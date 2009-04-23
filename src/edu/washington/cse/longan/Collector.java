@@ -30,18 +30,34 @@ public class Collector {
 
 	private Hashtable<Integer, MethodTracker> _methods = new Hashtable<Integer, MethodTracker>();
 
-	// point from an index -> the 'base' id that will be used
-	Integer[] _ids = new Integer[1024];
+	/**
+	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element
+	 * associated with the JPS id. (JPS.id binds every join point itself so there can be multiple
+	 * points for any program element)
+	 */
+	private Integer[] _ids = new Integer[1024];
 
-	Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
+	/**
+	 * id -> milliseconds
+	 */
+	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
 
-	Stack<Integer> _callStack = new Stack<Integer>();
+	/**
+	 * current callstack
+	 */
+	private Stack<Integer> _callStack = new Stack<Integer>();
 
-	Stack<Long> _timeStack = new Stack<Long>();
+	/**
+	 * method enter time. updated with the callstack so popping will give you the time the current
+	 * method entered.
+	 */
+	private Stack<Long> _timeStack = new Stack<Long>();
 
-	//	Hashtable<Integer, Signature> idToSignatureMap = new Hashtable<Integer, Signature>();
-
-	Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
+	/**
+	 * This index is used to maintain the _ids array: in this way the names of elements are tracked
+	 * and using the name the common base id can be found.
+	 */
+	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
 
 	private Collector() {
 		try {
