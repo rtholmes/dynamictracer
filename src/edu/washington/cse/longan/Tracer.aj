@@ -7,10 +7,11 @@ package edu.washington.cse.longan;
 
 import org.aspectj.lang.JoinPoint;
 
-import edu.washington.cse.longan.Collector;
-
 privileged aspect Tracer {
 
+	//	Hashtable<Integer, Signaturex> idToSignatureMap = new Hashtable<Integer, Signature>();
+
+	//	public static final boolean OUTPUT = false;
 
 	Collector _collector = Collector.getInstance();
 
@@ -32,47 +33,64 @@ privileged aspect Tracer {
 	pointcut lastTestCase() : execution(public *
 			 org.joda.time.TestIllegalFieldValueException.testOtherConstructors());
 
-	Object around() : methodEntryNoTests() 
-	{
 
+//	Object around() : methodEntryNoTests()
+	Object around() : methodEntry()
+	{
 		JoinPoint jp = thisJoinPoint;
 		_collector.methodEnter(jp);
-		
+
 		try {
+
 			return proceed();
+			
 		} finally {
 
 			_collector.methodExit(jp);
-		
+			
 		}
 
 	}
 
 	void around() : lastTestCase() {
-		
+
 		try {
+			
 			proceed();
+			
 		} finally {
-		
+			
 			_collector.writeToScreen();
 			
 		}
 	}
 
 	before() : constructor() {
+
 		_collector.constructorEnter(thisJoinPoint);
+		
 	}
 
 	after() : constructor() {
+		
 		_collector.constructorExit(thisJoinPoint);
+
 	}
 
 	before() : objectInitialization() {
-		_collector.objectInit(thisJoinPoint);
+
+		JoinPoint jp = thisJoinPoint;
+
+		_collector.objectInit(jp);
+		
 	}
 
 	before() : classInitialization() {
-		_collector.classInit(thisJoinPoint);
+		
+		JoinPoint jp = thisJoinPoint;
+
+		_collector.classInit(jp);
+		
 	}
 
 	//
@@ -166,4 +184,6 @@ privileged aspect Tracer {
 	// after() : exceptionHandler() {
 	// System.out.println("A exception of type Foo has just been handled");
 	// }
+	
+
 }
