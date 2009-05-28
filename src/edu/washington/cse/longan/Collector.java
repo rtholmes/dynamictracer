@@ -7,6 +7,8 @@ package edu.washington.cse.longan;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
@@ -22,18 +24,18 @@ import org.aspectj.lang.reflect.CodeSignature;
 import ca.lsmr.common.log.LSMRLogger;
 
 public class Collector {
-	public static final boolean OUTPUT = false;
+	public static final boolean OUTPUT = true;
 
 	private static Collector _instance = null;
 
-	private Logger _log = Logger.getLogger(this.getClass());
+	private static Logger _log = Logger.getLogger(Collector.class);
 
 	private Hashtable<Integer, MethodTracker> _methods = new Hashtable<Integer, MethodTracker>();
 
 	/**
-	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element
-	 * associated with the JPS id. (JPS.id binds every join point itself so there can be multiple
-	 * points for any program element)
+	 * Uses the JPS.getId() as an index; the stored element is the 'base' index
+	 * for the element associated with the JPS id. (JPS.id binds every join
+	 * point itself so there can be multiple points for any program element)
 	 */
 	private Integer[] _ids = new Integer[1024];
 
@@ -48,35 +50,42 @@ public class Collector {
 	private Stack<Integer> _callStack = new Stack<Integer>();
 
 	/**
-	 * method enter time. updated with the callstack so popping will give you the time the current
-	 * method entered.
+	 * method enter time. updated with the callstack so popping will give you
+	 * the time the current method entered.
 	 */
 	private Stack<Long> _timeStack = new Stack<Long>();
 
 	/**
-	 * This index is used to maintain the _ids array: in this way the names of elements are tracked
-	 * and using the name the common base id can be found.
+	 * This index is used to maintain the _ids array: in this way the names of
+	 * elements are tracked and using the name the common base id can be found.
 	 */
 	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
 
 	private Collector() {
 		try {
-			LSMRLogger.startLog4J(true, Level.INFO);
+			LSMRLogger.startLog4J(true, Level.DEBUG);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static Collector getInstance() {
-		if (_instance == null)
+		if (_instance == null) {
 			_instance = new Collector();
+			_log.trace("New Collector instantiated");
+		}
 		return _instance;
+	}
+
+	public static void clearInstance() {
+		_instance = null;
+		_log.trace("Collector cleared");
 	}
 
 	public void classInit(JoinPoint jp) {
 		try {
 			if (OUTPUT)
-				System.out.println("Class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+				_log.debug("Class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -86,17 +95,18 @@ public class Collector {
 
 		JoinPoint.StaticPart jps = jp.getStaticPart();
 
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			Signature sig = jp.getSignature();
+			_log.debug(out + "|-->| " + sig);
+		}
+
 		_callStack.push(getMethodId(jps));
 		_timeStack.push(System.currentTimeMillis());
-
-		for (int t = _callStack.size(); t > 0; t--)
-			if (OUTPUT)
-				System.out.print("\t");
-
-		if (OUTPUT) {
-			Signature sig = jp.getSignature();
-			System.out.println("|->| " + sig);
-		}
 
 	}
 
@@ -106,22 +116,36 @@ public class Collector {
 		record(jp, delta);
 
 		_callStack.pop();
+
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			Signature sig = jp.getSignature();
+			_log.debug(out + "|<--| " + sig);
+		}
+
 	}
 
-	public void methodEnter(JoinPoint jp) {
+	public void methodEnter(JoinPoint jp, boolean isExternal) {
 
 		int id = getMethodId(jp.getStaticPart());
 
 		_methods.get(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
-			String outString = "";
+			String out = "";
 			for (int i = _callStack.size(); i > 0; i--)
-				outString += "\t";
+				out += "\t";
 
 			String sig = _methods.get(id).getName();
 
-			_log.debug("->" + sig + " # args: " + jp.getArgs().length);
+			if (!isExternal)
+				_log.debug(out + "--> " + sig + " # args: " + jp.getArgs().length);
+			else
+				_log.debug(out + "-x> " + sig + " # args: " + jp.getArgs().length);
 
 			printArgs(jp);
 		}
@@ -129,9 +153,10 @@ public class Collector {
 		_callStack.push(id);
 
 		_timeStack.push(System.currentTimeMillis());
+
 	}
 
-	public void methodExit(JoinPoint jp) {
+	public void methodExit(JoinPoint jp, boolean isExternal) {
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
 		record(jp, delta);
@@ -139,21 +164,29 @@ public class Collector {
 
 		_callStack.pop();
 
+		String out = "";
 		for (int i = _callStack.size(); i > 0; i--)
 			if (OUTPUT)
-				System.out.print("\t");
+				out += "\t";
 
 		if (OUTPUT) {
 			Signature sig = jp.getSignature();
-			System.out.println("<-" + sig + " time: " + delta);
-			// System.out.println("<-" + sig + " time: " + (end - start));
+
+			if (!isExternal)
+				out += "<-- " + sig + " time: " + delta;
+			else
+				out += "<x- " + sig + " time: " + delta;
+
+			_log.debug(out);
 		}
 
 	}
 
 	public void objectInit(JoinPoint jp) {
-		if (OUTPUT)
-			System.out.println("Obj init: " + jp.getTarget().getClass().getName());
+		if (OUTPUT) {
+			String out = "Obj init: " + jp.getTarget().getClass().getName();
+			_log.debug(out);
+		}
 	}
 
 	public void writeToScreen() {
@@ -208,42 +241,80 @@ public class Collector {
 		}
 	}
 
+	/**
+	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of
+	 * 0 will conflict with every single class. We can use pertypewithin on the
+	 * aspect description but that will violate what we have happening here.
+	 * 
+	 * @param jps
+	 * @return
+	 */
+	private int methodidcounter = 0;
+
 	private Integer getMethodId(StaticPart jps) {
-		int id = jps.getId();
 
-		if (_ids[id] != null) {
-			// id has already been mapped to the base id so return it
-			return _ids[id];
-		} else {
-			String name = jps.getSignature().getName();
+		String name = "";
+		int id = -1;
+		// XXX: this kills performance but at least will work for now
+		if (true) {
+			name = jps.getSignature().toString();
 
-			Integer baseId = _nameToBaseIdMap.get(name);
-			if (baseId == null) {
-				// there is no base id yet; use this one
-				_nameToBaseIdMap.put(name, id);
-				_ids[id] = id;
-				baseId = id;
-			} else {
-				// there is a base id, choose it instead and
-				// add a new mapping for this one
-				_ids[id] = baseId;
+			if (!_nameToBaseIdMap.containsKey(name)) {
+				_nameToBaseIdMap.put(name, methodidcounter++);
 			}
 
-			id = baseId;
-
+			id = _nameToBaseIdMap.get(name);
 			if (!_methods.containsKey(id)) {
 				// update the method map. this map only uses the base id
 				_methods.put(id, new MethodTracker(id, name));
 			}
+			
+//			_log.trace("id: "+id+" name: "+name);
+			return id;
 
+		} else {
+			// RFE: fix this
+			id = jps.getId();
+
+			if (_ids[id] != null) {
+				// id has already been mapped to the base id so return it
+				return _ids[id];
+			} else {
+				// haven't encountered this id before, create one
+				name = jps.getSignature().toString();
+
+				// multiple ids can exist for the same methods (e.g., from
+				// different
+				// call sites); merge them
+				Integer baseId = _nameToBaseIdMap.get(name);
+				if (baseId == null) {
+					// there is no base id yet; use this one
+					_nameToBaseIdMap.put(name, id);
+					_ids[id] = id;
+					baseId = id;
+				} else {
+					// there is a base id, choose it instead and
+					// add a new mapping for this one
+					_ids[id] = baseId;
+				}
+
+				id = baseId;
+
+				if (!_methods.containsKey(id)) {
+					// update the method map. this map only uses the base id
+					_methods.put(id, new MethodTracker(id, name));
+				}
+
+			}
+			return id;
 		}
-		return id;
 	}
 
 	@SuppressWarnings("unchecked")
 	private void printArgs(JoinPoint jp) {
 		// if (false) {
 		try {
+
 			CodeSignature sig = (CodeSignature) jp.getSignature();
 
 			String[] names = sig.getParameterNames();
@@ -257,26 +328,40 @@ public class Collector {
 
 				String argV = "-[null]-";
 
-				for (int t = _callStack.size(); t > 0; t--)
-					if (OUTPUT)
-						System.out.print("\t");
+				String out = "";
+				if (OUTPUT)
+					for (int t = _callStack.size(); t > 0; t--)
+						out += "\t";
 
 				if (arg != null) {
 					if (arg instanceof String) {
 
 						if (OUTPUT)
-							System.out.println("\tString length: " + ((String) arg).length());
+							_log.debug(out + "\tArg " + i + ", String, length: " + ((String) arg).length());
 
 					} else if (arg.getClass().isArray()) {
 
 						if (OUTPUT)
-							System.out.println("\tArray length: " + Array.getLength(arg) + " class: "
+							_log.debug(out + "\tArg " + i + ", Array, length: " + Array.getLength(arg) + " class: "
 									+ arg.getClass().getComponentType());
 
 					} else if (arg instanceof Collection) {
 
 						if (OUTPUT)
-							System.out.println("\tCollection size: " + ((Collection) arg).size());
+							_log.debug(out + "\tArg " + i + ", Collection, size: " + ((Collection) arg).size() + " ( "
+									+ arg.getClass() + " )");
+
+					} else if (arg instanceof Set) {
+
+						if (OUTPUT)
+							_log.debug(out + "\tArg " + i + ", Set, size: " + ((Set) arg).size() + " ( "
+									+ arg.getClass() + " )");
+
+					} else if (arg instanceof List) {
+
+						if (OUTPUT)
+							_log.debug(out + "\tArg " + i + ", List, size: " + ((List) arg).size() + " ( "
+									+ arg.getClass() + " )");
 
 					} else {
 
@@ -284,12 +369,12 @@ public class Collector {
 						// Vector but is declared as a List)
 
 						if (OUTPUT)
-							System.out.println("\tArg type: " + arg.getClass().getName());
+							_log.debug(out + "\tArg " + i + ", unhandled type: " + arg.getClass().getName());
 
 					}
 				} else {
 					if (OUTPUT)
-						System.out.println("\tNull arg, type: " + argType.getName());
+						_log.debug(out + "\tArg " + i + ", null, supposed to be type: " + argType.getName());
 				}
 			}
 		} catch (Exception e) {
@@ -305,7 +390,7 @@ public class Collector {
 
 		if (val == null) {
 			_profile.put(id, delta);
-			//			idToSignatureMap.put(id, jp.getSignature());
+			// idToSignatureMap.put(id, jp.getSignature());
 		} else
 			_profile.put(id, val + delta);
 

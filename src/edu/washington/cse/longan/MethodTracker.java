@@ -51,6 +51,9 @@ public class MethodTracker {
 		} else {
 			// unknown caller, could be from non-instrumented code (e.g., junit
 			// core)
+			_log.trace("Unknown caller for: "+jp.getSignature());
+			
+			//RFE: track unknown callers (-1?)
 		}
 
 		// RFE: RT param analysis
