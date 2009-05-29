@@ -479,7 +479,24 @@ public class Collector {
 
 	}
 
-	public void handleException(JoinPoint jp, Object instance, Object exception) {
+	public void exceptionThrown
+	(JoinPoint jp, Throwable exception, boolean isExternal) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			// MethodTracker mt = _methods.get(_callStack.peek());
+
+			if (!isExternal)
+				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+			else
+				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+		}
+	}
+
+	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
 
 		if (OUTPUT) {
 			String out = "";
@@ -488,7 +505,7 @@ public class Collector {
 
 			MethodTracker mt = _methods.get(_callStack.peek());
 
-			_log.debug(out + "Handle exception: " + exception + " in: " + mt.getName());
+			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
 		}
 	}
 

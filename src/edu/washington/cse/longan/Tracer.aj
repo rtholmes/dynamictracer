@@ -72,7 +72,7 @@ privileged aspect Tracer {
 	// //////// ADVICE //////////
 	// //////////////////////////
 	before(Object instance, Object exception) : exceptionHandler(instance) && args(exception) {
-		_collector.handleException(thisJoinPoint, instance, exception);
+		_collector.exceptionHandled(thisJoinPoint, instance, exception);
 	}
 
 	before() : fieldGet() {
@@ -83,8 +83,42 @@ privileged aspect Tracer {
 		_collector.fieldSet(thisJoinPoint, newValue);
 	}
 
-	before() : libraryEntry() {
-		_collector.methodEnter(thisJoinPoint, true);
+	// before() : libraryEntry() {
+	// _collector.methodEnter(thisJoinPoint, true);
+	// }
+	//
+	// after() returning (Object o): libraryEntry() {
+	//
+	// _collector.methodExit(thisJoinPoint, o, true);
+	// }
+
+	// TODO: should we be using around or before/after?
+	Object around() : libraryEntry()
+	{
+		JoinPoint jp = thisJoinPoint;
+		_collector.methodEnter(jp, true);
+
+		Object retObject = null;
+		try {
+
+			retObject = proceed();
+
+			return retObject;
+
+		} finally {
+
+			_collector.methodExit(jp, retObject, true);
+
+		}
+
+	}
+
+	after() throwing (Throwable e): libraryEntry() {
+		_collector.exceptionThrown(thisJoinPoint, e, true);
+	}
+
+	after() throwing (Throwable e): methodEntry() {
+		_collector.exceptionThrown(thisJoinPoint, e, false);
 	}
 
 	before() : throwableCreation() {
@@ -95,40 +129,34 @@ privileged aspect Tracer {
 		_collector.afterCreateException(thisJoinPoint);
 	}
 
-	after() returning (Object o): libraryEntry() {
+	// before() : methodEntry() {
+	// _collector.methodEnter(thisJoinPoint, false);
+	// }
+	//	
+	// after() returning (Object returnObject):methodEntry() {
+	// _collector.methodExit(thisJoinPoint,returnObject, false);
+	// }
 
-		_collector.methodExit(thisJoinPoint, o, true);
-	}
+	// Object around() : methodEntryNoTests()
+	Object around() : methodEntry()
+	{
+		JoinPoint jp = thisJoinPoint;
+		_collector.methodEnter(jp, false);
 
-	before() : methodEntry() {
-		_collector.methodEnter(thisJoinPoint, false);
+		Object retObject = null;
+		try {
+
+			retObject = proceed();
+
+			return retObject;
+
+		} finally {
+
+			_collector.methodExit(jp, retObject, false);
+
+		}
+
 	}
-	
-	after() returning (Object returnObject):methodEntry() {
-		_collector.methodExit(thisJoinPoint,returnObject, false);
-	}
-	
-	
-//	// Object around() : methodEntryNoTests()
-//	Object around() : methodEntry()
-//	{
-//		JoinPoint jp = thisJoinPoint;
-//		_collector.methodEnter(jp, false);
-//
-//		Object retObject = null;
-//		try {
-//
-//			retObject = proceed();
-//
-//			return retObject;
-//
-//		} finally {
-//
-//			_collector.methodExit(jp, retObject, false);
-//
-//		}
-//
-//	}
 
 	before() : constructor() {
 
