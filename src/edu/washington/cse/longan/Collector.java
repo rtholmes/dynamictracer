@@ -82,10 +82,27 @@ public class Collector {
 		_log.trace("Collector cleared");
 	}
 
-	public void classInit(JoinPoint jp) {
+	public void beforeClassInit(JoinPoint jp) {
 		try {
-			if (OUTPUT)
-				_log.debug("Class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void afterClassInit(JoinPoint jp) {
+		try {
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -142,11 +159,11 @@ public class Collector {
 
 			for (int t = _callStack.size(); t > 0; t--)
 				out += "\t";
-			
-			_log.debug(out+"Field get: " + jp.toString());
+
+			_log.debug(out + "Field get: " + jp.toString());
 		}
 	}
-	
+
 	public void fieldSet(JoinPoint jp, Object newValue) {
 		// XXX: handle field sets
 		if (OUTPUT) {
@@ -154,8 +171,8 @@ public class Collector {
 
 			for (int t = _callStack.size(); t > 0; t--)
 				out += "\t";
-			
-			_log.debug(out+"Field set: " + jp.getSignature().toString()+" to: "+newValue);
+
+			_log.debug(out + "Field set: " + jp.getSignature().toString() + " to: " + newValue);
 		}
 	}
 
@@ -226,9 +243,28 @@ public class Collector {
 
 	}
 
-	public void objectInit(JoinPoint jp) {
+	public void beforeObjectInit(JoinPoint jp) {
 		if (OUTPUT) {
-			String out = "Obj init: " + jp.getTarget().getClass().getName();
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
+
+			_log.debug(out);
+		}
+	}
+
+	public void afterObjectInit(JoinPoint jp) {
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| After obj init: " + jp.getTarget().getClass().getName();
+
 			_log.debug(out);
 		}
 	}
@@ -300,7 +336,8 @@ public class Collector {
 		String name = "";
 		int id = -1;
 
-		if (true) {
+		boolean avoidDuplicateBug = true;
+		if (avoidDuplicateBug) {
 			name = jps.getSignature().toString();
 
 			if (!_nameToBaseIdMap.containsKey(name)) {
@@ -368,8 +405,10 @@ public class Collector {
 			for (int i = 0; i < args.length; i++) {
 				Object arg = args[i];
 				Class argType = types[i];
+				@SuppressWarnings("unused")
 				String argName = names[i];
 
+				@SuppressWarnings("unused")
 				String argV = "-[null]-";
 
 				String out = "";
@@ -440,4 +479,37 @@ public class Collector {
 
 	}
 
+	public void handleException(JoinPoint jp, Object instance, Object exception) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			MethodTracker mt = _methods.get(_callStack.peek());
+
+			_log.debug(out + "Handle exception: " + exception + " in: " + mt.getName());
+		}
+	}
+
+	public void beforeCreateException(JoinPoint jp) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+			_log.debug(out + "Before create exception: " + jp.getSignature().toString());
+		}
+		constructorEnter(jp, true);
+	}
+
+	public void afterCreateException(JoinPoint jp) {
+		constructorExit(jp, true);
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+			_log.debug(out + "After create exception: " + jp.getSignature().toString());
+		}
+	}
 }
