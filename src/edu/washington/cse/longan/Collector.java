@@ -91,7 +91,7 @@ public class Collector {
 		}
 	}
 
-	public void constructorEnter(JoinPoint jp) {
+	public void constructorEnter(JoinPoint jp, boolean isExternal) {
 
 		JoinPoint.StaticPart jps = jp.getStaticPart();
 
@@ -102,7 +102,10 @@ public class Collector {
 				out += "\t";
 
 			Signature sig = jp.getSignature();
-			_log.debug(out + "|-->| " + sig);
+			if (!isExternal)
+				_log.debug(out + "|-->| " + sig);
+			else
+				_log.debug(out + "|x->| " + sig);
 		}
 
 		_callStack.push(getMethodId(jps));
@@ -110,7 +113,7 @@ public class Collector {
 
 	}
 
-	public void constructorExit(JoinPoint jp) {
+	public void constructorExit(JoinPoint jp, boolean isExternal) {
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
 		record(jp, delta);
@@ -124,11 +127,18 @@ public class Collector {
 				out += "\t";
 
 			Signature sig = jp.getSignature();
-			_log.debug(out + "|<--| " + sig);
+			if (!isExternal)
+				_log.debug(out + "|<--| " + sig);
+			else
+				_log.debug(out + "|<-x| " + sig);
 		}
 
 	}
 
+	public void fieldSet(JoinPoint jp){
+		// XXX: handle field sets
+		_log.debug("Field set: "+jp.toString());
+	}
 	public void methodEnter(JoinPoint jp, boolean isExternal) {
 
 		int id = getMethodId(jp.getStaticPart());
@@ -156,6 +166,21 @@ public class Collector {
 
 	}
 
+	public void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
+
+		if (retObject != null) {
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug(out+"Return: "+retObject);
+			}
+		}
+		// RFE: handle return value
+		methodExit(jp, isExternal);
+		
+	}
+
 	public void methodExit(JoinPoint jp, boolean isExternal) {
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
@@ -164,12 +189,11 @@ public class Collector {
 
 		_callStack.pop();
 
-		String out = "";
-		for (int i = _callStack.size(); i > 0; i--)
-			if (OUTPUT)
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
 
-		if (OUTPUT) {
 			Signature sig = jp.getSignature();
 
 			if (!isExternal)
@@ -255,7 +279,7 @@ public class Collector {
 
 		String name = "";
 		int id = -1;
-		// XXX: this kills performance but at least will work for now
+
 		if (true) {
 			name = jps.getSignature().toString();
 
@@ -265,14 +289,14 @@ public class Collector {
 
 			id = _nameToBaseIdMap.get(name);
 			if (!_methods.containsKey(id)) {
-				// update the method map. this map only uses the base id
 				_methods.put(id, new MethodTracker(id, name));
 			}
-			
-//			_log.trace("id: "+id+" name: "+name);
+
+			// _log.trace("id: "+id+" name: "+name);
 			return id;
 
 		} else {
+			// PERFORMANCE: fix getMethodId
 			// RFE: fix this
 			id = jps.getId();
 

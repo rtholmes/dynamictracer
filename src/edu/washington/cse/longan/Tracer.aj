@@ -7,90 +7,133 @@ package edu.washington.cse.longan;
 
 import org.aspectj.lang.JoinPoint;
 
-privileged aspect Tracer {
+import edu.washington.cse.longan.Collector;
 
-	//	Hashtable<Integer, Signaturex> idToSignatureMap = new Hashtable<Integer, Signature>();
 
-	//	public static final boolean OUTPUT = false;
+
+
+           class  Tracer {
 
 	Collector _collector = Collector.getInstance();
 
-	pointcut withinTests() : within(junit.framework.TestCase+);
+	// pointcut withinTests() : within(junit.framework.TestCase+);
 
-	pointcut methodEntry() : execution(public * org.joda.time..*.* (..));
+	// pointcut methodEntry() : execution(public * org.joda.time..*.* (..));
+	// RT pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
 
-	pointcut methodEntryNoTests() : methodEntry() && ! withinTests();
+	// works
+	// RT pointcut constructor() :
+	// call(edu.washington.cse.longanTest.Inheritance.new(..));
+	// //call(edu.washington.cse..*.new(..));
 
-	pointcut constructor() :  call(org.joda.time.*.new(..));
+	// works
+	// pointcut objectInitialization() :
+	// initialization(edu.washington.cse.longanTest.Inheritance.new(..));
+	// matches but doesn't work for some reason
+	// RT pointcut objectInitialization() :
+	// initialization(edu.washington.cse.*.new(..));
 
-	pointcut objectInitialization() : initialization(Xorg.joda.time.*.new(..));
+	// org.joda.time.*
+	// RT pointcut classInitialization() :
+	// staticinitialization(edu.washington.cse.*);
 
-	pointcut classInitialization() : staticinitialization(Xorg.joda.time.*);
+	// works in jodatime
+	// pointcut constructor() : call(org.joda.time..*.new(..));
+	// pointcut objectInitialization() :
+	// initialization(org.joda.time.*.new(..));
 
-	// /**
-	// * This is more of a hack just so we know when we're done
-	// */
-	pointcut lastTestCase() : execution(public *
-			 org.joda.time.TestIllegalFieldValueException.testOtherConstructors());
+	pointcut methodEntry()                                            ;
 
+	pointcut constructor()                                       ;
 
-//	Object around() : methodEntryNoTests()
-	Object around() : methodEntry()
-	{
+	pointcut objectInitialization()                                               ;
+
+	pointcut classInitialization()                                             ;
+
+	// capture library calls and initializations
+	pointcut libEntry()                   ; // || call (*.new(..));
+
+	// captures calls but not instantiations
+	pointcut libraryEntry()                                ; // && ! methodEntry();
+
+	pointcut libraryConstructor()                                                          ;
+
+	// XXX: field set seems to work but field get doesn't
+	
+	pointcut fieldSet()                                ;
+	
+	before()              {
+		_collector.fieldSet(thisJoinPoint);
+	}
+	
+	before()                  {
+		_collector.methodEnter(thisJoinPoint, true);
+	}
+
+//	after() : libraryEntry() {
+	after(             Object o)                 {
+		
+		_collector.methodExit(thisJoinPoint,o, true);
+	}
+
+	// Object around() : methodEntryNoTests()
+	Object around()                  {
 		JoinPoint jp = thisJoinPoint;
-		_collector.methodEnter(jp);
+		_collector.methodEnter(jp, false);
 
+		Object retObject = null;
 		try {
 
-			return proceed();
+			retObject = proceed();
+			
+			return retObject;
 			
 		} finally {
 
-			_collector.methodExit(jp);
-			
+			_collector.methodExit(jp, retObject, false);
+
 		}
 
 	}
 
-	void around() : lastTestCase() {
+	before()                 {
 
-		try {
-			
-			proceed();
-			
-		} finally {
-			
-			_collector.writeToScreen();
-			
-		}
-	}
-
-	before() : constructor() {
-
-		_collector.constructorEnter(thisJoinPoint);
-		
-	}
-
-	after() : constructor() {
-		
-		_collector.constructorExit(thisJoinPoint);
+		_collector.constructorEnter(thisJoinPoint, false);
 
 	}
 
-	before() : objectInitialization() {
+	after()                 {
+
+		_collector.constructorExit(thisJoinPoint, false);
+
+	}
+
+	before()                        {
+		// XXX: external
+		_collector.constructorEnter(thisJoinPoint, true);
+
+	}
+
+	after()                        {
+		// XXX: external
+		_collector.constructorExit(thisJoinPoint, true);
+
+	}
+
+	before()                          {
 
 		JoinPoint jp = thisJoinPoint;
 
 		_collector.objectInit(jp);
-		
+
 	}
 
-	before() : classInitialization() {
-		
+	before()                         {
+
 		JoinPoint jp = thisJoinPoint;
 
 		_collector.classInit(jp);
-		
+
 	}
 
 	//
@@ -184,6 +227,5 @@ privileged aspect Tracer {
 	// after() : exceptionHandler() {
 	// System.out.println("A exception of type Foo has just been handled");
 	// }
-	
 
-}
+Tracer x1;}
