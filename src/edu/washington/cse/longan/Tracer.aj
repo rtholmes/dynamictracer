@@ -12,72 +12,67 @@ import edu.washington.cse.longan.Collector;
 
 
 
-           class  Tracer {
+privileged aspect Tracer {
 
 	Collector _collector = Collector.getInstance();
 
-	// pointcut withinTests() : within(junit.framework.TestCase+);
+	// RFE: test with super calls
 
-	// pointcut methodEntry() : execution(public * org.joda.time..*.* (..));
-	// RT pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
+	// all scoped method calls
+	pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
 
-	// works
-	// RT pointcut constructor() :
-	// call(edu.washington.cse.longanTest.Inheritance.new(..));
-	// //call(edu.washington.cse..*.new(..));
+	// all scoped constructors
+	pointcut constructor() : call(edu.washington.cse..*.new(..));
 
-	// works
-	// pointcut objectInitialization() :
-	// initialization(edu.washington.cse.longanTest.Inheritance.new(..));
-	// matches but doesn't work for some reason
-	// RT pointcut objectInitialization() :
-	// initialization(edu.washington.cse.*.new(..));
+	// all scoped object initializers [not sure how to use these yet]
+	pointcut objectInitialization() : initialization(edu.washington.cse..*.new(..)) && !within(Tracer);
 
-	// org.joda.time.*
-	// RT pointcut classInitialization() :
-	// staticinitialization(edu.washington.cse.*);
+	// all scoped class initializers [not sure how to use these yet]
+	pointcut classInitialization() : staticinitialization(edu.washington.cse..*.*) && !within(Tracer);
 
-	// works in jodatime
-	// pointcut constructor() : call(org.joda.time..*.new(..));
-	// pointcut objectInitialization() :
-	// initialization(org.joda.time.*.new(..));
+	// all library method calls (e.g., all non-scoped calls)
+	// 2nd clause loses us static calls to instrumenter suite for some reason,
+	// but we don't want these anyways.
+	pointcut libraryEntry() : call(* *.* (..)) && ! call(* edu.washington.cse..*.* (..)) && !within(Tracer);
 
-	pointcut methodEntry()                                            ;
+	// captures calls but not instantiations (the above entry used to be
+	// libEntry)
+	// pointcut libraryEntry() : libEntry() && !within(Tracer);
 
-	pointcut constructor()                                       ;
-
-	pointcut objectInitialization()                                               ;
-
-	pointcut classInitialization()                                             ;
-
-	// capture library calls and initializations
-	pointcut libEntry()                   ; // || call (*.new(..));
-
-	// captures calls but not instantiations
-	pointcut libraryEntry()                                ; // && ! methodEntry();
-
-	pointcut libraryConstructor()                                                          ;
-
-	// XXX: field set seems to work but field get doesn't
+	// all non-scoped constructor calls
+	pointcut libraryConstructor() : call(*..*.new(..)) && !within(Tracer) && !constructor();
 	
-	pointcut fieldSet()                                ;
+	// all field accesses
+	// Note: Cannot capture references to static final fields (they are inlined)
+	pointcut fieldGet() : get(* *.*) && !within(Tracer);
+
+	// all field sets
+	// Cannot capture initializations of static final fields (they are inlined)
+	pointcut fieldSet() : set(* *.*) && !within(Tracer);
+
+	// XXX: handle exceptions still
 	
-	before()              {
-		_collector.fieldSet(thisJoinPoint);
+	before() : fieldGet() {
+		_collector.fieldGet(thisJoinPoint);
 	}
-	
-	before()                  {
+
+	before(Object newValue) : fieldSet() && args(newValue) {
+		_collector.fieldSet(thisJoinPoint, newValue);
+	}
+
+	before() : libraryEntry() {
 		_collector.methodEnter(thisJoinPoint, true);
 	}
 
-//	after() : libraryEntry() {
-	after(             Object o)                 {
-		
-		_collector.methodExit(thisJoinPoint,o, true);
+	// after() : libraryEntry() {
+	after() returning (Object o): libraryEntry() {
+
+		_collector.methodExit(thisJoinPoint, o, true);
 	}
 
 	// Object around() : methodEntryNoTests()
-	Object around()                  {
+	Object around() : methodEntry()
+	{
 		JoinPoint jp = thisJoinPoint;
 		_collector.methodEnter(jp, false);
 
@@ -85,9 +80,9 @@ import edu.washington.cse.longan.Collector;
 		try {
 
 			retObject = proceed();
-			
+
 			return retObject;
-			
+
 		} finally {
 
 			_collector.methodExit(jp, retObject, false);
@@ -96,31 +91,31 @@ import edu.washington.cse.longan.Collector;
 
 	}
 
-	before()                 {
+	before() : constructor() {
 
 		_collector.constructorEnter(thisJoinPoint, false);
 
 	}
 
-	after()                 {
+	after() : constructor() {
 
 		_collector.constructorExit(thisJoinPoint, false);
 
 	}
 
-	before()                        {
+	before() : libraryConstructor() {
 		// XXX: external
 		_collector.constructorEnter(thisJoinPoint, true);
 
 	}
 
-	after()                        {
+	after() : libraryConstructor() {
 		// XXX: external
 		_collector.constructorExit(thisJoinPoint, true);
 
 	}
 
-	before()                          {
+	before() : objectInitialization() {
 
 		JoinPoint jp = thisJoinPoint;
 
@@ -128,7 +123,10 @@ import edu.washington.cse.longan.Collector;
 
 	}
 
-	before()                         {
+	before() : classInitialization() {
+
+		// RFE: can we check to see what classes / interfaces are extended /
+		// implemented here?
 
 		JoinPoint jp = thisJoinPoint;
 
@@ -228,4 +226,4 @@ import edu.washington.cse.longan.Collector;
 	// System.out.println("A exception of type Foo has just been handled");
 	// }
 
-Tracer x1;}
+}

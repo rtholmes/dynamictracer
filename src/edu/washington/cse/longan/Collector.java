@@ -135,10 +135,30 @@ public class Collector {
 
 	}
 
-	public void fieldSet(JoinPoint jp){
+	public void fieldGet(JoinPoint jp) {
 		// XXX: handle field sets
-		_log.debug("Field set: "+jp.toString());
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+			
+			_log.debug(out+"Field get: " + jp.toString());
+		}
 	}
+	
+	public void fieldSet(JoinPoint jp, Object newValue) {
+		// XXX: handle field sets
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+			
+			_log.debug(out+"Field set: " + jp.getSignature().toString()+" to: "+newValue);
+		}
+	}
+
 	public void methodEnter(JoinPoint jp, boolean isExternal) {
 
 		int id = getMethodId(jp.getStaticPart());
@@ -173,12 +193,12 @@ public class Collector {
 				String out = "";
 				for (int i = _callStack.size(); i > 0; i--)
 					out += "\t";
-				_log.debug(out+"Return: "+retObject);
+				_log.debug(out + "Return: " + retObject);
 			}
 		}
 		// RFE: handle return value
 		methodExit(jp, isExternal);
-		
+
 	}
 
 	public void methodExit(JoinPoint jp, boolean isExternal) {
