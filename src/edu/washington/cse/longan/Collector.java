@@ -176,7 +176,7 @@ public class Collector {
 
 		JoinPoint.StaticPart jps = jp.getStaticPart();
 
-		int id = getMethodId(jp.getStaticPart());
+		int id = getMethodId(jp);
 
 		_methods.get(id).methodEnter(jp, _callStack);
 
@@ -193,7 +193,7 @@ public class Collector {
 				_log.debug(out + "|x->| " + sig);
 		}
 
-		_callStack.push(getMethodId(jps));
+		_callStack.push(getMethodId(jp));
 		_timeStack.push(System.currentTimeMillis());
 
 	}
@@ -201,7 +201,7 @@ public class Collector {
 	public void constructorExit(JoinPoint jp, boolean isExternal) {
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
-		record(jp, delta);
+		recordProfileData(jp, delta);
 
 		_callStack.pop();
 
@@ -273,14 +273,14 @@ public class Collector {
 		}
 	}
 
-	private Integer getMethodId(StaticPart jps) {
+	private Integer getMethodId(JoinPoint jp) {
 
 		String name = "";
 		int id = -1;
 
 		boolean avoidDuplicateBug = true;
 		if (avoidDuplicateBug) {
-			name = jps.getSignature().toString();
+			name = jp.getSignature().toString();
 
 			if (!_nameToBaseIdMap.containsKey(name)) {
 				_nameToBaseIdMap.put(name, methodidcounter++);
@@ -288,7 +288,7 @@ public class Collector {
 
 			id = _nameToBaseIdMap.get(name);
 			if (!_methods.containsKey(id)) {
-				_methods.put(id, new MethodTracker(id, name));
+				_methods.put(id, new MethodTracker(id, jp));
 			}
 
 			// _log.trace("id: "+id+" name: "+name);
@@ -297,14 +297,14 @@ public class Collector {
 		} else {
 			// PERFORMANCE: fix getMethodId
 			// RFE: fix this
-			id = jps.getId();
+			id = jp.getStaticPart().getId();
 
 			if (_ids[id] != null) {
 				// id has already been mapped to the base id so return it
 				return _ids[id];
 			} else {
 				// haven't encountered this id before, create one
-				name = jps.getSignature().toString();
+				name = jp.getSignature().toString();
 
 				// multiple ids can exist for the same methods (e.g., from
 				// different
@@ -325,7 +325,7 @@ public class Collector {
 
 				if (!_methods.containsKey(id)) {
 					// update the method map. this map only uses the base id
-					_methods.put(id, new MethodTracker(id, name));
+					_methods.put(id, new MethodTracker(id, jp));
 				}
 
 			}
@@ -346,7 +346,7 @@ public class Collector {
 
 	public void methodEnter(JoinPoint jp, boolean isExternal) {
 
-		int id = getMethodId(jp.getStaticPart());
+		int id = getMethodId(jp);
 
 		_methods.get(id).methodEnter(jp, _callStack);
 
@@ -371,10 +371,20 @@ public class Collector {
 
 	}
 
-	public void methodExit(JoinPoint jp, boolean isExternal) {
+	public void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
+
+		if (retObject != null) {
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug(out + "Return: " + retObject);
+			}
+		}
+		
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
-		record(jp, delta);
+		recordProfileData(jp, delta);
 
 		_callStack.pop();
 
@@ -392,28 +402,11 @@ public class Collector {
 
 			_log.debug(out);
 		}
-
+		
+		getMethodTracker(jp).methodExit(jp, retObject);
+		
 	}
 
-	public void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
-
-		if (retObject != null) {
-			if (OUTPUT) {
-				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
-					out += "\t";
-				_log.debug(out + "Return: " + retObject);
-			}
-		}
-		// RFE: handle return value
-		methodExit(jp, isExternal);
-
-	}
-
-	public void point() {
-		_log.warn("POINT REACHED");
-
-	}
 
 	@SuppressWarnings("unchecked")
 	private void printArgs(JoinPoint jp) {
@@ -490,8 +483,8 @@ public class Collector {
 		// }
 	}
 
-	private void record(JoinPoint jp, long delta) {
-		int id = getMethodId(jp.getStaticPart());
+	private void recordProfileData(JoinPoint jp, long delta) {
+		int id = getMethodId(jp);
 
 		Long val = _profile.get(id);
 
@@ -569,6 +562,10 @@ public class Collector {
 			e.fillInStackTrace();
 			_log.error(e);
 		}
+	}
+	
+	private MethodTracker getMethodTracker(JoinPoint jp){
+		return _methods.get(getMethodId(jp));
 	}
 
 }

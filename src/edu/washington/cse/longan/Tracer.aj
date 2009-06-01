@@ -9,66 +9,57 @@ import org.aspectj.lang.JoinPoint;
 
 import edu.washington.cse.longan.Collector;
 
-privileged aspect Tracer {
+           class  Tracer {
 
 	Collector _collector = Collector.getInstance();
 
 	// all scoped method calls (super can't be captured)
 	// pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
-	pointcut methodEntry() : execution(* org.ulti.dev.dynamic.test..*.* (..)) &&
-		!throwableCreation();
+	pointcut methodEntry()                                                                             ;
 
 	// all scoped constructors
 	// pointcut constructor() : call(edu.washington.cse..*.new(..));
-	pointcut constructor() : call(org.ulti.dev.dynamic.test..*.new(..)) &&
-		!throwableCreation();
+	pointcut constructor()                                                                       ;
 
 	// all scoped object initializers [not sure how to use these yet]
 	// pointcut objectInitialization() :
 	// initialization(edu.washington.cse..*.new(..)) && !within(Tracer);
-	pointcut objectInitialization() : initialization(org.ulti.dev.dynamic.test..*.new(..)) && !within(Tracer);
+	pointcut objectInitialization()                                                                          ;
 
 	// all scoped class initializers [not sure how to use these yet]
 	// pointcut classInitialization() :
 	// staticinitialization(edu.washington.cse..*.*) && !within(Tracer);
-	pointcut classInitialization() : staticinitialization(org.ulti.dev.dynamic.test..*.*) && !within(Tracer);
+	pointcut classInitialization()                                                                          ;
 
 	// all library method calls (e.g., all non-scoped calls)
 	// 2nd clause loses us static calls to instrumenter suite for some reason,
 	// but we don't want these anyways.
 	// pointcut libraryEntry() : call(* *.* (..)) && ! call(*
 	// edu.washington.cse..*.* (..)) && !within(Tracer);
-	pointcut libraryEntry() : call(* *.* (..)) &&
-		!call(* org.ulti.dev.dynamic.test..*.* (..)) && // ignore regular methods
-		!call(* edu.washington.cse..*.* (..)) && 		// ignore tracer code
-		!throwableCreation() &&
-		!within(Tracer);
+	pointcut libraryEntry()                                                                                                                                                                                                                 ;
 
 	// captures calls but not instantiations (the above entry used to be
 	// libEntry)
 	// pointcut libraryEntry() : libEntry() && !within(Tracer);
 
 	// all non-scoped constructor calls
-	pointcut libraryConstructor() : call(*..*.new(..)) && 
-		!constructor() &&
-		!throwableCreation() &&
-		!within(Tracer);
+	pointcut libraryConstructor()                                                                                         ;
 
 	// all field accesses
 	// Note: Cannot capture references to static final fields (they are inlined)
-	pointcut fieldGet() : get(* *.*) && !within(Tracer);
+	pointcut fieldGet()                                ;
 
 	// all field sets
 	// Cannot capture initializations of static final fields (they are inlined)
-	pointcut fieldSet() : set(* *.*) && !within(Tracer);
+	pointcut fieldSet()                                ;
 
-	pointcut exceptionHandler(Object instance) : handler(*) && this(instance);
+	pointcut exceptionHandler(Object instance)                               ;
 
-	pointcut throwableCreation() : call(java.lang.Exception+.new(..));
+	pointcut throwableCreation()                                     ;
 
-	pointcut lastThing() : execution(void org.ulti.dev.dynamic.test.test.InheritanceTest.lastThing()) && !within(Tracer);
+	pointcut lastThing()                                                                                                ;
 	
-	after() : lastThing() {
+	after()               {
 //		System.err.println("adsf");
 //		_collector.point();
 		_collector.writeToScreen();
@@ -77,15 +68,15 @@ privileged aspect Tracer {
 	// //////////////////////////
 	// //////// ADVICE //////////
 	// //////////////////////////
-	before(Object instance, Object exception) : exceptionHandler(instance) && args(exception) {
+	before(Object instance, Object exception)                                                 {
 		_collector.exceptionHandled(thisJoinPoint, instance, exception);
 	}
 
-	before() : fieldGet() {
+	before()              {
 		_collector.fieldGet(thisJoinPoint);
 	}
 
-	before(Object newValue) : fieldSet() && args(newValue) {
+	before(Object newValue)                                {
 		_collector.fieldSet(thisJoinPoint, newValue);
 	}
 
@@ -99,8 +90,7 @@ privileged aspect Tracer {
 	// }
 
 	// TODO: should we be using around or before/after?
-	Object around() : libraryEntry()
-	{
+	Object around()                   {
 		JoinPoint jp = thisJoinPoint;
 		_collector.methodEnter(jp, true);
 
@@ -119,19 +109,19 @@ privileged aspect Tracer {
 
 	}
 
-	after() throwing (Throwable e): libraryEntry() {
+	after(            Throwable e)                 {
 		_collector.exceptionThrown(thisJoinPoint, e, true);
 	}
 
-	after() throwing (Throwable e): methodEntry() {
+	after(            Throwable e)                {
 		_collector.exceptionThrown(thisJoinPoint, e, false);
 	}
 
-	before() : throwableCreation() {
+	before()                       {
 		_collector.beforeCreateException(thisJoinPoint);
 	}
 
-	after() : throwableCreation() {
+	after()                       {
 		_collector.afterCreateException(thisJoinPoint);
 	}
 
@@ -144,8 +134,7 @@ privileged aspect Tracer {
 	// }
 
 	// Object around() : methodEntryNoTests()
-	Object around() : methodEntry()
-	{
+	Object around()                  {
 		JoinPoint jp = thisJoinPoint;
 		_collector.methodEnter(jp, false);
 
@@ -164,31 +153,31 @@ privileged aspect Tracer {
 
 	}
 
-	before() : constructor() {
+	before()                 {
 
 		_collector.constructorEnter(thisJoinPoint, false);
 
 	}
 
-	after() : constructor() {
+	after()                 {
 
 		_collector.constructorExit(thisJoinPoint, false);
 
 	}
 
-	before() : libraryConstructor() {
+	before()                        {
 		// XXX: external
 		_collector.constructorEnter(thisJoinPoint, true);
 
 	}
 
-	after() : libraryConstructor() {
+	after()                        {
 		// XXX: external
 		_collector.constructorExit(thisJoinPoint, true);
 
 	}
 
-	before() : objectInitialization() {
+	before()                          {
 
 		JoinPoint jp = thisJoinPoint;
 
@@ -196,7 +185,7 @@ privileged aspect Tracer {
 
 	}
 
-	after() : objectInitialization() {
+	after()                          {
 
 		JoinPoint jp = thisJoinPoint;
 
@@ -204,7 +193,7 @@ privileged aspect Tracer {
 
 	}
 
-	before() : classInitialization() {
+	before()                         {
 
 		// RFE: can we check to see what classes / interfaces are extended /
 		// implemented here?
@@ -215,7 +204,7 @@ privileged aspect Tracer {
 
 	}
 
-	after() : classInitialization() {
+	after()                         {
 
 		// RFE: can we check to see what classes / interfaces are extended /
 		// implemented here?
@@ -318,4 +307,4 @@ privileged aspect Tracer {
 	// System.out.println("A exception of type Foo has just been handled");
 	// }
 
-}
+Tracer x1;}
