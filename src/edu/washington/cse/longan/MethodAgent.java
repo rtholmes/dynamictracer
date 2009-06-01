@@ -14,7 +14,10 @@ import org.aspectj.lang.reflect.MethodSignature;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
-public class MethodTracker {
+import edu.washington.cse.longan.tracker.IObjectTracker;
+import edu.washington.cse.longan.tracker.ObjectTrackerFactory;
+
+public class MethodAgent {
 	private int _id;
 
 	private Logger _log = Logger.getLogger(this.getClass());
@@ -25,15 +28,15 @@ public class MethodTracker {
 
 	private static final int UNKNOWN_CALLER = -1;
 
-	private ObjectTracker returnObjectTracker = null;
+	private IObjectTracker returnObjectTracker = null;
 
-	private ObjectTracker[] parameterTrackers;
+	private IObjectTracker[] parameterTrackers;
 
 	// HashSet<Integer> _calledBy = new HashSet<Integer>();
 
 	Multiset<Integer> _calledBy = HashMultiset.create();
 
-	public MethodTracker(int id, JoinPoint jp) {
+	public MethodAgent(int id, JoinPoint jp) {
 
 		_id = id;
 
@@ -65,7 +68,7 @@ public class MethodTracker {
 
 			Class[] paramTypes = methodSig.getParameterTypes();
 
-			parameterTrackers = new ObjectTracker[paramTypes.length];
+			parameterTrackers = new IObjectTracker[paramTypes.length];
 
 			for (int i = 0; i < paramTypes.length; i++) {
 				parameterTrackers[i] = ObjectTrackerFactory.create(paramTypes[i]);

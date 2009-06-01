@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/ca.lsmr.common"/>
 	<classpathentry kind="lib" path="/Applications/eclipse3.5m6/plugins/org.aspectj.runtime_1.6.4.20090329215800/aspectjrt.jar" sourcepath="/Applications/eclipse3.5m6/plugins/org.eclipse.ajdt.source_1.7.0.20090402121713/src/org.aspectj.runtime_1.6.4.20090329215800/aspectjrtsrc.zip">
 		<accessrules>
 			<accessrule kind="accessible" pattern="org/aspectj/internal/lang/annotation/*"/>
@@ -19,5 +18,6 @@
 		</accessrules>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

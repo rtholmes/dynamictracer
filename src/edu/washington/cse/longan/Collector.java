@@ -46,7 +46,7 @@ public class Collector {
 		return _instance;
 	}
 
-	private Hashtable<Integer, MethodTracker> _methods = new Hashtable<Integer, MethodTracker>();
+	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
 
 	/**
 	 * Uses the JPS.getId() as an index; the stored element is the 'base' index
@@ -227,7 +227,7 @@ public class Collector {
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
 
-			MethodTracker mt = _methods.get(_callStack.peek());
+			MethodAgent mt = _methods.get(_callStack.peek());
 
 			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
 		}
@@ -288,7 +288,7 @@ public class Collector {
 
 			id = _nameToBaseIdMap.get(name);
 			if (!_methods.containsKey(id)) {
-				_methods.put(id, new MethodTracker(id, jp));
+				_methods.put(id, new MethodAgent(id, jp));
 			}
 
 			// _log.trace("id: "+id+" name: "+name);
@@ -325,7 +325,7 @@ public class Collector {
 
 				if (!_methods.containsKey(id)) {
 					// update the method map. this map only uses the base id
-					_methods.put(id, new MethodTracker(id, jp));
+					_methods.put(id, new MethodAgent(id, jp));
 				}
 
 			}
@@ -445,12 +445,6 @@ public class Collector {
 							_log.debug(out + "\tArg " + i + ", Array, length: " + Array.getLength(arg) + " class: "
 									+ arg.getClass().getComponentType());
 
-					} else if (arg instanceof Collection) {
-
-						if (OUTPUT)
-							_log.debug(out + "\tArg " + i + ", Collection, size: " + ((Collection) arg).size() + " ( "
-									+ arg.getClass() + " )");
-
 					} else if (arg instanceof Set) {
 
 						if (OUTPUT)
@@ -461,6 +455,12 @@ public class Collector {
 
 						if (OUTPUT)
 							_log.debug(out + "\tArg " + i + ", List, size: " + ((List) arg).size() + " ( "
+									+ arg.getClass() + " )");
+
+					} else if (arg instanceof Collection) {
+
+						if (OUTPUT)
+							_log.debug(out + "\tArg " + i + ", Collection, size: " + ((Collection) arg).size() + " ( "
 									+ arg.getClass() + " )");
 
 					} else {
@@ -523,7 +523,7 @@ public class Collector {
 				}
 				_log.info("Total time (with double counting): " + total);
 
-				for (MethodTracker mt : _methods.values()) {
+				for (MethodAgent mt : _methods.values()) {
 					String methodName = mt.getName();
 
 					_log.info("Time: " + _profile.get(mt.getId()) + " element: " + methodName);
@@ -564,7 +564,7 @@ public class Collector {
 		}
 	}
 	
-	private MethodTracker getMethodTracker(JoinPoint jp){
+	private MethodAgent getMethodTracker(JoinPoint jp){
 		return _methods.get(getMethodId(jp));
 	}
 
