@@ -10,6 +10,9 @@ import java.util.Stack;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+
 public class MethodTracker {
 	private int _id;
 
@@ -17,8 +20,10 @@ public class MethodTracker {
 
 	private String _name;
 
-	HashSet<Integer> _calledBy = new HashSet<Integer>();
+//	HashSet<Integer> _calledBy = new HashSet<Integer>();
 
+	Multiset<Integer> _calledBy = HashMultiset.create();
+	
 	public MethodTracker(int id, String name) {
 
 		_id = id;
@@ -29,7 +34,7 @@ public class MethodTracker {
 
 	}
 
-	public HashSet<Integer> getCalledBy() {
+	public Multiset<Integer> getCalledBy() {
 		return _calledBy;
 	}
 

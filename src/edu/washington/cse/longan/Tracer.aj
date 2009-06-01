@@ -13,9 +13,7 @@ privileged aspect Tracer {
 
 	Collector _collector = Collector.getInstance();
 
-	// RFE: test with super calls
-
-	// all scoped method calls
+	// all scoped method calls (super can't be captured)
 	// pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
 	pointcut methodEntry() : execution(* org.ulti.dev.dynamic.test..*.* (..)) &&
 		!throwableCreation();
@@ -68,6 +66,14 @@ privileged aspect Tracer {
 
 	pointcut throwableCreation() : call(java.lang.Exception+.new(..));
 
+	pointcut lastThing() : execution(void org.ulti.dev.dynamic.test.test.InheritanceTest.lastThing()) && !within(Tracer);
+	
+	after() : lastThing() {
+//		System.err.println("adsf");
+//		_collector.point();
+		_collector.writeToScreen();
+	}
+	
 	// //////////////////////////
 	// //////// ADVICE //////////
 	// //////////////////////////

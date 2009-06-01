@@ -6,6 +6,7 @@ package edu.washington.cse.longan;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,8 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.JoinPoint.StaticPart;
 import org.aspectj.lang.reflect.CodeSignature;
 
+import com.google.common.collect.Multiset;
+
 import ca.lsmr.common.log.LSMRLogger;
 
 public class Collector {
@@ -29,6 +32,19 @@ public class Collector {
 	private static Collector _instance = null;
 
 	private static Logger _log = Logger.getLogger(Collector.class);
+
+	public static void clearInstance() {
+		_instance = null;
+		_log.warn("Collector cleared");
+	}
+
+	public static Collector getInstance() {
+		if (_instance == null) {
+			_instance = new Collector();
+			_log.trace("New Collector instantiated");
+		}
+		return _instance;
+	}
 
 	private Hashtable<Integer, MethodTracker> _methods = new Hashtable<Integer, MethodTracker>();
 
@@ -61,35 +77,19 @@ public class Collector {
 	 */
 	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
 
+	/**
+	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of
+	 * 0 will conflict with every single class. We can use pertypewithin on the
+	 * aspect description but that will violate what we have happening here.
+	 * 
+	 * @param jps
+	 * @return
+	 */
+	private int methodidcounter = 0;
+
 	private Collector() {
 		try {
 			LSMRLogger.startLog4J(true, Level.DEBUG);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static Collector getInstance() {
-		if (_instance == null) {
-			_instance = new Collector();
-			_log.trace("New Collector instantiated");
-		}
-		return _instance;
-	}
-
-	public static void clearInstance() {
-		_instance = null;
-		_log.trace("Collector cleared");
-	}
-
-	public void beforeClassInit(JoinPoint jp) {
-		try {
-			if (OUTPUT) {
-				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
-					out += "\t";
-				_log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -108,9 +108,77 @@ public class Collector {
 		}
 	}
 
+	public void afterCreateException(JoinPoint jp) {
+		constructorExit(jp, true);
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+			_log.debug(out + "After create exception: " + jp.getSignature().toString());
+		}
+	}
+
+	public void afterObjectInit(JoinPoint jp) {
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| After obj init: " + jp.getTarget().getClass().getName();
+
+			_log.debug(out);
+		}
+	}
+
+	public void beforeClassInit(JoinPoint jp) {
+		try {
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void beforeCreateException(JoinPoint jp) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+			_log.debug(out + "Before create exception: " + jp.getSignature().toString());
+		}
+		constructorEnter(jp, true);
+	}
+
+	public void beforeObjectInit(JoinPoint jp) {
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
+
+			_log.debug(out);
+		}
+	}
+
 	public void constructorEnter(JoinPoint jp, boolean isExternal) {
 
+		// parent class & interfaces
+		// jp.getSignature().getDeclaringType().getSuperclass();
+		// jp.getSignature().getDeclaringType().getInterfaces();
+
 		JoinPoint.StaticPart jps = jp.getStaticPart();
+
+		int id = getMethodId(jp.getStaticPart());
+
+		_methods.get(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
@@ -152,6 +220,35 @@ public class Collector {
 
 	}
 
+	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			MethodTracker mt = _methods.get(_callStack.peek());
+
+			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
+		}
+	}
+
+	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			// MethodTracker mt = _methods.get(_callStack.peek());
+
+			if (!isExternal)
+				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+			else
+				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+		}
+	}
+
 	public void fieldGet(JoinPoint jp) {
 		// XXX: handle field sets
 		if (OUTPUT) {
@@ -175,161 +272,6 @@ public class Collector {
 			_log.debug(out + "Field set: " + jp.getSignature().toString() + " to: " + newValue);
 		}
 	}
-
-	public void methodEnter(JoinPoint jp, boolean isExternal) {
-
-		int id = getMethodId(jp.getStaticPart());
-
-		_methods.get(id).methodEnter(jp, _callStack);
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-
-			String sig = _methods.get(id).getName();
-
-			if (!isExternal)
-				_log.debug(out + "--> " + sig + " # args: " + jp.getArgs().length);
-			else
-				_log.debug(out + "-x> " + sig + " # args: " + jp.getArgs().length);
-
-			printArgs(jp);
-		}
-
-		_callStack.push(id);
-
-		_timeStack.push(System.currentTimeMillis());
-
-	}
-
-	public void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
-
-		if (retObject != null) {
-			if (OUTPUT) {
-				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
-					out += "\t";
-				_log.debug(out + "Return: " + retObject);
-			}
-		}
-		// RFE: handle return value
-		methodExit(jp, isExternal);
-
-	}
-
-	public void methodExit(JoinPoint jp, boolean isExternal) {
-		long delta = System.currentTimeMillis() - _timeStack.pop();
-
-		record(jp, delta);
-		// record(jp, jp.getStaticPart(), end - start);
-
-		_callStack.pop();
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-
-			Signature sig = jp.getSignature();
-
-			if (!isExternal)
-				out += "<-- " + sig + " time: " + delta;
-			else
-				out += "<x- " + sig + " time: " + delta;
-
-			_log.debug(out);
-		}
-
-	}
-
-	public void beforeObjectInit(JoinPoint jp) {
-		if (OUTPUT) {
-			String out = "";
-
-			for (int t = _callStack.size(); t > 0; t--)
-				out += "\t";
-
-			out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
-
-			_log.debug(out);
-		}
-	}
-
-	public void afterObjectInit(JoinPoint jp) {
-		if (OUTPUT) {
-			String out = "";
-
-			for (int t = _callStack.size(); t > 0; t--)
-				out += "\t";
-
-			out += "|-| After obj init: " + jp.getTarget().getClass().getName();
-
-			_log.debug(out);
-		}
-	}
-
-	public void writeToScreen() {
-		try {
-			if (true) {
-				_log.info("after last test case");
-
-				long total = 0;
-				for (Integer i : _methods.keySet()) {
-					long time = _profile.get(i);
-					total += time;
-					_log.info(i + "\t " + time + " \t-> " + _methods.get(i).getName());
-				}
-				_log.info("Total time (with double counting): " + total);
-
-				for (MethodTracker mt : _methods.values()) {
-					String methodName = mt.getName();
-
-					if (methodName != null)
-						_log.info(methodName + " called by:");
-					else
-						_log.error("unknown id: " + mt.getId());
-
-					Vector<String> calledBys = new Vector<String>();
-					for (Integer calledById : mt.getCalledBy()) {
-						MethodTracker calledByMethod = _methods.get(calledById);
-
-						if (calledByMethod != null) {
-							String calledByName = calledByMethod.getName();
-
-							calledByName += " id: " + calledById + " -> " + _ids[calledById];
-
-							if (!calledBys.contains(calledByName)) {
-								calledBys.add(calledByName);
-							} else {
-								_log.error("multiple copies of? " + calledByName);
-							}
-
-						} else
-							calledBys.add(calledById + "");
-					}
-
-					Collections.sort(calledBys);
-					for (String cbn : calledBys)
-						_log.info("\t" + cbn);
-
-				}
-			}
-		} catch (Exception e) {
-			e.fillInStackTrace();
-			_log.error(e);
-		}
-	}
-
-	/**
-	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of
-	 * 0 will conflict with every single class. We can use pertypewithin on the
-	 * aspect description but that will violate what we have happening here.
-	 * 
-	 * @param jps
-	 * @return
-	 */
-	private int methodidcounter = 0;
 
 	private Integer getMethodId(StaticPart jps) {
 
@@ -389,6 +331,88 @@ public class Collector {
 			}
 			return id;
 		}
+	}
+
+	Collection<Integer> getUniqueCallers(int methodId) {
+		HashSet<Integer> callers = new HashSet<Integer>();
+
+		Multiset<Integer> calledBys = _methods.get(methodId).getCalledBy();
+
+		for (Integer calledBy : calledBys)
+			callers.add(calledBy);
+
+		return callers;
+	}
+
+	public void methodEnter(JoinPoint jp, boolean isExternal) {
+
+		int id = getMethodId(jp.getStaticPart());
+
+		_methods.get(id).methodEnter(jp, _callStack);
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			String sig = _methods.get(id).getName();
+
+			if (!isExternal)
+				_log.debug(out + "--> " + sig + " # args: " + jp.getArgs().length);
+			else
+				_log.debug(out + "-x> " + sig + " # args: " + jp.getArgs().length);
+
+			printArgs(jp);
+		}
+
+		_callStack.push(id);
+
+		_timeStack.push(System.currentTimeMillis());
+
+	}
+
+	public void methodExit(JoinPoint jp, boolean isExternal) {
+		long delta = System.currentTimeMillis() - _timeStack.pop();
+
+		record(jp, delta);
+
+		_callStack.pop();
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			Signature sig = jp.getSignature();
+
+			if (!isExternal)
+				out += "<-- " + sig + " time: " + delta;
+			else
+				out += "<x- " + sig + " time: " + delta;
+
+			_log.debug(out);
+		}
+
+	}
+
+	public void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
+
+		if (retObject != null) {
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
+				_log.debug(out + "Return: " + retObject);
+			}
+		}
+		// RFE: handle return value
+		methodExit(jp, isExternal);
+
+	}
+
+	public void point() {
+		_log.warn("POINT REACHED");
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -479,54 +503,72 @@ public class Collector {
 
 	}
 
-	public void exceptionThrown
-	(JoinPoint jp, Throwable exception, boolean isExternal) {
+	public void writeToScreen() {
+		try {
+			if (true) {
+				_log.info("Writing Statistics");
 
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
+				Vector<String> sortedNames = new Vector<String>(_nameToBaseIdMap.keySet());
+				Collections.sort(sortedNames);
 
-			// MethodTracker mt = _methods.get(_callStack.peek());
+				long total = 0;
+				for (String name : sortedNames) {
+					int elementId = _nameToBaseIdMap.get(name);
+					// XXX: NPE
+					// long time = _profile.get(elementId);
+					// total += time;
+					_log.info(_methods.get(elementId).getName());
 
-			if (!isExternal)
-				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-			else
-				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+					Collection<Integer> uniqueCallers = getUniqueCallers(elementId);
+
+					for (Integer caller : uniqueCallers) {
+						String calledByName = _methods.get(caller).getName();
+						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
+						_log.info("\t<--: " + caller + " count: " + calledByCount + " name: " + calledByName);
+					}
+
+				}
+				_log.info("Total time (with double counting): " + total);
+
+				for (MethodTracker mt : _methods.values()) {
+					String methodName = mt.getName();
+
+					_log.info("Time: " + _profile.get(mt.getId()) + " element: " + methodName);
+					// if (methodName != null)
+					// _log.info(methodName + " called by:");
+					// else
+					// _log.error("unknown id: " + mt.getId());
+
+					// Vector<String> calledBys = new Vector<String>();
+					// for (Integer calledById : mt.getCalledBy()) {
+					// MethodTracker calledByMethod = _methods.get(calledById);
+					//
+					// if (calledByMethod != null) {
+					// String calledByName = calledByMethod.getName();
+					//
+					// calledByName += " id: " + calledById + " -> " +
+					// _ids[calledById];
+					//
+					// if (!calledBys.contains(calledByName)) {
+					// calledBys.add(calledByName);
+					// } else {
+					// _log.error("multiple copies of? " + calledByName);
+					// }
+					//
+					// } else
+					// calledBys.add(calledById + "");
+					// }
+
+					// Collections.sort(calledBys);
+					// for (String cbn : calledBys)
+					// _log.info("\t" + cbn);
+
+				}
+			}
+		} catch (Exception e) {
+			e.fillInStackTrace();
+			_log.error(e);
 		}
 	}
 
-	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-
-			MethodTracker mt = _methods.get(_callStack.peek());
-
-			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
-		}
-	}
-
-	public void beforeCreateException(JoinPoint jp) {
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-			_log.debug(out + "Before create exception: " + jp.getSignature().toString());
-		}
-		constructorEnter(jp, true);
-	}
-
-	public void afterCreateException(JoinPoint jp) {
-		constructorExit(jp, true);
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-			_log.debug(out + "After create exception: " + jp.getSignature().toString());
-		}
-	}
 }
