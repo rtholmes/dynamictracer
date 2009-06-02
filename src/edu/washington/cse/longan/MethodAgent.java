@@ -4,11 +4,13 @@
  */
 package edu.washington.cse.longan;
 
+import java.util.Hashtable;
 import java.util.Stack;
 
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
+import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import com.google.common.collect.HashMultiset;
@@ -28,13 +30,26 @@ public class MethodAgent {
 
 	private static final int UNKNOWN_CALLER = -1;
 
-	private IObjectTracker returnObjectTracker = null;
+	private IObjectTracker[] _parameterTrackerDefinitions;
 
-	private IObjectTracker[] parameterTrackers;
-
-	// HashSet<Integer> _calledBy = new HashSet<Integer>();
+	private IObjectTracker _returnTrackerDefinition;
 
 	Multiset<Integer> _calledBy = HashMultiset.create();
+
+	/**
+	 * Track parameter attributes per caller; these can be aggregated later, if required.
+	 * 
+	 * key: caller id value: array of trackers for each parameter of the method
+	 */
+	Hashtable<Integer, IObjectTracker[]> _parameterTrackers = new Hashtable<Integer, IObjectTracker[]>();
+
+	boolean _hasVoidReturn = false;
+	/**
+	 * Track return value attributes per caller.
+	 * 
+	 * key: caller id value: tracker for the return value
+	 */
+	private Hashtable<Integer, IObjectTracker> _returnObjectTrackers = new Hashtable<Integer, IObjectTracker>();
 
 	public MethodAgent(int id, JoinPoint jp) {
 
@@ -44,13 +59,10 @@ public class MethodAgent {
 
 		prepareTrackers(jp);
 
-		// RFE: initial parameter analysis
-
 	}
 
 	@SuppressWarnings("unchecked")
 	private void prepareTrackers(JoinPoint jp) {
-		// TODO Auto-generated method stub
 
 		Signature sig = jp.getSignature();
 
@@ -61,17 +73,29 @@ public class MethodAgent {
 
 			if (returnType.getName().equals("void")) {
 				// null return types require no analysis at runtime
-				returnObjectTracker = null;
+				_hasVoidReturn = true;
 			} else {
-				returnObjectTracker = ObjectTrackerFactory.create(returnType);
+				_returnTrackerDefinition = ObjectTrackerFactory.create(returnType);
 			}
 
 			Class[] paramTypes = methodSig.getParameterTypes();
 
-			parameterTrackers = new IObjectTracker[paramTypes.length];
+			_parameterTrackerDefinitions = new IObjectTracker[paramTypes.length];
 
 			for (int i = 0; i < paramTypes.length; i++) {
-				parameterTrackers[i] = ObjectTrackerFactory.create(paramTypes[i]);
+				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i]);
+			}
+
+		} else if (sig instanceof ConstructorSignature) {
+
+			ConstructorSignature constructorSig = (ConstructorSignature) sig;
+
+			Class[] paramTypes = constructorSig.getParameterTypes();
+
+			_parameterTrackerDefinitions = new IObjectTracker[paramTypes.length];
+
+			for (int i = 0; i < paramTypes.length; i++) {
+				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i]);
 			}
 
 		} else {
@@ -95,21 +119,45 @@ public class MethodAgent {
 
 	public void methodEnter(JoinPoint jp, Stack<Integer> callStack) {
 		updateCallers(callStack);
-		updateArguments(jp);
+		updateArguments(jp, callStack);
 	}
 
-	public void methodExit(JoinPoint jp, Object returnObject) {
-		if (returnObjectTracker != null)
-			returnObjectTracker.track(returnObject);
+	public void methodExit(JoinPoint jp, Object returnObject, Stack<Integer> callStack) {
+
+		if (!_hasVoidReturn) {
+			int caller = -1;
+			if (!callStack.isEmpty())
+				caller = callStack.peek();
+			try {
+				if (!_returnObjectTrackers.contains(caller))
+					_returnObjectTrackers.put(caller, _returnTrackerDefinition.clone());
+			} catch (CloneNotSupportedException cnse) {
+				_log.error(cnse);
+			}
+
+			IObjectTracker tracker = _returnObjectTrackers.get(caller);
+
+			tracker.track(returnObject);
+		}
+
 	}
 
-	private void updateArguments(JoinPoint jp) {
+	private void updateArguments(JoinPoint jp, Stack<Integer> callStack) {
 
 		Object args[] = jp.getArgs();
-		if (args.length == parameterTrackers.length) {
+		if (args.length == _parameterTrackerDefinitions.length) {
+
+			int caller = -1;
+			if (!callStack.isEmpty())
+				caller = callStack.peek();
+
+			if (!_parameterTrackers.containsKey(caller))
+				_parameterTrackers.put(caller, _parameterTrackerDefinitions.clone());
+
+			IObjectTracker[] paramaterTrackers = _parameterTrackers.get(caller);
 
 			for (int i = 0; i < args.length; i++) {
-				parameterTrackers[i].track(args[i]);
+				paramaterTrackers[i].track(args[i]);
 			}
 
 		} else {
@@ -133,5 +181,13 @@ public class MethodAgent {
 
 		}
 
+	}
+	
+	Hashtable<Integer, IObjectTracker[]> getParameterTrackers(){
+		return _parameterTrackers;
+	}
+	
+	Hashtable<Integer, IObjectTracker> getReturnTrackers() {
+		return _returnObjectTrackers;
 	}
 }

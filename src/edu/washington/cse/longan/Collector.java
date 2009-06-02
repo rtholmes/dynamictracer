@@ -4,6 +4,7 @@
  */
 package edu.washington.cse.longan;
 
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,18 +14,18 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
-import java.lang.reflect.Array;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
-import org.aspectj.lang.JoinPoint.StaticPart;
 import org.aspectj.lang.reflect.CodeSignature;
+
+import ca.lsmr.common.log.LSMRLogger;
 
 import com.google.common.collect.Multiset;
 
-import ca.lsmr.common.log.LSMRLogger;
+import edu.washington.cse.longan.tracker.GenericObjectTracker;
+import edu.washington.cse.longan.tracker.IObjectTracker;
 
 public class Collector {
 	public static final boolean OUTPUT = true;
@@ -49,9 +50,8 @@ public class Collector {
 	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
 
 	/**
-	 * Uses the JPS.getId() as an index; the stored element is the 'base' index
-	 * for the element associated with the JPS id. (JPS.id binds every join
-	 * point itself so there can be multiple points for any program element)
+	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
+	 * id. (JPS.id binds every join point itself so there can be multiple points for any program element)
 	 */
 	private Integer[] _ids = new Integer[1024];
 
@@ -66,21 +66,19 @@ public class Collector {
 	private Stack<Integer> _callStack = new Stack<Integer>();
 
 	/**
-	 * method enter time. updated with the callstack so popping will give you
-	 * the time the current method entered.
+	 * method enter time. updated with the callstack so popping will give you the time the current method entered.
 	 */
 	private Stack<Long> _timeStack = new Stack<Long>();
 
 	/**
-	 * This index is used to maintain the _ids array: in this way the names of
-	 * elements are tracked and using the name the common base id can be found.
+	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
+	 * the common base id can be found.
 	 */
 	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
 
 	/**
-	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of
-	 * 0 will conflict with every single class. We can use pertypewithin on the
-	 * aspect description but that will violate what we have happening here.
+	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single
+	 * class. We can use pertypewithin on the aspect description but that will violate what we have happening here.
 	 * 
 	 * @param jps
 	 * @return
@@ -381,10 +379,11 @@ public class Collector {
 				_log.debug(out + "Return: " + retObject);
 			}
 		}
-		
+
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
 		recordProfileData(jp, delta);
+		getMethodTracker(jp).methodExit(jp, retObject, _callStack);
 
 		_callStack.pop();
 
@@ -402,11 +401,7 @@ public class Collector {
 
 			_log.debug(out);
 		}
-		
-		getMethodTracker(jp).methodExit(jp, retObject);
-		
 	}
-
 
 	@SuppressWarnings("unchecked")
 	private void printArgs(JoinPoint jp) {
@@ -422,10 +417,9 @@ public class Collector {
 			for (int i = 0; i < args.length; i++) {
 				Object arg = args[i];
 				Class argType = types[i];
-				@SuppressWarnings("unused")
+
 				String argName = names[i];
 
-				@SuppressWarnings("unused")
 				String argV = "-[null]-";
 
 				String out = "";
@@ -507,10 +501,8 @@ public class Collector {
 				long total = 0;
 				for (String name : sortedNames) {
 					int elementId = _nameToBaseIdMap.get(name);
-					// XXX: NPE
-					// long time = _profile.get(elementId);
-					// total += time;
-					_log.info(_methods.get(elementId).getName());
+					MethodAgent methodAgent = _methods.get(elementId);
+					_log.info(methodAgent.getName());
 
 					Collection<Integer> uniqueCallers = getUniqueCallers(elementId);
 
@@ -518,6 +510,21 @@ public class Collector {
 						String calledByName = _methods.get(caller).getName();
 						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
 						_log.info("\t<--: " + caller + " count: " + calledByCount + " name: " + calledByName);
+
+						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
+						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
+
+						if (paramTracker.length > 0) {
+							_log.info("\t\tParamTracker: ");
+							for (IObjectTracker tracker : paramTracker) {
+								_log.info("\t\t\t" + tracker.toString());
+							}
+						}
+
+						if (returnTracker != null) {
+							_log.info("\t\tReturn Tracker: ");
+							_log.info("\t\t\t" + returnTracker.toString());
+						}
 					}
 
 				}
@@ -563,8 +570,8 @@ public class Collector {
 			_log.error(e);
 		}
 	}
-	
-	private MethodAgent getMethodTracker(JoinPoint jp){
+
+	private MethodAgent getMethodTracker(JoinPoint jp) {
 		return _methods.get(getMethodId(jp));
 	}
 

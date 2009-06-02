@@ -5,20 +5,26 @@ public class ObjectTrackerFactory {
 	@SuppressWarnings("unchecked")
 	public static IObjectTracker create(Class obj) {
 		// TODO Auto-generated method stub
-		
 
-		if (obj.isArray())
-			return createArrayTracker(obj);
-		
-		if (obj.isPrimitive())
-			return createPrimitiveTracker(obj);
-		
-		return null;
+		return createGenericObjectTracker(obj);
+
+		// if (obj.isArray())
+		// return createArrayTracker(obj);
+		//
+		// if (obj.isPrimitive())
+		// return createPrimitiveTracker(obj);
+		//
+		// return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static IObjectTracker createGenericObjectTracker(Class obj) {
+		return new GenericObjectTracker(obj);
 	}
 
 	@SuppressWarnings("unchecked")
 	private static IObjectTracker createArrayTracker(Class obj) {
-		// TODO Auto-generated method stub
+		// TODO
 		return null;
 	}
 

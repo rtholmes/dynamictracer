@@ -7,4 +7,10 @@ public class PrimitiveTracker implements IObjectTracker {
 		
 	}
 
+	@Override
+	public IObjectTracker clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		return (IObjectTracker) super.clone();
+	}
+	
 }
