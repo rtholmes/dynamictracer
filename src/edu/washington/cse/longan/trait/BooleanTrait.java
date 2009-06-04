@@ -8,7 +8,7 @@ public class BooleanTrait extends AbstractTrait {
 	}
 
 	public String getName() {
-		return "Boolean";
+		return "BooleanTrait";
 	}
 
 	public void track(Object obj) {

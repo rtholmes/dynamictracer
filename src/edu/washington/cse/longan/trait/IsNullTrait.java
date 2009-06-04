@@ -8,7 +8,7 @@ public class IsNullTrait extends AbstractTrait {
 	}
 
 	public String getName() {
-		return "IsNull";
+		return "IsNullTrait";
 	}
 
 	public void track(Object obj) {

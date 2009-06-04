@@ -2,7 +2,7 @@ package edu.washington.cse.longan.trait;
 
 import java.util.Collection;
 
-public class CollectionEmptyTrait extends AbstractTrait {
+public class StringEmptyTrait extends AbstractTrait {
 
 	@Override
 	public String getDescription() {
@@ -11,7 +11,7 @@ public class CollectionEmptyTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "CollectionEmptyTrait";
+		return "StringEmptyTrait";
 	}
 
 	@Override
@@ -19,8 +19,9 @@ public class CollectionEmptyTrait extends AbstractTrait {
 
 		int empty = getData().count(DATA_KINDS.EMPTY);
 		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
-		
-		String ret = "CollectionEmpty - Total: " + getData().size() + " Empty" + ": " + empty + " not empty: "+notEmpty+". ";
+
+		String ret = "StringEmpty - Total: " + getData().size() + " Empty" + ": " + empty + " not empty: " + notEmpty
+				+ ". ";
 
 		return ret;
 	}
@@ -28,7 +29,7 @@ public class CollectionEmptyTrait extends AbstractTrait {
 	@Override
 	public void track(Object obj) {
 		if (obj != null) {
-			int i = ((Collection) obj).size();
+			int i = ((String) obj).length();
 			if (i == 0)
 				getData().add(DATA_KINDS.EMPTY);
 			else

@@ -28,7 +28,7 @@ public class TypeTrait extends AbstractTrait {
 			ret += type + ": " + num + "; ";
 		}
 
-		ret = "Unique objects: " + getSupplementalData().elementSet().size() + ", total objects: " + getSupplementalData().size() + " - " + ret+". ";
+		ret = "Type(s): " + getSupplementalData().elementSet().size() + ", total objects: " + getSupplementalData().size() + " - " + ret+". ";
 
 		return ret;
 	}
