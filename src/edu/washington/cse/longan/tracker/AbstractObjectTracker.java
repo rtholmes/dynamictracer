@@ -126,6 +126,7 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	}
 
 	public void track(Object obj) {
+		
 		for (ITrait trait : getTraits()) {
 			trait.track(obj);
 		}

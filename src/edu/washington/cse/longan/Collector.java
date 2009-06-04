@@ -508,6 +508,7 @@ public class Collector {
 					MethodAgent methodAgent = _methods.get(elementId);
 
 					_log.info(name);
+					
 					if (!methodAgent.getName().equals(name)) {
 						// this should never happen
 						_log.error("Method names don't match.");

@@ -1,4 +1,5 @@
 /**
+
  * Created on Apr 22, 2009
  * @author rtholmes
  */
@@ -92,12 +93,12 @@ public class MethodAgent {
 			ConstructorSignature constructorSig = (ConstructorSignature) sig;
 
 			Class[] paramTypes = constructorSig.getParameterTypes();
-			String[] paramNames= constructorSig.getParameterNames();
-			
+			String[] paramNames = constructorSig.getParameterNames();
+
 			_parameterTrackerDefinitions = new IObjectTracker[paramTypes.length];
 
 			for (int i = 0; i < paramTypes.length; i++) {
-				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i],i,paramNames[i]);
+				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i], i, paramNames[i]);
 			}
 
 		} else {
@@ -153,8 +154,24 @@ public class MethodAgent {
 			if (!callStack.isEmpty())
 				caller = callStack.peek();
 
-			if (!_parameterTrackers.containsKey(caller))
-				_parameterTrackers.put(caller, _parameterTrackerDefinitions.clone());
+			if (!_parameterTrackers.containsKey(caller)) {
+
+				// This is a mess, but calling _paramTraDef.clone() doesn't seem to do a deep copy
+				try {
+					IObjectTracker[] pTrackers = new IObjectTracker[_parameterTrackerDefinitions.length];
+					for (int i = 0; i < _parameterTrackerDefinitions.length; i++) {
+						IObjectTracker ot = _parameterTrackerDefinitions[i];
+
+						pTrackers[i] = ot.clone();
+					}
+					_parameterTrackers.put(caller, pTrackers);
+					
+				} catch (CloneNotSupportedException e) {
+					_log.error(e);
+					e.printStackTrace();
+				}
+				
+			}
 
 			IObjectTracker[] paramaterTrackers = _parameterTrackers.get(caller);
 
@@ -191,5 +208,11 @@ public class MethodAgent {
 
 	Hashtable<Integer, IObjectTracker> getReturnTrackers() {
 		return _returnObjectTrackers;
+	}
+
+	@Override
+	public String toString() {
+
+		return getName();
 	}
 }
