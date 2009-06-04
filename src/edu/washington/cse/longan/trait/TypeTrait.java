@@ -22,14 +22,13 @@ public class TypeTrait extends AbstractTrait {
 	public String toString() {
 		String ret = "";
 
-		int count = 0;
-		for (String type : getSupplementalData()) {
+		
+		for (String type : getSupplementalData().elementSet()) {
 			int num = getSupplementalData().count(type);
-			count += num;
 			ret += type + ": " + num + "; ";
 		}
 
-		ret = "Unique objects: " + getSupplementalData().size() + ", total objects: " + count + " - " + ret+". ";
+		ret = "Unique objects: " + getSupplementalData().elementSet().size() + ", total objects: " + getSupplementalData().size() + " - " + ret+". ";
 
 		return ret;
 	}

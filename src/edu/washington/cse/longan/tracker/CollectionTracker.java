@@ -2,24 +2,24 @@ package edu.washington.cse.longan.tracker;
 
 import org.apache.log4j.Logger;
 
-import edu.washington.cse.longan.trait.ITrait;
+import edu.washington.cse.longan.trait.CollectionEmptyTrait;
 import edu.washington.cse.longan.trait.IsNullTrait;
 import edu.washington.cse.longan.trait.TypeTrait;
 
-public class GenericObjectTracker extends AbstractObjectTracker {
+public class CollectionTracker extends AbstractObjectTracker {
 
 	@SuppressWarnings("unchecked")
-	public GenericObjectTracker(Class clazz) {
+	public CollectionTracker(Class clazz) {
 		super(clazz);
 	}
 
 	@SuppressWarnings("unchecked")
-	public GenericObjectTracker(Class clazz, String name) {
+	public CollectionTracker(Class clazz, String name) {
 		super(clazz, name);
 	}
 
 	@SuppressWarnings("unchecked")
-	public GenericObjectTracker(Class clazz, int index, String name) {
+	public CollectionTracker(Class clazz, int index, String name) {
 		super(clazz, index, name);
 	}
 
@@ -29,11 +29,11 @@ public class GenericObjectTracker extends AbstractObjectTracker {
 	public IObjectTracker clone() throws CloneNotSupportedException {
 
 		if (isField())
-			return new GenericObjectTracker(getClazz(), getName());
+			return new CollectionTracker(getClazz(), getName());
 		if (isReturn())
-			return new GenericObjectTracker(getClazz());
+			return new CollectionTracker(getClazz());
 		if (isParameter())
-			return new GenericObjectTracker(getClazz(), getPosition(), getName());
+			return new CollectionTracker(getClazz(), getPosition(), getName());
 
 		_log.error("This should never happen.");
 		return null;
@@ -41,6 +41,7 @@ public class GenericObjectTracker extends AbstractObjectTracker {
 
 	@Override
 	public void createTraits() {
+		addTrait(new CollectionEmptyTrait());
 		addTrait(new IsNullTrait());
 		addTrait(new TypeTrait());
 	}
@@ -48,6 +49,6 @@ public class GenericObjectTracker extends AbstractObjectTracker {
 
 
 	public String getTrackerName() {
-		return "GenericObjectTracker";
+		return "CollectionTracker";
 	}
 }

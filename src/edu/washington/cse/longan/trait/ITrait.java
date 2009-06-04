@@ -12,7 +12,10 @@ public interface ITrait {
 		IS_POSITIVE,
 		IS_TRUE,
 		IS_FALSE,
-		TYPE
+		TYPE,
+		SIZE,
+		EMPTY, 
+		NOT_EMPTY
 	}
 
 	public String getName();

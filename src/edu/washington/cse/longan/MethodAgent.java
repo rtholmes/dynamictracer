@@ -28,7 +28,7 @@ public class MethodAgent {
 
 	private static final String VOID_RETURN = "VOID";
 
-	private static final int UNKNOWN_CALLER = -1;
+	private static final int UNKNOWN_CALLER_ID = -1;
 
 	private IObjectTracker[] _parameterTrackerDefinitions;
 
@@ -79,11 +79,12 @@ public class MethodAgent {
 			}
 
 			Class[] paramTypes = methodSig.getParameterTypes();
+			String[] paramNames = methodSig.getParameterNames();
 
 			_parameterTrackerDefinitions = new IObjectTracker[paramTypes.length];
 
 			for (int i = 0; i < paramTypes.length; i++) {
-				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i]);
+				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i], i, paramNames[i]);
 			}
 
 		} else if (sig instanceof ConstructorSignature) {
@@ -91,11 +92,12 @@ public class MethodAgent {
 			ConstructorSignature constructorSig = (ConstructorSignature) sig;
 
 			Class[] paramTypes = constructorSig.getParameterTypes();
-
+			String[] paramNames= constructorSig.getParameterNames();
+			
 			_parameterTrackerDefinitions = new IObjectTracker[paramTypes.length];
 
 			for (int i = 0; i < paramTypes.length; i++) {
-				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i]);
+				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i],i,paramNames[i]);
 			}
 
 		} else {
@@ -177,16 +179,16 @@ public class MethodAgent {
 
 			_log.trace("Unknown caller for: " + _name);
 
-			_calledBy.add(UNKNOWN_CALLER);
+			_calledBy.add(UNKNOWN_CALLER_ID);
 
 		}
 
 	}
-	
-	Hashtable<Integer, IObjectTracker[]> getParameterTrackers(){
+
+	Hashtable<Integer, IObjectTracker[]> getParameterTrackers() {
 		return _parameterTrackers;
 	}
-	
+
 	Hashtable<Integer, IObjectTracker> getReturnTrackers() {
 		return _returnObjectTrackers;
 	}

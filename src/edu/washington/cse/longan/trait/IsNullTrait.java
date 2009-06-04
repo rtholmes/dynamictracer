@@ -23,7 +23,7 @@ public class IsNullTrait extends AbstractTrait {
 		int isNull = getData().count(DATA_KINDS.IS_NULL);
 		int notNull = getData().count(DATA_KINDS.NOT_NULL);
 
-		String ret = "IsNull \t\t Total: " + (isNull + notNull) + " IsNull: " + isNull + " NotNull: " + notNull+". ";
+		String ret = "IsNull - Total: " + getData().size() + " IsNull: " + isNull + " NotNull: " + notNull+". ";
 		
 		return ret;
 	}

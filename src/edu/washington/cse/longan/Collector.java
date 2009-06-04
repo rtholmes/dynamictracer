@@ -30,6 +30,8 @@ import edu.washington.cse.longan.tracker.IObjectTracker;
 public class Collector {
 	public static final boolean OUTPUT = true;
 
+	private static final String UNKNOWN_CALLER = "Unknown";
+
 	private static Collector _instance = null;
 
 	private static Logger _log = Logger.getLogger(Collector.class);
@@ -382,10 +384,12 @@ public class Collector {
 
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
+		_callStack.pop();
+		
 		recordProfileData(jp, delta);
 		getMethodTracker(jp).methodExit(jp, retObject, _callStack);
 
-		_callStack.pop();
+		
 
 		if (OUTPUT) {
 			String out = "";
@@ -502,27 +506,42 @@ public class Collector {
 				for (String name : sortedNames) {
 					int elementId = _nameToBaseIdMap.get(name);
 					MethodAgent methodAgent = _methods.get(elementId);
-					_log.info(methodAgent.getName());
+
+					_log.info(name);
+					if (!methodAgent.getName().equals(name)) {
+						// this should never happen
+						_log.error("Method names don't match.");
+					}
 
 					Collection<Integer> uniqueCallers = getUniqueCallers(elementId);
 
 					for (Integer caller : uniqueCallers) {
-						String calledByName = _methods.get(caller).getName();
+
+						MethodAgent calledBy = _methods.get(caller);
+						String calledByName = "";
+						
+						if (calledBy != null)
+							calledByName = calledBy.getName();
+						else
+							calledByName = UNKNOWN_CALLER;
+
+						
 						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
 						_log.info("\t<--: " + caller + " count: " + calledByCount + " name: " + calledByName);
 
+						
 						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
 						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
 
 						if (paramTracker.length > 0) {
-							_log.info("\t\tParamTracker: ");
 							for (IObjectTracker tracker : paramTracker) {
+								_log.info("\t\tParam: "+tracker.getTrackerName()+" - [ idx: " + tracker.getPosition() + " ] name: " + tracker.getName()+ " static type: "+tracker.getStaticTypeName());
 								_log.info("\t\t\t" + tracker.toString());
 							}
 						}
 
 						if (returnTracker != null) {
-							_log.info("\t\tReturn Tracker: ");
+							_log.info("\t\tReturn: "+returnTracker.getTrackerName()+" static type: "+returnTracker.getStaticTypeName());
 							_log.info("\t\t\t" + returnTracker.toString());
 						}
 					}
