@@ -1,6 +1,5 @@
 package edu.washington.cse.longan.trait;
 
-
 public class BooleanTrait extends AbstractTrait {
 
 	public String getDescription() {
@@ -12,10 +11,12 @@ public class BooleanTrait extends AbstractTrait {
 	}
 
 	public void track(Object obj) {
-		if (obj.equals(Boolean.TRUE))
-			getData().add(DATA_KINDS.IS_TRUE);
-		else
-			getData().add(DATA_KINDS.IS_FALSE);
+		if (obj != null) {
+			if (obj.equals(Boolean.TRUE))
+				getData().add(DATA_KINDS.IS_TRUE);
+			else
+				getData().add(DATA_KINDS.IS_FALSE);
+		}
 	}
 
 	@Override
@@ -23,8 +24,8 @@ public class BooleanTrait extends AbstractTrait {
 		int isTrue = getData().count(DATA_KINDS.IS_TRUE);
 		int isFalse = getData().count(DATA_KINDS.IS_FALSE);
 
-		String ret = "Boolean - Total: " + getData().size() + " True: " + isTrue + " False: " + isFalse+". ";
-		
+		String ret = "Boolean - Total: " + getData().size() + " True: " + isTrue + " False: " + isFalse + ". ";
+
 		return ret;
 	}
 

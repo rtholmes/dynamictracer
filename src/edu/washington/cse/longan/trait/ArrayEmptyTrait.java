@@ -1,7 +1,12 @@
 package edu.washington.cse.longan.trait;
 
+import java.util.Arrays;
+
+import org.apache.log4j.Logger;
 
 public class ArrayEmptyTrait extends AbstractTrait {
+
+	private Logger _log = Logger.getLogger(this.getClass());
 
 	@Override
 	public String getDescription() {
@@ -18,16 +23,55 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 		int empty = getData().count(DATA_KINDS.EMPTY);
 		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
-		
-		String ret = "ArrayEmpty - Total: " + getData().size() + " Empty" + ": " + empty + " not empty: "+notEmpty+". ";
+
+		String ret = "ArrayEmpty - Total: " + getData().size() + " Empty" + ": " + empty + " not empty: " + notEmpty
+				+ ". ";
 
 		return ret;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void track(Object obj) {
 		if (obj != null) {
-			int i = ((Object[]) obj).length;
+
+			// TODO: track primitive arrays
+			// BUG: crashes with primitive arrays
+			boolean isArray = obj.getClass().isArray();
+			boolean isPrim = obj.getClass().isPrimitive();
+			int size = Arrays.asList(obj).size();
+			boolean isNull = (obj == null);
+			String name = obj.getClass().getName();
+			String compKind = obj.getClass().getComponentType().toString();
+
+			int i = -1;
+
+			if (obj instanceof Object[]){
+				i = ((Object[]) obj).length;
+			} else { //catch (ClassCastException cce) {
+
+				Class c = obj.getClass();
+				Class cType = c.getComponentType();
+				
+				if (cType.equals(Integer.TYPE)) {
+					i = ((int[]) obj).length;
+				} else if (cType.equals(Long.TYPE)) {
+					i = ((long[]) obj).length;
+				} else if (cType.equals(Float.TYPE)) {
+					i = ((float[]) obj).length;
+				} else if (cType.equals(Double.TYPE)) {
+					i = ((double[]) obj).length;
+				} else if (cType.equals(Byte.TYPE)) {
+					i = ((byte[]) obj).length;
+				} else {
+					_log.warn("Unhandled array kind: " + cType);
+				}
+			}
+
+			// long[] arr = (long[])obj;
+			// int al = arr.length;
+			//			
+
 			if (i == 0)
 				getData().add(DATA_KINDS.EMPTY);
 			else
@@ -35,5 +79,4 @@ public class ArrayEmptyTrait extends AbstractTrait {
 		}
 
 	}
-
 }

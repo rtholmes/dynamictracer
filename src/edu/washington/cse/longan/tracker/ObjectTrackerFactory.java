@@ -1,11 +1,8 @@
 package edu.washington.cse.longan.tracker;
 
-import java.util.Collection;
-
 import org.apache.log4j.Logger;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
 @SuppressWarnings("unchecked")
@@ -13,6 +10,7 @@ public class ObjectTrackerFactory {
 
 	private static Class _collectionSignature;
 	private static Class _stringSignature;
+	private static Class _numberSignature;
 
 	static Logger _log = Logger.getLogger(ObjectTrackerFactory.class);
 
@@ -21,8 +19,8 @@ public class ObjectTrackerFactory {
 	static {
 		try {
 			_stringSignature = Class.forName("java.lang.String");
+			_numberSignature = Class.forName("java.lang.Number");
 			_collectionSignature = Class.forName("java.util.Collection");
-			_log.info("");
 		} catch (ClassNotFoundException cnfe) {
 			_log.error(cnfe);
 		}
@@ -41,6 +39,14 @@ public class ObjectTrackerFactory {
 				return new NumberTracker(clazz);
 			}
 
+			if (clazz.getName().equals("char")) {
+				return new CharTracker(clazz);
+			}
+
+			if (clazz.getName().equals("byte")) {
+				return new ByteTracker(clazz);
+			}
+
 			_log.info("Unhandled primitive type: " + clazz.getName());
 			return new PrimitiveTracker(clazz);
 		}
@@ -50,6 +56,9 @@ public class ObjectTrackerFactory {
 
 		if (isCollection(clazz))
 			return new CollectionTracker(clazz);
+
+		if (isNumber(clazz))
+			return new NumberTracker(clazz);
 
 		// This is just for tracking
 		_unhandledTypes.add(clazz.getName());
@@ -71,6 +80,14 @@ public class ObjectTrackerFactory {
 				return new NumberTracker(clazz, index, name);
 			}
 
+			if (clazz.getName().equals("char")) {
+				return new CharTracker(clazz, index, name);
+			}
+
+			if (clazz.getName().equals("byte")) {
+				return new ByteTracker(clazz, index, name);
+			}
+
 			_log.info("Unhandled primitive type: " + clazz.getName());
 			return new PrimitiveTracker(clazz, index, name);
 		}
@@ -81,11 +98,21 @@ public class ObjectTrackerFactory {
 		if (isCollection(clazz))
 			return new CollectionTracker(clazz, index, name);
 
+		if (isNumber(clazz))
+			return new NumberTracker(clazz, index, name);
+
 		// This is just for tracking
 		_unhandledTypes.add(clazz.getName());
 
 		return new GenericObjectTracker(clazz, index, name);
 
+	}
+
+	private static boolean isNumber(Class clazz) {
+		if (_numberSignature.isAssignableFrom(clazz))
+			return true;
+		else
+			return false;
 	}
 
 	private static boolean isCollection(Class clazz) {

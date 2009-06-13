@@ -24,11 +24,11 @@ import ca.lsmr.common.log.LSMRLogger;
 
 import com.google.common.collect.Multiset;
 
-import edu.washington.cse.longan.tracker.GenericObjectTracker;
 import edu.washington.cse.longan.tracker.IObjectTracker;
 
 public class Collector {
-	public static final boolean OUTPUT = true;
+	public static final boolean OUTPUT = false;
+	public static final boolean SUMMARY_OUTPUT = false;
 
 	private static final String UNKNOWN_CALLER = "Unknown";
 
@@ -50,6 +50,7 @@ public class Collector {
 	}
 
 	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
+	private Hashtable<Integer, FieldAgent> _fields = new Hashtable<Integer, FieldAgent>();
 
 	/**
 	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
@@ -496,7 +497,7 @@ public class Collector {
 
 	public void writeToScreen() {
 		try {
-			if (true) {
+			if (SUMMARY_OUTPUT) {
 				_log.info("Writing Statistics");
 
 				Vector<String> sortedNames = new Vector<String>(_nameToBaseIdMap.keySet());
@@ -528,12 +529,13 @@ public class Collector {
 
 						
 						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
-						_log.info("\t<--: " + caller + " count: " + calledByCount + " name: " + calledByName);
-
+						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 						
 						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
 						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
 
+						// XXX: param trackers only seem to be hit once (confusingly not consistently), even if a method is called N times.
+						// XXX: return trackers buggered as well
 						if (paramTracker.length > 0) {
 							for (IObjectTracker tracker : paramTracker) {
 								_log.info("\t\tParam: "+tracker.getTrackerName()+" - [ idx: " + tracker.getPosition() + " ] name: " + tracker.getName()+ " static type: "+tracker.getStaticTypeName());

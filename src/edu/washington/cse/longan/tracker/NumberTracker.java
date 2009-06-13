@@ -1,5 +1,6 @@
 package edu.washington.cse.longan.tracker;
 
+import edu.washington.cse.longan.trait.IsNullTrait;
 import edu.washington.cse.longan.trait.NumberTrait;
 
 public class NumberTracker extends AbstractObjectTracker {
@@ -35,6 +36,7 @@ public class NumberTracker extends AbstractObjectTracker {
 
 	@Override
 	public void createTraits() {
+		addTrait(new IsNullTrait());
 		addTrait(new NumberTrait());
 
 	}
