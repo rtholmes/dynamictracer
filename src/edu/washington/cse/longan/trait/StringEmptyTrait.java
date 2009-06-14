@@ -1,6 +1,7 @@
 package edu.washington.cse.longan.trait;
 
-import java.util.Collection;
+import org.jdom.Element;
+
 
 public class StringEmptyTrait extends AbstractTrait {
 
@@ -38,4 +39,13 @@ public class StringEmptyTrait extends AbstractTrait {
 
 	}
 
+	@Override
+	public Element toXML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public static ITrait parseXML(Element element){
+		throw new AssertionError("Subtypes should implement this method.");
+	}
 }

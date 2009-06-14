@@ -165,12 +165,12 @@ public class MethodAgent {
 						pTrackers[i] = ot.clone();
 					}
 					_parameterTrackers.put(caller, pTrackers);
-					
+
 				} catch (CloneNotSupportedException e) {
 					_log.error(e);
 					e.printStackTrace();
 				}
-				
+
 			}
 
 			IObjectTracker[] paramaterTrackers = _parameterTrackers.get(caller);
@@ -210,9 +210,21 @@ public class MethodAgent {
 		return _returnObjectTrackers;
 	}
 
+	public IObjectTracker[] getParameterTrackerDefinitions() {
+		return _parameterTrackerDefinitions;
+	}
+
+	public IObjectTracker getReturnTrackerDefinition() {
+		return _returnTrackerDefinition;
+	}
+
 	@Override
 	public String toString() {
 
 		return getName();
+	}
+
+	public boolean hasVoidReturn() {
+		return _hasVoidReturn;
 	}
 }

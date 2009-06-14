@@ -1,12 +1,18 @@
 package edu.washington.cse.longan.trait;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
+
+import edu.washington.cse.longan.io.ILonganIO;
 
 public class ArrayEmptyTrait extends AbstractTrait {
 
 	private Logger _log = Logger.getLogger(this.getClass());
+
+	public static String ID = "ArrayEmptyTrait";
 
 	@Override
 	public String getDescription() {
@@ -15,7 +21,7 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "ArrayEmptyTrait";
+		return ID;
 	}
 
 	@Override
@@ -46,13 +52,13 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 			int i = -1;
 
-			if (obj instanceof Object[]){
+			if (obj instanceof Object[]) {
 				i = ((Object[]) obj).length;
-			} else { //catch (ClassCastException cce) {
+			} else { // catch (ClassCastException cce) {
 
 				Class c = obj.getClass();
 				Class cType = c.getComponentType();
-				
+
 				if (cType.equals(Integer.TYPE)) {
 					i = ((int[]) obj).length;
 				} else if (cType.equals(Long.TYPE)) {
@@ -78,5 +84,53 @@ public class ArrayEmptyTrait extends AbstractTrait {
 				getData().add(DATA_KINDS.NOT_EMPTY);
 		}
 
+	}
+
+	@Override
+	public Element toXML() {
+		Element element = new Element(ILonganIO.TRAIT);
+		element.setAttribute(ILonganIO.KEY, getName());
+
+		int empty = getData().count(DATA_KINDS.EMPTY);
+		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
+
+		Element valueElement = new Element(ILonganIO.DATA);
+		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.EMPTY + "");
+		valueElement.setAttribute(ILonganIO.DATA, empty + "");
+		element.addContent(valueElement);
+
+		valueElement = new Element(ILonganIO.DATA);
+		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.NOT_EMPTY + "");
+		valueElement.setAttribute(ILonganIO.DATA, notEmpty + "");
+		element.addContent(valueElement);
+
+		return element;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static ITrait parseXML(Element element) {
+		if (element.getName().equals(ILonganIO.TRAIT) && element.getAttribute(ILonganIO.KEY).equals(ID)) {
+
+			ArrayEmptyTrait trait = new ArrayEmptyTrait();
+
+			int empty = -1;
+			int notEmpty = -1;
+			
+			for (Element child : (List<Element>)element.getChildren()){
+				if (child.getAttributeValue(ILonganIO.KEY).equals(DATA_KINDS.EMPTY.toString()))
+					empty = Integer.parseInt(child.getAttributeValue(ILonganIO.VALUE));
+				else if (child.getAttributeValue(ILonganIO.KEY).equals(DATA_KINDS.NOT_EMPTY.toString()))
+					notEmpty = Integer.parseInt(child.getAttributeValue(ILonganIO.VALUE));
+				else
+					throw new AssertionError("Unhanlded key: "+child.getAttributeValue(ILonganIO.KEY));
+			}
+			
+			trait.getData().setCount(DATA_KINDS.EMPTY, empty);
+			trait.getData().setCount(DATA_KINDS.NOT_EMPTY, notEmpty);
+
+			return trait;
+		} else {
+			throw new AssertionError("Calling parseXML with the wrong element for " + ID);
+		}
 	}
 }

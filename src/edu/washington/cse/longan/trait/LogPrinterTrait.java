@@ -1,11 +1,12 @@
 package edu.washington.cse.longan.trait;
 
 import org.apache.log4j.Logger;
+import org.jdom.Element;
 
 import com.google.common.collect.Multiset;
 
 
-public class LogPrinterTrait implements ITrait {
+public class LogPrinterTrait extends AbstractTrait{
 
 	Logger _log = Logger.getLogger(this.getClass());
 	public Multiset<DATA_KINDS> getData() {
@@ -28,4 +29,19 @@ public class LogPrinterTrait implements ITrait {
 		_log.debug(obj);
 	}
 
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Element toXML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public static ITrait parseXML(Element element){
+		throw new AssertionError("Subtypes should implement this method.");
+	}
 }

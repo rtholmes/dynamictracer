@@ -1,5 +1,7 @@
 package edu.washington.cse.longan.trait;
 
+import org.jdom.Element;
+
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -38,4 +40,10 @@ public abstract class AbstractTrait implements ITrait {
 	public int hashCode() {
 		return getName().hashCode();
 	}
+	
+	public static ITrait parseXML(Element element){
+		throw new AssertionError("Subtypes should implement this method.");
+	}
+	
+	public abstract Element toXML();
 }

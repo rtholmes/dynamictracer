@@ -1,5 +1,7 @@
 package edu.washington.cse.longan.trait;
 
+import org.jdom.Element;
+
 public class TypeTrait extends AbstractTrait {
 
 	@Override
@@ -22,15 +24,24 @@ public class TypeTrait extends AbstractTrait {
 	public String toString() {
 		String ret = "";
 
-		
 		for (String type : getSupplementalData().elementSet()) {
 			int num = getSupplementalData().count(type);
 			ret += type + ": " + num + "; ";
 		}
 
-		ret = "Type(s): " + getSupplementalData().elementSet().size() + ", total objects: " + getSupplementalData().size() + " - " + ret+". ";
+		ret = "Type(s): " + getSupplementalData().elementSet().size() + ", total objects: "
+				+ getSupplementalData().size() + " - " + ret + ". ";
 
 		return ret;
 	}
 
+	@Override
+	public Element toXML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public static ITrait parseXML(Element element){
+		throw new AssertionError("Subtypes should implement this method.");
+	}
 }

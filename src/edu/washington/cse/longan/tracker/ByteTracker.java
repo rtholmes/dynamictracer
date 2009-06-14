@@ -1,6 +1,5 @@
 package edu.washington.cse.longan.tracker;
 
-import edu.washington.cse.longan.trait.LogPrinterTrait;
 import edu.washington.cse.longan.trait.ValueTrait;
 
 public class ByteTracker extends AbstractObjectTracker {

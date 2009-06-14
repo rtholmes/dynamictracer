@@ -21,20 +21,22 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.CodeSignature;
 
 import ca.lsmr.common.log.LSMRLogger;
+import ca.lsmr.common.util.TimeUtility;
 
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.tracker.IObjectTracker;
 
 public class Collector {
+	private static Collector _instance = null;
+	private static Logger _log = Logger.getLogger(Collector.class);
+
 	public static final boolean OUTPUT = false;
-	public static final boolean SUMMARY_OUTPUT = false;
+
+	public static final boolean SUMMARY_OUTPUT = true;
 
 	private static final String UNKNOWN_CALLER = "Unknown";
-
-	private static Collector _instance = null;
-
-	private static Logger _log = Logger.getLogger(Collector.class);
 
 	public static void clearInstance() {
 		_instance = null;
@@ -49,35 +51,37 @@ public class Collector {
 		return _instance;
 	}
 
-	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
-	private Hashtable<Integer, FieldAgent> _fields = new Hashtable<Integer, FieldAgent>();
+	/**
+	 * current callstack
+	 */
+	private Stack<Integer> _callStack = new Stack<Integer>();
 
+	private Hashtable<Integer, FieldAgent> _fields = new Hashtable<Integer, FieldAgent>();
 	/**
 	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
 	 * id. (JPS.id binds every join point itself so there can be multiple points for any program element)
 	 */
 	private Integer[] _ids = new Integer[1024];
 
-	/**
-	 * id -> milliseconds
-	 */
-	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
-
-	/**
-	 * current callstack
-	 */
-	private Stack<Integer> _callStack = new Stack<Integer>();
-
-	/**
-	 * method enter time. updated with the callstack so popping will give you the time the current method entered.
-	 */
-	private Stack<Long> _timeStack = new Stack<Long>();
+	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
 
 	/**
 	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
 	 * the common base id can be found.
 	 */
 	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
+
+	/**
+	 * id -> milliseconds
+	 */
+	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
+
+	private Session _session;
+
+	/**
+	 * method enter time. updated with the callstack so popping will give you the time the current method entered.
+	 */
+	private Stack<Long> _timeStack = new Stack<Long>();
 
 	/**
 	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single
@@ -91,6 +95,7 @@ public class Collector {
 	private Collector() {
 		try {
 			LSMRLogger.startLog4J(true, Level.DEBUG);
+			_session = new Session();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -274,6 +279,10 @@ public class Collector {
 		}
 	}
 
+	public Collection<FieldAgent> getFields() {
+		return _fields.values();
+	}
+
 	private Integer getMethodId(JoinPoint jp) {
 
 		String name = "";
@@ -334,6 +343,14 @@ public class Collector {
 		}
 	}
 
+	public Collection<MethodAgent> getMethods() {
+		return _methods.values();
+	}
+
+	private MethodAgent getMethodTracker(JoinPoint jp) {
+		return _methods.get(getMethodId(jp));
+	}
+
 	Collection<Integer> getUniqueCallers(int methodId) {
 		HashSet<Integer> callers = new HashSet<Integer>();
 
@@ -386,11 +403,9 @@ public class Collector {
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
 		_callStack.pop();
-		
+
 		recordProfileData(jp, delta);
 		getMethodTracker(jp).methodExit(jp, retObject, _callStack);
-
-		
 
 		if (OUTPUT) {
 			String out = "";
@@ -496,6 +511,16 @@ public class Collector {
 	}
 
 	public void writeToScreen() {
+
+		try {
+			String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
+			String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
+			SessionXMLWriter sxmlw = new SessionXMLWriter();
+			sxmlw.write(fName, this);
+		} catch (Exception e) {
+			_log.error(e);
+		}
+
 		try {
 			if (SUMMARY_OUTPUT) {
 				_log.info("Writing Statistics");
@@ -509,7 +534,7 @@ public class Collector {
 					MethodAgent methodAgent = _methods.get(elementId);
 
 					_log.info(name);
-					
+
 					if (!methodAgent.getName().equals(name)) {
 						// this should never happen
 						_log.error("Method names don't match.");
@@ -521,30 +546,33 @@ public class Collector {
 
 						MethodAgent calledBy = _methods.get(caller);
 						String calledByName = "";
-						
+
 						if (calledBy != null)
 							calledByName = calledBy.getName();
 						else
 							calledByName = UNKNOWN_CALLER;
 
-						
 						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
 						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
-						
+
 						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
 						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
 
-						// XXX: param trackers only seem to be hit once (confusingly not consistently), even if a method is called N times.
+						// XXX: param trackers only seem to be hit once (confusingly not consistently), even if a method
+						// is called N times.
 						// XXX: return trackers buggered as well
 						if (paramTracker.length > 0) {
 							for (IObjectTracker tracker : paramTracker) {
-								_log.info("\t\tParam: "+tracker.getTrackerName()+" - [ idx: " + tracker.getPosition() + " ] name: " + tracker.getName()+ " static type: "+tracker.getStaticTypeName());
+								_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: "
+										+ tracker.getPosition() + " ] name: " + tracker.getName() + " static type: "
+										+ tracker.getStaticTypeName());
 								_log.info("\t\t\t" + tracker.toString());
 							}
 						}
 
 						if (returnTracker != null) {
-							_log.info("\t\tReturn: "+returnTracker.getTrackerName()+" static type: "+returnTracker.getStaticTypeName());
+							_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
+									+ returnTracker.getStaticTypeName());
 							_log.info("\t\t\t" + returnTracker.toString());
 						}
 					}
@@ -591,10 +619,6 @@ public class Collector {
 			e.fillInStackTrace();
 			_log.error(e);
 		}
-	}
-
-	private MethodAgent getMethodTracker(JoinPoint jp) {
-		return _methods.get(getMethodId(jp));
 	}
 
 }

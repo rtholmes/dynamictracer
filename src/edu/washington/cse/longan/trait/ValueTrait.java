@@ -1,5 +1,7 @@
 package edu.washington.cse.longan.trait;
 
+import org.jdom.Element;
+
 public class ValueTrait extends AbstractTrait {
 
 	@Override
@@ -32,4 +34,13 @@ public class ValueTrait extends AbstractTrait {
 		return ret;
 	}
 
+	@Override
+	public Element toXML() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public static ITrait parseXML(Element element){
+		throw new AssertionError("Subtypes should implement this method.");
+	}
 }
