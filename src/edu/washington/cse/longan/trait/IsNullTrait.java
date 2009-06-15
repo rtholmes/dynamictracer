@@ -2,7 +2,6 @@ package edu.washington.cse.longan.trait;
 
 import org.jdom.Element;
 
-
 public class IsNullTrait extends AbstractTrait {
 
 	public String getDescription() {
@@ -25,18 +24,14 @@ public class IsNullTrait extends AbstractTrait {
 		int isNull = getData().count(DATA_KINDS.IS_NULL);
 		int notNull = getData().count(DATA_KINDS.NOT_NULL);
 
-		String ret = "IsNull - Total: " + getData().size() + " IsNull: " + isNull + " NotNull: " + notNull+". ";
-		
+		String ret = "IsNull - Total: " + getData().size() + " IsNull: " + isNull + " NotNull: " + notNull + ". ";
+
 		return ret;
 	}
 
-	@Override
-	public Element toXML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public static ITrait parseXML(Element element){
+
+
+	public static ITrait parseXML(Element element) {
 		throw new AssertionError("Subtypes should implement this method.");
 	}
 }

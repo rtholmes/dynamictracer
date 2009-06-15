@@ -22,5 +22,11 @@ public interface ILonganIO {
 	public static final String VALUE = "value";
 	public static final String KEY = "key";
 	public static final String DATA = "data";
+	public static final String SUPPLEMENTAL_DATA = "sdata";
+	public static final String TIME = "time";
+	public static final String UNKNOWN_CALLER = "unknown";
+	public static final String CALLEDBY = "calledBy";
+	public static final String UNKNOWN_ID = "-1";
+	public static final String COUNT = "count";
 
 }

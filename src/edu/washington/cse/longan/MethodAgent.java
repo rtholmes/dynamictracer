@@ -202,11 +202,11 @@ public class MethodAgent {
 
 	}
 
-	Hashtable<Integer, IObjectTracker[]> getParameterTrackers() {
+	public Hashtable<Integer, IObjectTracker[]> getParameterTrackers() {
 		return _parameterTrackers;
 	}
 
-	Hashtable<Integer, IObjectTracker> getReturnTrackers() {
+	public Hashtable<Integer, IObjectTracker> getReturnTrackers() {
 		return _returnObjectTrackers;
 	}
 

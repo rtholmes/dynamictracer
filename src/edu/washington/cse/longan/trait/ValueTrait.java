@@ -34,11 +34,7 @@ public class ValueTrait extends AbstractTrait {
 		return ret;
 	}
 
-	@Override
-	public Element toXML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+
 	
 	public static ITrait parseXML(Element element){
 		throw new AssertionError("Subtypes should implement this method.");

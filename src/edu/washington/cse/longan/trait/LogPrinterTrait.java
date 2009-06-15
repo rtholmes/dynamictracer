@@ -35,11 +35,6 @@ public class LogPrinterTrait extends AbstractTrait{
 		return null;
 	}
 
-	@Override
-	public Element toXML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
 	public static ITrait parseXML(Element element){
 		throw new AssertionError("Subtypes should implement this method.");

@@ -1,5 +1,9 @@
 package edu.washington.cse.longan.tracker;
 
+import java.util.Collection;
+
+import edu.washington.cse.longan.trait.ITrait;
+
 public interface IObjectTracker extends Cloneable {
 
 	public IObjectTracker clone() throws CloneNotSupportedException;
@@ -42,5 +46,7 @@ public interface IObjectTracker extends Cloneable {
 	 * @param obj element to be tracked.
 	 */
 	public void track(Object obj);
+
+	public Collection<ITrait> getTraits();
 
 }

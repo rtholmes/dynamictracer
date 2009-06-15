@@ -2,6 +2,9 @@ package edu.washington.cse.longan.trait;
 
 import org.jdom.Element;
 
+import edu.washington.cse.longan.io.ILonganIO;
+import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
+
 public class BooleanTrait extends AbstractTrait {
 
 	public String getDescription() {
@@ -31,13 +34,7 @@ public class BooleanTrait extends AbstractTrait {
 		return ret;
 	}
 
-	@Override
-	public Element toXML() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	public static ITrait parseXML(Element element){
+	public static ITrait parseXML(Element element) {
 		throw new AssertionError("Subtypes should implement this method.");
 	}
 }

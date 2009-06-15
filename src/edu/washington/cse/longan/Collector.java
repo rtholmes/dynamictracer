@@ -42,7 +42,7 @@ public class Collector {
 
 	public static final boolean SUMMARY_OUTPUT = true;
 
-	private static final String UNKNOWN_CALLER = "Unknown";
+	public static final String UNKNOWN_CALLER = "Unknown";
 
 	public static void clearInstance() {
 		_instance = null;

@@ -65,7 +65,7 @@ public class Session {
 		_nameToBaseIdMap.put(name, id);
 	}
 	
-	protected Hashtable<Integer, Long> getProfile() {
+	public Hashtable<Integer, Long> getProfile() {
 		return _profile;
 	}
 	

@@ -86,26 +86,26 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 	}
 
-	@Override
-	public Element toXML() {
-		Element element = new Element(ILonganIO.TRAIT);
-		element.setAttribute(ILonganIO.KEY, getName());
-
-		int empty = getData().count(DATA_KINDS.EMPTY);
-		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
-
-		Element valueElement = new Element(ILonganIO.DATA);
-		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.EMPTY + "");
-		valueElement.setAttribute(ILonganIO.DATA, empty + "");
-		element.addContent(valueElement);
-
-		valueElement = new Element(ILonganIO.DATA);
-		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.NOT_EMPTY + "");
-		valueElement.setAttribute(ILonganIO.DATA, notEmpty + "");
-		element.addContent(valueElement);
-
-		return element;
-	}
+//	@Override
+//	public Element toXML() {
+//		Element element = new Element(ILonganIO.TRAIT);
+//		element.setAttribute(ILonganIO.KEY, getName());
+//
+//		int empty = getData().count(DATA_KINDS.EMPTY);
+//		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
+//
+//		Element valueElement = new Element(ILonganIO.DATA);
+//		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.EMPTY + "");
+//		valueElement.setAttribute(ILonganIO.DATA, empty + "");
+//		element.addContent(valueElement);
+//
+//		valueElement = new Element(ILonganIO.DATA);
+//		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.NOT_EMPTY + "");
+//		valueElement.setAttribute(ILonganIO.DATA, notEmpty + "");
+//		element.addContent(valueElement);
+//
+//		return element;
+//	}
 
 	@SuppressWarnings("unchecked")
 	public static ITrait parseXML(Element element) {
