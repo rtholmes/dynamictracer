@@ -8,7 +8,6 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
@@ -28,6 +27,13 @@ import com.google.common.collect.Multiset;
 import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.tracker.IObjectTracker;
 
+/**
+ * This is the main data collector used by the Aspect information collector. The _session field contains all of the
+ * collected data.
+ * 
+ * @author rtholmes
+ * 
+ */
 public class Collector {
 	private static Collector _instance = null;
 	private static Logger _log = Logger.getLogger(Collector.class);
@@ -55,26 +61,27 @@ public class Collector {
 	 * current callstack
 	 */
 	private Stack<Integer> _callStack = new Stack<Integer>();
-
-	private Hashtable<Integer, FieldAgent> _fields = new Hashtable<Integer, FieldAgent>();
-	/**
-	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
-	 * id. (JPS.id binds every join point itself so there can be multiple points for any program element)
-	 */
-	private Integer[] _ids = new Integer[1024];
-
-	private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
-
-	/**
-	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
-	 * the common base id can be found.
-	 */
-	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
-
-	/**
-	 * id -> milliseconds
-	 */
-	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
+	//
+	// private Hashtable<Integer, FieldAgent> _fields = new Hashtable<Integer, FieldAgent>();
+	// /**
+	// * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the
+	// JPS
+	// * id. (JPS.id binds every join point itself so there can be multiple points for any program element)
+	// */
+	// private Integer[] _ids = new Integer[1024];
+	//
+	// private Hashtable<Integer, MethodAgent> _methods = new Hashtable<Integer, MethodAgent>();
+	//
+	// /**
+	// * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
+	// * the common base id can be found.
+	// */
+	// private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
+	//
+	// /**
+	// * id -> milliseconds
+	// */
+	// private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
 
 	private Session _session;
 
@@ -184,7 +191,8 @@ public class Collector {
 
 		int id = getMethodId(jp);
 
-		_methods.get(id).methodEnter(jp, _callStack);
+		_session.getMethod(id).methodEnter(jp, _callStack);
+		// _methods.get(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
@@ -233,7 +241,7 @@ public class Collector {
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
 
-			MethodAgent mt = _methods.get(_callStack.peek());
+			MethodAgent mt = _session.getMethod(_callStack.peek());
 
 			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
 		}
@@ -279,10 +287,6 @@ public class Collector {
 		}
 	}
 
-	public Collection<FieldAgent> getFields() {
-		return _fields.values();
-	}
-
 	private Integer getMethodId(JoinPoint jp) {
 
 		String name = "";
@@ -292,69 +296,67 @@ public class Collector {
 		if (avoidDuplicateBug) {
 			name = jp.getSignature().toString();
 
-			if (!_nameToBaseIdMap.containsKey(name)) {
-				_nameToBaseIdMap.put(name, methodidcounter++);
+			if (!_session.hasIDForElement(name)) {
+				_session.addIDForElement(name, methodidcounter++);
+				// _nameToBaseIdMap.put(name, methodidcounter++);
 			}
 
-			id = _nameToBaseIdMap.get(name);
-			if (!_methods.containsKey(id)) {
-				_methods.put(id, new MethodAgent(id, jp));
+			id = _session.getIdForElement(name);
+			if (!_session.methodExists(id)) {
+				_session.addMethod(id, new MethodAgent(id, jp));
 			}
 
 			// _log.trace("id: "+id+" name: "+name);
 			return id;
 
 		} else {
-			// PERFORMANCE: fix getMethodId
-			// RFE: fix this
-			id = jp.getStaticPart().getId();
-
-			if (_ids[id] != null) {
-				// id has already been mapped to the base id so return it
-				return _ids[id];
-			} else {
-				// haven't encountered this id before, create one
-				name = jp.getSignature().toString();
-
-				// multiple ids can exist for the same methods (e.g., from
-				// different
-				// call sites); merge them
-				Integer baseId = _nameToBaseIdMap.get(name);
-				if (baseId == null) {
-					// there is no base id yet; use this one
-					_nameToBaseIdMap.put(name, id);
-					_ids[id] = id;
-					baseId = id;
-				} else {
-					// there is a base id, choose it instead and
-					// add a new mapping for this one
-					_ids[id] = baseId;
-				}
-
-				id = baseId;
-
-				if (!_methods.containsKey(id)) {
-					// update the method map. this map only uses the base id
-					_methods.put(id, new MethodAgent(id, jp));
-				}
-
-			}
-			return id;
+			// // PERFORMANCE: fix getMethodId
+			// // RFE: fix this
+			// id = jp.getStaticPart().getId();
+			//
+			// if (_ids[id] != null) {
+			// // id has already been mapped to the base id so return it
+			// return _ids[id];
+			// } else {
+			// // haven't encountered this id before, create one
+			// name = jp.getSignature().toString();
+			//
+			// // multiple ids can exist for the same methods (e.g., from
+			// // different
+			// // call sites); merge them
+			// Integer baseId = _nameToBaseIdMap.get(name);
+			// if (baseId == null) {
+			// // there is no base id yet; use this one
+			// _nameToBaseIdMap.put(name, id);
+			// _ids[id] = id;
+			// baseId = id;
+			// } else {
+			// // there is a base id, choose it instead and
+			// // add a new mapping for this one
+			// _ids[id] = baseId;
+			// }
+			//
+			// id = baseId;
+			//
+			// if (!_methods.containsKey(id)) {
+			// // update the method map. this map only uses the base id
+			// _methods.put(id, new MethodAgent(id, jp));
+			// }
+			//
+			// }
+			// return id;
+			return -1;
 		}
 	}
 
-	public Collection<MethodAgent> getMethods() {
-		return _methods.values();
-	}
-
 	private MethodAgent getMethodTracker(JoinPoint jp) {
-		return _methods.get(getMethodId(jp));
+		return _session.getMethod(getMethodId(jp));
 	}
 
 	Collection<Integer> getUniqueCallers(int methodId) {
 		HashSet<Integer> callers = new HashSet<Integer>();
 
-		Multiset<Integer> calledBys = _methods.get(methodId).getCalledBy();
+		Multiset<Integer> calledBys = _session.getMethod(methodId).getCalledBy();
 
 		for (Integer calledBy : calledBys)
 			callers.add(calledBy);
@@ -366,14 +368,14 @@ public class Collector {
 
 		int id = getMethodId(jp);
 
-		_methods.get(id).methodEnter(jp, _callStack);
+		_session.getMethod(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
 
-			String sig = _methods.get(id).getName();
+			String sig = _session.getMethod(id).getName();
 
 			if (!isExternal)
 				_log.debug(out + "--> " + sig + " # args: " + jp.getArgs().length);
@@ -500,13 +502,13 @@ public class Collector {
 	private void recordProfileData(JoinPoint jp, long delta) {
 		int id = getMethodId(jp);
 
-		Long val = _profile.get(id);
+		Long val = _session.getProfile().get(id);
 
 		if (val == null) {
-			_profile.put(id, delta);
+			_session.getProfile().put(id, delta);
 			// idToSignatureMap.put(id, jp.getSignature());
 		} else
-			_profile.put(id, val + delta);
+			_session.getProfile().put(id, val + delta);
 
 	}
 
@@ -516,7 +518,7 @@ public class Collector {
 			String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
 			String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
 			SessionXMLWriter sxmlw = new SessionXMLWriter();
-			sxmlw.write(fName, this);
+			sxmlw.write(fName, _session);
 		} catch (Exception e) {
 			_log.error(e);
 		}
@@ -525,13 +527,14 @@ public class Collector {
 			if (SUMMARY_OUTPUT) {
 				_log.info("Writing Statistics");
 
-				Vector<String> sortedNames = new Vector<String>(_nameToBaseIdMap.keySet());
+				Vector<String> sortedNames = new Vector<String>(_session.getElementNames());
 				Collections.sort(sortedNames);
 
 				long total = 0;
 				for (String name : sortedNames) {
-					int elementId = _nameToBaseIdMap.get(name);
-					MethodAgent methodAgent = _methods.get(elementId);
+
+					int elementId = _session.getIdForElement(name);
+					MethodAgent methodAgent = _session.getMethod(elementId);
 
 					_log.info(name);
 
@@ -544,7 +547,7 @@ public class Collector {
 
 					for (Integer caller : uniqueCallers) {
 
-						MethodAgent calledBy = _methods.get(caller);
+						MethodAgent calledBy = _session.getMethod(caller);
 						String calledByName = "";
 
 						if (calledBy != null)
@@ -552,7 +555,7 @@ public class Collector {
 						else
 							calledByName = UNKNOWN_CALLER;
 
-						int calledByCount = _methods.get(elementId).getCalledBy().count(caller);
+						int calledByCount = _session.getMethod(elementId).getCalledBy().count(caller);
 						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 
 						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
@@ -580,10 +583,10 @@ public class Collector {
 				}
 				_log.info("Total time (with double counting): " + total);
 
-				for (MethodAgent mt : _methods.values()) {
+				for (MethodAgent mt : _session.getMethods()) {
 					String methodName = mt.getName();
 
-					_log.info("Time: " + _profile.get(mt.getId()) + " element: " + methodName);
+					_log.info("Time: " + _session.getProfile().get(mt.getId()) + " element: " + methodName);
 					// if (methodName != null)
 					// _log.info(methodName + " called by:");
 					// else

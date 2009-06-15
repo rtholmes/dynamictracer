@@ -11,21 +11,21 @@ import org.jdom.Element;
 
 import ca.lsmr.common.util.TimeUtility;
 import ca.lsmr.common.util.xml.XMLTools;
-import edu.washington.cse.longan.Collector;
 import edu.washington.cse.longan.FieldAgent;
 import edu.washington.cse.longan.MethodAgent;
+import edu.washington.cse.longan.Session;
 import edu.washington.cse.longan.tracker.IObjectTracker;
 
 public class SessionXMLWriter {
 
-	public void write(String fName, Collector collector) {
+	public void write(String fName, Session session) {
 		Document doc = XMLTools.newXMLDocument();
 
 		Element root = new Element(ILonganIO.ROOT);
 		root.setAttribute(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
 
-		List<MethodAgent> methods = new Vector<MethodAgent>(collector.getMethods());
-		List<FieldAgent> fields = new Vector<FieldAgent>(collector.getFields());
+		List<MethodAgent> methods = new Vector<MethodAgent>(session.getMethods());
+		List<FieldAgent> fields = new Vector<FieldAgent>(session.getFields());
 
 		Collections.sort(methods, new Comparator<MethodAgent>() {
 			public int compare(MethodAgent m1, MethodAgent m2) {
