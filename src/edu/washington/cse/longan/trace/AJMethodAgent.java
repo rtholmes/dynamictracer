@@ -98,9 +98,6 @@ public class AJMethodAgent extends MethodElement {
 
 	}
 
-
-	
-
 	public void methodEnter(JoinPoint jp, Stack<Integer> callStack) {
 		updateCallers(callStack);
 		updateArguments(jp, callStack);
@@ -113,19 +110,24 @@ public class AJMethodAgent extends MethodElement {
 			if (!callStack.isEmpty())
 				caller = callStack.peek();
 			try {
-				if (!_returnObjectTrackers.contains(caller)){
+				if (!_returnObjectTrackers.contains(caller)) {
 					IObjectTracker tracker = _returnTrackerDefinition.clone();
 					_returnObjectTrackers.put(caller, tracker);
-					
+
 					// this may seem unnecessary in the AJ tracker (and it is really)
 					// but it keeps things consistent with the parent types
 					// which is what we're really after anyways for the analysis
+					ReturnTraitContainer rtc = getReturnTraitContainers();
 					ITrait[] traits = new ITrait[0];
 					traits = tracker.getTraits().toArray(traits);
-					ReturnTraitContainer ptc = new ReturnTraitContainer(tracker.getStaticTypeName());
-					ptc.addTraits(caller, traits);
+					if (rtc == null) {
+						rtc = new ReturnTraitContainer(tracker.getStaticTypeName());
+						addReturnTrait(rtc);
+					}
+					rtc.addTraits(caller, traits);
+
 				}
-				
+
 			} catch (CloneNotSupportedException cnse) {
 				_log.error(cnse);
 			}
@@ -159,11 +161,15 @@ public class AJMethodAgent extends MethodElement {
 						// this may seem unnecessary in the AJ tracker (and it is really)
 						// but it keeps things consistent with the parent types
 						// which is what we're really after anyways for the analysis
+						ParamTraitContainer ptc = getParamTrait(i);
 						ITrait[] traits = new ITrait[0];
 						traits = pTrackers[i].getTraits().toArray(traits);
-						ParamTraitContainer ptc = new ParamTraitContainer(ot.getName(), ot.getStaticTypeName(), ot
-								.getPosition());
+						if (ptc == null) {
+							ptc = new ParamTraitContainer(ot.getName(), ot.getStaticTypeName(), ot.getPosition());
+							addParamTrait(ptc, i);
+						}
 						ptc.addTraits(caller, traits);
+
 					}
 					_parameterTrackers.put(caller, pTrackers);
 

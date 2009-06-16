@@ -58,13 +58,18 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			returnElem = true;
 		} else if (qName.equals(ILonganIO.PARAMETER)) {
 			paramElem = true;
+
+			if (staticElem && paramsElem && methodElem) {
+
+			}
+
 		} else if (qName.equals(ILonganIO.METHOD)) {
 			methodElem = true;
 
 			if (staticElem) {
 				parseStaticMethodAttrs(attributes);
 			}
-			
+
 		} else if (qName.equals(ILonganIO.ROOT)) {
 			rootElem = true;
 			parseRootAttributes(attributes);

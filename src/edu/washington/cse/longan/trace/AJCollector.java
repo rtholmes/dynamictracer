@@ -40,23 +40,24 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = true;
+	public static final boolean OUTPUT = false;
 
-	public static final boolean SUMMARY_OUTPUT = true;
+	public static final boolean SUMMARY_OUTPUT = false;
 
 	public static final boolean XML_OUTPUT = true;
 
 	public static final String UNKNOWN_CALLER = "Unknown";
 
 	public static void clearInstance() {
+		if (_instance != null)
+			_log.warn("AJCollector cleared");
+		
 		_instance = null;
-		_log.warn("AJCollector cleared");
 	}
 
 	public static AJCollector getInstance() {
 		if (_instance == null) {
 			_instance = new AJCollector();
-			_log.trace("New AJCollector instantiated");
 		}
 		return _instance;
 	}
@@ -107,6 +108,8 @@ public class AJCollector {
 		try {
 			LSMRLogger.startLog4J(true, Level.DEBUG);
 			_session = new Session();
+			_log.info("New AJCollector instantiated");
+//			_log.info("Tracing started");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -195,7 +198,7 @@ public class AJCollector {
 
 		int id = getMethodId(jp);
 
-		((AJMethodAgent)_session.getMethod(id)).methodEnter(jp, _callStack);
+		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
 		// _methods.get(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
@@ -354,7 +357,7 @@ public class AJCollector {
 	}
 
 	private AJMethodAgent getMethodTracker(JoinPoint jp) {
-		return (AJMethodAgent)_session.getMethod(getMethodId(jp));
+		return (AJMethodAgent) _session.getMethod(getMethodId(jp));
 	}
 
 	Collection<Integer> getUniqueCallers(int methodId) {
@@ -372,7 +375,7 @@ public class AJCollector {
 
 		int id = getMethodId(jp);
 
-		((AJMethodAgent)_session.getMethod(id)).methodEnter(jp, _callStack);
+		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
@@ -520,7 +523,7 @@ public class AJCollector {
 		if (XML_OUTPUT) {
 			try {
 				String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
-//				String folder = "/Volumes/RamDisk/";
+				// String folder = "/Volumes/RamDisk/";
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
 				SessionXMLWriter sxmlw = new SessionXMLWriter();
 				sxmlw.write(fName, _session);
@@ -543,7 +546,7 @@ public class AJCollector {
 				for (String name : sortedNames) {
 
 					int elementId = _session.getIdForElement(name);
-					AJMethodAgent methodAgent = (AJMethodAgent)_session.getMethod(elementId);
+					AJMethodAgent methodAgent = (AJMethodAgent) _session.getMethod(elementId);
 
 					_log.info(name);
 
@@ -556,7 +559,7 @@ public class AJCollector {
 
 					for (Integer caller : uniqueCallers) {
 
-						AJMethodAgent calledBy = (AJMethodAgent)_session.getMethod(caller);
+						AJMethodAgent calledBy = (AJMethodAgent) _session.getMethod(caller);
 						String calledByName = "";
 
 						if (calledBy != null)

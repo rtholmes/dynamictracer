@@ -4,16 +4,17 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Set;
 
-import edu.washington.cse.longan.trace.AJFieldAgent;
-import edu.washington.cse.longan.trace.AJMethodAgent;
+import org.apache.log4j.Logger;
 
 /**
- * Contains the dynamic details of any single session. 
+ * Contains the dynamic details of any single session.
  * 
  * @author rtholmes
- *
+ * 
  */
 public class Session {
+
+	private Logger _log = Logger.getLogger(this.getClass());
 
 	private Hashtable<Integer, FieldElement> _fields = new Hashtable<Integer, FieldElement>();
 
@@ -35,6 +36,10 @@ public class Session {
 	 * id -> milliseconds
 	 */
 	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
+
+	public Session() {
+		_log.info("New session instantiated.");
+	}
 
 	public MethodElement getMethod(int id) {
 		return _methods.get(id);
@@ -67,11 +72,11 @@ public class Session {
 	public void addIDForElement(String name, int id) {
 		_nameToBaseIdMap.put(name, id);
 	}
-	
+
 	public Hashtable<Integer, Long> getProfile() {
 		return _profile;
 	}
-	
+
 	public Set<String> getElementNames() {
 		return _nameToBaseIdMap.keySet();
 	}

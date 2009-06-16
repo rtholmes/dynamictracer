@@ -36,10 +36,16 @@ public class MethodElement {
 		_returnTraits = rtc;
 	}
 
+	protected ParamTraitContainer getParamTrait(int position) {
+		if (position >= 0 && position < _paramTraits.size())
+			return _paramTraits.get(position);
+
+		return null;
+	}
+
 	public void addParamTrait(ParamTraitContainer ptc, int position) {
 		if (position != _paramTraits.size()) {
-			_log.warn("warn here");
-			throw new AssertionError("Not sure why, but this is important");
+			throw new AssertionError("Should probably be updating a ptc, not replacing it...");
 		} else {
 			_paramTraits.add(ptc);
 		}

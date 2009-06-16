@@ -2,6 +2,8 @@ package edu.washington.cse.longan.trait;
 
 import org.jdom.Element;
 
+import edu.washington.cse.longan.io.ILonganIO;
+
 public class TypeTrait extends AbstractTrait {
 
 	@Override
@@ -35,9 +37,21 @@ public class TypeTrait extends AbstractTrait {
 		return ret;
 	}
 
-
-	
-	public static ITrait parseXML(Element element){
+	public static ITrait parseXML(Element element) {
 		throw new AssertionError("Subtypes should implement this method.");
+	}
+
+	@Override
+	public Element toXML() {
+		Element element = super.toXML();
+
+		for (String kind : getSupplementalData().elementSet()) {
+			Element valueElement = new Element(ILonganIO.SUPPLEMENTAL_DATA);
+			valueElement.setAttribute(ILonganIO.KEY, kind + "");
+			valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
+			element.addContent(valueElement);
+		}
+		
+		return element;
 	}
 }

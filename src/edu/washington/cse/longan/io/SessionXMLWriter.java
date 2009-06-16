@@ -1,14 +1,18 @@
 package edu.washington.cse.longan.io;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 import org.jdom.Element;
@@ -34,8 +38,10 @@ import edu.washington.cse.longan.trait.ITrait;
 public class SessionXMLWriter implements ILonganIO {
 
 	Logger _log = Logger.getLogger(this.getClass());
+	private static final boolean ZIP = false;
 
 	public void write(String fName, Session session) {
+
 		Element staticData = genStatic(session);
 
 		OutputFormat format = new OutputFormat();
@@ -43,7 +49,22 @@ public class SessionXMLWriter implements ILonganIO {
 
 		try {
 			// init output infrastructure
-			OutputStream out = new FileOutputStream(new File(fName));
+			OutputStream out;
+			if (ZIP) {
+				ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(new File(fName
+						+ ".zip"))));
+				ZipEntry ze = new ZipEntry(fName.substring(fName.lastIndexOf(File.separator)));
+				zos.putNextEntry(ze);
+				out = zos;
+
+				// GZIPOutputStream gz = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(
+				// new File(fName+".gz"))));
+				// out = gz;
+
+			} else {
+				out = new BufferedOutputStream(new FileOutputStream(new File(fName)));
+
+			}
 			ContentHandler handler = new XMLSerializer(out, format);
 			SAXOutputter saxo = new SAXOutputter(handler);
 
@@ -70,12 +91,15 @@ public class SessionXMLWriter implements ILonganIO {
 			handler.endElement(null, null, ILonganIO.ROOT);
 			handler.endDocument();
 
+			out.close();
 		} catch (FileNotFoundException fnfe) {
 			_log.error(fnfe);
 		} catch (SAXException saxe) {
 			_log.error(saxe);
 		} catch (JDOMException jdome) {
 			_log.error(jdome);
+		} catch (IOException ioe) {
+			_log.error(ioe);
 		}
 	}
 
@@ -139,6 +163,8 @@ public class SessionXMLWriter implements ILonganIO {
 			Element paramsElement = new Element(ILonganIO.PARAMETERS);
 
 			Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
+
+			// XXX: params aren't writing
 
 			// IObjectTracker[] paramTrackers = method.getParameterTrackerDefinitions();
 			for (ParamTraitContainer ptc : ptcs) {
