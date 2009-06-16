@@ -48,7 +48,7 @@ public abstract class AbstractTrait implements ITrait {
 	}
 
 	public Element toXML() {
-		
+
 		Element element = new Element(ILonganIO.TRAIT);
 		element.setAttribute(ILonganIO.KEY, getName());
 
@@ -58,14 +58,13 @@ public abstract class AbstractTrait implements ITrait {
 			valueElement.setAttribute(ILonganIO.VALUE, getData().count(kind) + "");
 			element.addContent(valueElement);
 		}
-		
-//		for (String kind : getSupplementalData().elementSet()) {
-//			Element valueElement = new Element(ILonganIO.SUPPLEMENTAL_DATA);
-//			valueElement.setAttribute(ILonganIO.KEY, kind + "");
-//			valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
-//			element.addContent(valueElement);
-//		}
-		
+
+		// for (String kind : getSupplementalData().elementSet()) {
+		// Element valueElement = new Element(ILonganIO.SUPPLEMENTAL_DATA);
+		// valueElement.setAttribute(ILonganIO.KEY, kind + "");
+		// valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
+		// element.addContent(valueElement);
+		// }
 
 		return element;
 	}

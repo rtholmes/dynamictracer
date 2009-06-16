@@ -2,8 +2,8 @@ package edu.washington.cse.longan.trait;
 
 import org.jdom.Element;
 
-
 public class StringEmptyTrait extends AbstractTrait {
+	public static String ID = "StringEmptyTrait";
 
 	@Override
 	public String getDescription() {
@@ -12,7 +12,7 @@ public class StringEmptyTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "StringEmptyTrait";
+		return ID;
 	}
 
 	@Override
@@ -39,8 +39,7 @@ public class StringEmptyTrait extends AbstractTrait {
 
 	}
 
-	
-	public static ITrait parseXML(Element element){
+	public static ITrait parseXML(Element element) {
 		throw new AssertionError("Subtypes should implement this method.");
 	}
 }

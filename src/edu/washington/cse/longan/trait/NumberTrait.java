@@ -4,6 +4,7 @@ import org.jdom.Element;
 
 public class NumberTrait extends AbstractTrait {
 
+	public static String ID = "NumberTrait";
 	@Override
 	public String getDescription() {
 		return getName();
@@ -11,7 +12,7 @@ public class NumberTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "NumberTrait";
+		return ID;
 	}
 
 	@Override

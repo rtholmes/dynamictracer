@@ -4,12 +4,14 @@ import org.jdom.Element;
 
 public class IsNullTrait extends AbstractTrait {
 
+	public static String ID = "IsNullTrait";
+
 	public String getDescription() {
 		return "Is the object ever null?";
 	}
 
 	public String getName() {
-		return "IsNullTrait";
+		return ID;
 	}
 
 	public void track(Object obj) {
@@ -28,8 +30,6 @@ public class IsNullTrait extends AbstractTrait {
 
 		return ret;
 	}
-
-
 
 	public static ITrait parseXML(Element element) {
 		throw new AssertionError("Subtypes should implement this method.");

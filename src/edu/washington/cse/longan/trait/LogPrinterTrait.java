@@ -8,6 +8,8 @@ import com.google.common.collect.Multiset;
 
 public class LogPrinterTrait extends AbstractTrait{
 
+	public static String ID = "LogPrinterTrait";
+	
 	Logger _log = Logger.getLogger(this.getClass());
 	public Multiset<DATA_KINDS> getData() {
 		return null;
@@ -18,7 +20,7 @@ public class LogPrinterTrait extends AbstractTrait{
 	}
 
 	public String getName() {
-		return "LogPrinterTrait";
+		return ID;
 	}
 
 	public Multiset<String> getSupplementalData() {

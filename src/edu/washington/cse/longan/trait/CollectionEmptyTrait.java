@@ -5,7 +5,7 @@ import java.util.Collection;
 import org.jdom.Element;
 
 public class CollectionEmptyTrait extends AbstractTrait {
-
+	public static String ID = "CollectionEmptyTrait";
 	@Override
 	public String getDescription() {
 		return getName();
@@ -13,7 +13,7 @@ public class CollectionEmptyTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "CollectionEmptyTrait";
+		return ID;
 	}
 
 	@Override

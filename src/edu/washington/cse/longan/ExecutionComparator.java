@@ -27,7 +27,7 @@ public class ExecutionComparator {
 		// joda 2
 		// executionFiles.add(path+"2009-06-15T17-24-21.461-0700.xml");
 		// inh run 1
-		executionFiles.add(path + "2009-06-16T00-29-40.973-0700.xml");
+		executionFiles.add(path + "a.xml");
 
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.compare(executionFiles);

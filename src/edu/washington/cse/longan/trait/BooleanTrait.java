@@ -2,17 +2,16 @@ package edu.washington.cse.longan.trait;
 
 import org.jdom.Element;
 
-import edu.washington.cse.longan.io.ILonganIO;
-import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
-
 public class BooleanTrait extends AbstractTrait {
+
+	public static String ID = "BooleanTrait";
 
 	public String getDescription() {
 		return "Is the object true or false?";
 	}
 
 	public String getName() {
-		return "BooleanTrait";
+		return ID;
 	}
 
 	public void track(Object obj) {

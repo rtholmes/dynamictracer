@@ -27,12 +27,14 @@ public class MethodElement {
 	public MethodElement(int id, String name) {
 		_id = id;
 		_name = name;
+		_log.debug("New MethodElement - " + id + ": " + name);
 	}
 
 	public void addReturnTrait(ReturnTraitContainer rtc) {
 		if (_returnTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
+		_log.debug("ReturnTraitContainer added: " + rtc.getStaticTypeName());
 		_returnTraits = rtc;
 	}
 
@@ -48,6 +50,9 @@ public class MethodElement {
 			throw new AssertionError("Should probably be updating a ptc, not replacing it...");
 		} else {
 			_paramTraits.add(ptc);
+			
+			_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - "
+					+ ptc.getStaticTypeName());
 		}
 	}
 

@@ -217,6 +217,7 @@ public class SessionXMLWriter implements ILonganIO {
 		for (MethodElement method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
+			// RFE: make sure null is never printed here
 			methodElement.setAttribute(ILonganIO.TIME, session.getProfile().get(method.getId()) + "");
 
 			Collection<Integer> uniqueCallers = method.getCalledBy().elementSet();

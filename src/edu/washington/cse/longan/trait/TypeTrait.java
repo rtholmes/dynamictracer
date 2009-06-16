@@ -5,6 +5,7 @@ import org.jdom.Element;
 import edu.washington.cse.longan.io.ILonganIO;
 
 public class TypeTrait extends AbstractTrait {
+	public static String ID = "TypeTrait";
 
 	@Override
 	public String getDescription() {
@@ -13,7 +14,7 @@ public class TypeTrait extends AbstractTrait {
 
 	@Override
 	public String getName() {
-		return "TypeTrait";
+		return ID;
 	}
 
 	@Override
@@ -51,7 +52,7 @@ public class TypeTrait extends AbstractTrait {
 			valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
 			element.addContent(valueElement);
 		}
-		
+
 		return element;
 	}
 }
