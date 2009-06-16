@@ -59,12 +59,12 @@ public abstract class AbstractTrait implements ITrait {
 			element.addContent(valueElement);
 		}
 		
-		for (String kind : getSupplementalData().elementSet()) {
-			Element valueElement = new Element(ILonganIO.SUPPLEMENTAL_DATA);
-			valueElement.setAttribute(ILonganIO.KEY, kind + "");
-			valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
-			element.addContent(valueElement);
-		}
+//		for (String kind : getSupplementalData().elementSet()) {
+//			Element valueElement = new Element(ILonganIO.SUPPLEMENTAL_DATA);
+//			valueElement.setAttribute(ILonganIO.KEY, kind + "");
+//			valueElement.setAttribute(ILonganIO.VALUE, getSupplementalData().count(kind) + "");
+//			element.addContent(valueElement);
+//		}
 		
 
 		return element;

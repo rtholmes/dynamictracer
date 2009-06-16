@@ -1,5 +1,9 @@
 package edu.washington.cse.longan.io;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -9,9 +13,22 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.output.JDOMLocator;
+import org.jdom.output.SAXOutputter;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.LocatorImpl;
 
 import ca.lsmr.common.util.TimeUtility;
 import ca.lsmr.common.util.xml.XMLTools;
+
+import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+import com.sun.org.apache.xml.internal.utils.AttList;
+
 import edu.washington.cse.longan.FieldAgent;
 import edu.washington.cse.longan.MethodAgent;
 import edu.washington.cse.longan.Session;
@@ -24,16 +41,60 @@ public class SessionXMLWriter {
 	Logger _log = Logger.getLogger(this.getClass());
 
 	public void write(String fName, Session session) {
-		Document doc = XMLTools.newXMLDocument();
+//		Document doc = XMLTools.newXMLDocument();
 
-		Element root = new Element(ILonganIO.ROOT);
-		root.setAttribute(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
+//		Element root = new Element(ILonganIO.ROOT);
+//		root.setAttribute(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
 
-		root.addContent(genStatic(session));
-		root.addContent(genDynamic(session));
+		Element staticData = genStatic(session);
+//		root.addContent(staticData);
+//		root.addContent(genDynamic(session));
 
-		doc.setRootElement(root);
-		boolean success = XMLTools.writeXMLDocument(doc, fName);
+//		doc.setRootElement(root);
+
+		// MyContentHandler mch = new MyContentHandler(System.out);
+		OutputFormat format = new OutputFormat();// dom);
+		format.setIndenting(true);
+
+		try {
+			
+			OutputStream out = new FileOutputStream(new File(fName));
+			ContentHandler handler = new XMLSerializer(out, format);
+			
+			
+			SAXOutputter saxo = new SAXOutputter(handler);
+			handler.startDocument();
+
+			AttributeList attrs = new AttributeList();
+			attrs.add(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
+			
+			handler.startElement(null, null, ILonganIO.ROOT, attrs);
+			
+			// the static stuff should be manageable, just do it the standard way
+			saxo.outputFragment(staticData);
+			
+			handler.startElement(null, null, ILonganIO.DYNAMIC, null);
+
+			genDynamic(session, handler, saxo);
+			
+			handler.endElement(null, null,ILonganIO.DYNAMIC);
+
+			// clean up
+			handler.endElement(null, null,ILonganIO.ROOT);
+			handler.endDocument();
+			
+		} catch (FileNotFoundException e) {
+
+			e.printStackTrace();
+		} catch (SAXException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (JDOMException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+//		boolean success = XMLTools.writeXMLDocument(doc, fName);
 	}
 
 	private Element genStatic(Session session) {
@@ -119,8 +180,8 @@ public class SessionXMLWriter {
 		return fieldsElement;
 	}
 
-	private Element genDynamic(Session session) {
-		Element dynamicElement = new Element(ILonganIO.DYNAMIC);
+	private void genDynamic(Session session, ContentHandler handler, SAXOutputter saxo) throws SAXException, JDOMException {
+//		Element dynamicElement = new Element(ILonganIO.DYNAMIC);
 
 		List<MethodAgent> methods = new Vector<MethodAgent>(session.getMethods());
 		List<FieldAgent> fields = new Vector<FieldAgent>(session.getFields());
@@ -137,7 +198,9 @@ public class SessionXMLWriter {
 			}
 		});
 
-		Element methodsElement = new Element(ILonganIO.METHODS);
+//		Element methodsElement = new Element(ILonganIO.METHODS);
+		handler.startElement(null, null, ILonganIO.METHODS, null);
+		
 		for (MethodAgent method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
@@ -192,9 +255,9 @@ public class SessionXMLWriter {
 				calledByElement.addContent(paramsElement);
 
 				if (returnTracker != null) {
-//					_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
-//							+ returnTracker.getStaticTypeName());
-//					_log.info("\t\t\t" + returnTracker.toString());
+					// _log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
+					// + returnTracker.getStaticTypeName());
+					// _log.info("\t\t\t" + returnTracker.toString());
 					Element returnElement = new Element(ILonganIO.RETURN);
 
 					// _log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition()
@@ -207,19 +270,22 @@ public class SessionXMLWriter {
 					}
 
 					calledByElement.addContent(returnElement);
-					
+
 				}
 
 				methodElement.addContent(calledByElement);
 			}
 
-			methodsElement.addContent(methodElement);
+//			methodsElement.addContent(methodElement);
+			saxo.outputFragment(methodElement);
+
 		}
-		dynamicElement.addContent(methodsElement);
+		handler.endElement(null, null, ILonganIO.METHODS);
+//		dynamicElement.addContent(methodsElement);
 
 		// TODO: add fields
 
-		return dynamicElement;
+//		return dynamicElement;
 	}
 
 }

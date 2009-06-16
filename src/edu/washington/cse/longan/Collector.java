@@ -40,7 +40,7 @@ public class Collector {
 
 	public static final boolean OUTPUT = false;
 
-	public static final boolean SUMMARY_OUTPUT = true;
+	public static final boolean SUMMARY_OUTPUT = false;
 
 	public static final String UNKNOWN_CALLER = "Unknown";
 
@@ -512,8 +512,7 @@ public class Collector {
 
 	}
 
-	public void writeToScreen() {
-
+	public void writeToDisk() {
 		try {
 			String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
 			String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
@@ -522,6 +521,9 @@ public class Collector {
 		} catch (Exception e) {
 			_log.error(e);
 		}
+	}
+	public void writeToScreen() {
+
 
 		try {
 			if (SUMMARY_OUTPUT) {
