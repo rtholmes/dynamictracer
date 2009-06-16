@@ -31,7 +31,7 @@ public interface IObjectTracker extends Cloneable {
 	 * @return the index of the element. Only applies to parameters.
 	 */
 	public int getPosition();
-
+	
 	public boolean isField();
 
 	public boolean isParameter();

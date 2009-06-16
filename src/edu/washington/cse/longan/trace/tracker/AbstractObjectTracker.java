@@ -14,7 +14,7 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	private boolean _isParameter = false;
 
 	private boolean _isReturn = false;
-
+	
 	private String _staticTypeName = "";
 
 	Logger _log = Logger.getLogger(this.getClass());
@@ -123,7 +123,7 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	public boolean isParameter() {
 		return _isParameter;
 	}
-
+	
 	public boolean isReturn() {
 		return _isReturn;
 	}

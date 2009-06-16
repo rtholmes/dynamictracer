@@ -14,30 +14,24 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.model.ILonganConstants;
+import edu.washington.cse.longan.model.MethodElement;
+import edu.washington.cse.longan.model.ParamTraitContainer;
+import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 import edu.washington.cse.longan.trace.tracker.ObjectTrackerFactory;
-
+import edu.washington.cse.longan.trait.ITrait;
 
 //RFE: refactor out all aspectJ references
-public class AJMethodAgent {
-	private int _id;
+public class AJMethodAgent extends MethodElement {
 
 	private Logger _log = Logger.getLogger(this.getClass());
 
-	private String _name;
+	protected IObjectTracker[] _parameterTrackerDefinitions;
 
-	private static final String VOID_RETURN = "VOID";
-
-	private static final int UNKNOWN_CALLER_ID = -1;
-
-	private IObjectTracker[] _parameterTrackerDefinitions;
-
-	private IObjectTracker _returnTrackerDefinition;
-
-	Multiset<Integer> _calledBy = HashMultiset.create();
+	protected IObjectTracker _returnTrackerDefinition;
 
 	/**
 	 * Track parameter attributes per caller; these can be aggregated later, if required.
@@ -46,7 +40,6 @@ public class AJMethodAgent {
 	 */
 	Hashtable<Integer, IObjectTracker[]> _parameterTrackers = new Hashtable<Integer, IObjectTracker[]>();
 
-	boolean _hasVoidReturn = false;
 	/**
 	 * Track return value attributes per caller.
 	 * 
@@ -55,13 +48,9 @@ public class AJMethodAgent {
 	private Hashtable<Integer, IObjectTracker> _returnObjectTrackers = new Hashtable<Integer, IObjectTracker>();
 
 	public AJMethodAgent(int id, JoinPoint jp) {
-
-		_id = id;
-
-		_name = jp.getSignature().toString();
+		super(id, jp.getSignature().toString());
 
 		prepareTrackers(jp);
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -91,6 +80,7 @@ public class AJMethodAgent {
 			}
 
 		} else if (sig instanceof ConstructorSignature) {
+			_isConstructor = true;
 
 			ConstructorSignature constructorSig = (ConstructorSignature) sig;
 
@@ -134,8 +124,19 @@ public class AJMethodAgent {
 			if (!callStack.isEmpty())
 				caller = callStack.peek();
 			try {
-				if (!_returnObjectTrackers.contains(caller))
-					_returnObjectTrackers.put(caller, _returnTrackerDefinition.clone());
+				if (!_returnObjectTrackers.contains(caller)){
+					IObjectTracker tracker = _returnTrackerDefinition.clone();
+					_returnObjectTrackers.put(caller, tracker);
+					
+					// this may seem unnecessary in the AJ tracker (and it is really)
+					// but it keeps things consistent with the parent types
+					// which is what we're really after anyways for the analysis
+					ITrait[] traits = new ITrait[0];
+					traits = tracker.getTraits().toArray(traits);
+					ReturnTraitContainer ptc = new ReturnTraitContainer(tracker.getStaticTypeName());
+					ptc.addTraits(caller, traits);
+				}
+				
 			} catch (CloneNotSupportedException cnse) {
 				_log.error(cnse);
 			}
@@ -165,6 +166,15 @@ public class AJMethodAgent {
 						IObjectTracker ot = _parameterTrackerDefinitions[i];
 
 						pTrackers[i] = ot.clone();
+
+						// this may seem unnecessary in the AJ tracker (and it is really)
+						// but it keeps things consistent with the parent types
+						// which is what we're really after anyways for the analysis
+						ITrait[] traits = new ITrait[0];
+						traits = pTrackers[i].getTraits().toArray(traits);
+						ParamTraitContainer ptc = new ParamTraitContainer(ot.getName(), ot.getStaticTypeName(), ot
+								.getPosition());
+						ptc.addTraits(caller, traits);
 					}
 					_parameterTrackers.put(caller, pTrackers);
 
@@ -198,7 +208,7 @@ public class AJMethodAgent {
 
 			_log.trace("Unknown caller for: " + _name);
 
-			_calledBy.add(UNKNOWN_CALLER_ID);
+			_calledBy.add(ILonganConstants.UNKNOWN_CALLER_ID);
 
 		}
 
