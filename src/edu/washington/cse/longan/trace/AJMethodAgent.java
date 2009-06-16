@@ -14,8 +14,6 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
-import com.google.common.collect.Multiset;
-
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
@@ -100,17 +98,8 @@ public class AJMethodAgent extends MethodElement {
 
 	}
 
-	public Multiset<Integer> getCalledBy() {
-		return _calledBy;
-	}
 
-	public Integer getId() {
-		return _id;
-	}
-
-	public String getName() {
-		return _name;
-	}
+	
 
 	public void methodEnter(JoinPoint jp, Stack<Integer> callStack) {
 		updateCallers(callStack);

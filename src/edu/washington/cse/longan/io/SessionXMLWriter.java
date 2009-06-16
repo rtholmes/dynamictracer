@@ -23,10 +23,11 @@ import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
+import edu.washington.cse.longan.model.FieldElement;
+import edu.washington.cse.longan.model.MethodElement;
+import edu.washington.cse.longan.model.ParamTraitContainer;
+import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.model.Session;
-import edu.washington.cse.longan.trace.AJFieldAgent;
-import edu.washington.cse.longan.trace.AJMethodAgent;
-import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 import edu.washington.cse.longan.trait.AbstractTrait;
 import edu.washington.cse.longan.trait.ITrait;
 
@@ -45,6 +46,8 @@ public class SessionXMLWriter implements ILonganIO {
 			OutputStream out = new FileOutputStream(new File(fName));
 			ContentHandler handler = new XMLSerializer(out, format);
 			SAXOutputter saxo = new SAXOutputter(handler);
+
+			_log.info("Writing to: " + fName);
 
 			// create document
 			handler.startDocument();
@@ -79,17 +82,17 @@ public class SessionXMLWriter implements ILonganIO {
 	private Element genStatic(Session session) {
 		Element staticElement = new Element(ILonganIO.STATIC);
 
-		List<AJMethodAgent> methods = new Vector<AJMethodAgent>(session.getMethods());
-		List<AJFieldAgent> fields = new Vector<AJFieldAgent>(session.getFields());
+		List<MethodElement> methods = new Vector<MethodElement>(session.getMethods());
+		List<FieldElement> fields = new Vector<FieldElement>(session.getFields());
 
-		Collections.sort(methods, new Comparator<AJMethodAgent>() {
-			public int compare(AJMethodAgent m1, AJMethodAgent m2) {
+		Collections.sort(methods, new Comparator<MethodElement>() {
+			public int compare(MethodElement m1, MethodElement m2) {
 				return m1.getName().compareTo(m2.getName());
 			}
 		});
 
-		Collections.sort(fields, new Comparator<AJFieldAgent>() {
-			public int compare(AJFieldAgent f1, AJFieldAgent f2) {
+		Collections.sort(fields, new Comparator<FieldElement>() {
+			public int compare(FieldElement f1, FieldElement f2) {
 				return f1.getName().compareTo(f2.getName());
 			}
 		});
@@ -110,20 +113,21 @@ public class SessionXMLWriter implements ILonganIO {
 	// return dynamicElement;
 	// }
 
-	private Element genMethods(Collection<AJMethodAgent> methods) {
+	private Element genMethods(Collection<MethodElement> methods) {
 		Element methodsElement = new Element(ILonganIO.METHODS);
 
-		for (AJMethodAgent method : methods) {
+		for (MethodElement method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
 			methodElement.setAttribute(ILonganIO.NAME, method.getName() + "");
 
 			Element returnElement = new Element(ILonganIO.RETURN);
-			IObjectTracker returnTracker = method.getReturnTrackerDefinition();
+			ReturnTraitContainer rtc = method.getReturnTraitContainers();
+			// IObjectTracker returnTracker = method.getReturnTrackerDefinition();
 
-			if (returnTracker != null) {
-				returnElement.setAttribute(ILonganIO.TYPE, returnTracker.getStaticTypeName());
+			if (rtc != null) {
+				returnElement.setAttribute(ILonganIO.TYPE, rtc.getStaticTypeName());
 			} else if (method.hasVoidReturn()) {
 				returnElement.setAttribute(ILonganIO.TYPE, "void");
 			} else {
@@ -134,14 +138,17 @@ public class SessionXMLWriter implements ILonganIO {
 
 			Element paramsElement = new Element(ILonganIO.PARAMETERS);
 
-			IObjectTracker[] paramTrackers = method.getParameterTrackerDefinitions();
-			for (int i = 0; i < paramTrackers.length; i++) {
-				Element paramElement = new Element(ILonganIO.PARAMETER);
-				IObjectTracker paramTracker = paramTrackers[i];
+			Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
 
-				paramElement.setAttribute(ILonganIO.POSITION, i + "");
-				paramElement.setAttribute(ILonganIO.TYPE, paramTracker.getStaticTypeName());
-				paramElement.setAttribute(ILonganIO.NAME, paramTracker.getName());
+			// IObjectTracker[] paramTrackers = method.getParameterTrackerDefinitions();
+			for (ParamTraitContainer ptc : ptcs) {
+				Element paramElement = new Element(ILonganIO.PARAMETER);
+				// ParamTraitContainer ptc = ptcs.get(i);
+				// IObjectTracker paramTracker = paramTrackers[i];
+
+				paramElement.setAttribute(ILonganIO.POSITION, ptc.getPosition() + "");
+				paramElement.setAttribute(ILonganIO.TYPE, ptc.getStaticTypeName());
+				paramElement.setAttribute(ILonganIO.NAME, ptc.getName());
 
 				paramsElement.addContent(paramElement);
 			}
@@ -153,7 +160,7 @@ public class SessionXMLWriter implements ILonganIO {
 		return methodsElement;
 	}
 
-	private Element genFields(Collection<AJFieldAgent> fields) {
+	private Element genFields(Collection<FieldElement> fields) {
 		Element fieldsElement = new Element(ILonganIO.FIELDS);
 		// TODO: add fields
 		return fieldsElement;
@@ -163,17 +170,17 @@ public class SessionXMLWriter implements ILonganIO {
 			JDOMException {
 		// Element dynamicElement = new Element(ILonganIO.DYNAMIC);
 
-		List<AJMethodAgent> methods = new Vector<AJMethodAgent>(session.getMethods());
-		List<AJFieldAgent> fields = new Vector<AJFieldAgent>(session.getFields());
+		List<MethodElement> methods = new Vector<MethodElement>(session.getMethods());
+		List<FieldElement> fields = new Vector<FieldElement>(session.getFields());
 
-		Collections.sort(methods, new Comparator<AJMethodAgent>() {
-			public int compare(AJMethodAgent m1, AJMethodAgent m2) {
+		Collections.sort(methods, new Comparator<MethodElement>() {
+			public int compare(MethodElement m1, MethodElement m2) {
 				return m1.getName().compareTo(m2.getName());
 			}
 		});
 
-		Collections.sort(fields, new Comparator<AJFieldAgent>() {
-			public int compare(AJFieldAgent f1, AJFieldAgent f2) {
+		Collections.sort(fields, new Comparator<FieldElement>() {
+			public int compare(FieldElement f1, FieldElement f2) {
 				return f1.getName().compareTo(f2.getName());
 			}
 		});
@@ -181,16 +188,16 @@ public class SessionXMLWriter implements ILonganIO {
 		// Element methodsElement = new Element(ILonganIO.METHODS);
 		handler.startElement(null, null, ILonganIO.METHODS, null);
 
-		for (AJMethodAgent method : methods) {
+		for (MethodElement method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
 			methodElement.setAttribute(ILonganIO.TIME, session.getProfile().get(method.getId()) + "");
 
-			Collection<Integer> uniqueCallers = method.getCalledBy();
+			Collection<Integer> uniqueCallers = method.getCalledBy().elementSet();
 
 			for (Integer caller : uniqueCallers) {
 
-				AJMethodAgent calledBy = session.getMethod(caller);
+				MethodElement calledBy = session.getMethod(caller);
 				String calledByName = "";
 
 				Element calledByElement = new Element(ILonganIO.CALLEDBY);
@@ -208,33 +215,38 @@ public class SessionXMLWriter implements ILonganIO {
 
 				// _log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 
-				IObjectTracker[] paramTracker = method.getParameterTrackers().get(caller);
-				IObjectTracker returnTracker = method.getReturnTrackers().get(caller);
+				ITrait[] returnTraits = null;
+				if (method.getReturnTraitContainers() != null)
+					returnTraits = method.getReturnTraitContainers().getTraitsForCaller(caller);
+
+				// IObjectTracker returnTracker = method.getReturnTrackers().get(caller);
+
+				// IObjectTracker[] paramTracker = method.getParameterTrackers().get(caller);
+				Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
 
 				Element paramsElement = new Element(ILonganIO.PARAMETERS);
-				if (paramTracker.length > 0) {
-					for (int i = 0; i < paramTracker.length; i++) {
-						Element paramElement = new Element(ILonganIO.PARAMETER);
-						paramElement.setAttribute(ILonganIO.POSITION, i + "");
 
-						IObjectTracker tracker = paramTracker[i];
+				for (ParamTraitContainer ptc : ptcs) {
+					Element paramElement = new Element(ILonganIO.PARAMETER);
+					paramElement.setAttribute(ILonganIO.POSITION, ptc.getPosition() + "");
 
-						// _log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition()
-						// + " ] name: " + tracker.getName() + " static type: " + tracker.getStaticTypeName());
-						// _log.info("\t\t\t" + tracker.toString());
+					// IObjectTracker tracker = paramTracker[i];
 
-						// don't record tracker details, it's the traits that hold the useful information
-						for (ITrait trait : tracker.getTraits()) {
-							paramElement.addContent(((AbstractTrait) trait).toXML());
-						}
+					// _log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition()
+					// + " ] name: " + tracker.getName() + " static type: " + tracker.getStaticTypeName());
+					// _log.info("\t\t\t" + tracker.toString());
 
-						paramsElement.addContent(paramElement);
+					// don't record tracker details, it's the traits that hold the useful information
+					for (ITrait trait : ptc.getTraitsForCaller(caller)) {
+						paramElement.addContent(((AbstractTrait) trait).toXML());
 					}
 
+					paramsElement.addContent(paramElement);
 				}
+
 				calledByElement.addContent(paramsElement);
 
-				if (returnTracker != null) {
+				if (returnTraits != null) {
 					// _log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
 					// + returnTracker.getStaticTypeName());
 					// _log.info("\t\t\t" + returnTracker.toString());
@@ -245,7 +257,7 @@ public class SessionXMLWriter implements ILonganIO {
 					// _log.info("\t\t\t" + tracker.toString());
 
 					// don't record tracker details, it's the traits that hold the useful information
-					for (ITrait trait : returnTracker.getTraits()) {
+					for (ITrait trait : returnTraits) {
 						returnElement.addContent(((AbstractTrait) trait).toXML());
 					}
 

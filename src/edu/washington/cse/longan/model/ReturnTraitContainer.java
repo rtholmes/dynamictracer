@@ -17,4 +17,12 @@ public class ReturnTraitContainer implements ITraitContainer {
 	public void addTraits(int caller, ITrait[] traits) {
 		_traits.put(caller, traits);
 	}
+
+	public String getStaticTypeName() {
+		return _staticType;
+	}
+
+	public ITrait[] getTraitsForCaller(int caller) {
+		return _traits.get(caller);
+	}
 }

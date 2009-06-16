@@ -30,7 +30,7 @@ public class MethodElement {
 	}
 
 	public void addReturnTrait(ReturnTraitContainer rtc) {
-		if (_returnTraits != null){
+		if (_returnTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
 		_returnTraits = rtc;
@@ -44,4 +44,29 @@ public class MethodElement {
 			_paramTraits.add(ptc);
 		}
 	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public int getId() {
+		return _id;
+	}
+
+	public boolean hasVoidReturn() {
+		return _hasVoidReturn;
+	}
+
+	public Multiset<Integer> getCalledBy() {
+		return _calledBy;
+	}
+
+	public ReturnTraitContainer getReturnTraitContainers() {
+		return _returnTraits;
+	}
+
+	public Vector<ParamTraitContainer> getParamTraitContainers() {
+		return _paramTraits;
+	}
+
 }

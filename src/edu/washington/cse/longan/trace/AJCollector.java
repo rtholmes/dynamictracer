@@ -25,6 +25,7 @@ import ca.lsmr.common.util.TimeUtility;
 import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.io.SessionXMLWriter;
+import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
 import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 
@@ -39,11 +40,11 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = false;
+	public static final boolean OUTPUT = true;
 
 	public static final boolean SUMMARY_OUTPUT = true;
 
-	public static final boolean XML_OUTPUT = false;
+	public static final boolean XML_OUTPUT = true;
 
 	public static final String UNKNOWN_CALLER = "Unknown";
 
@@ -194,7 +195,7 @@ public class AJCollector {
 
 		int id = getMethodId(jp);
 
-		_session.getMethod(id).methodEnter(jp, _callStack);
+		((AJMethodAgent)_session.getMethod(id)).methodEnter(jp, _callStack);
 		// _methods.get(id).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
@@ -244,7 +245,7 @@ public class AJCollector {
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
 
-			AJMethodAgent mt = _session.getMethod(_callStack.peek());
+			MethodElement mt = _session.getMethod(_callStack.peek());
 
 			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
 		}
@@ -353,7 +354,7 @@ public class AJCollector {
 	}
 
 	private AJMethodAgent getMethodTracker(JoinPoint jp) {
-		return _session.getMethod(getMethodId(jp));
+		return (AJMethodAgent)_session.getMethod(getMethodId(jp));
 	}
 
 	Collection<Integer> getUniqueCallers(int methodId) {
@@ -371,7 +372,7 @@ public class AJCollector {
 
 		int id = getMethodId(jp);
 
-		_session.getMethod(id).methodEnter(jp, _callStack);
+		((AJMethodAgent)_session.getMethod(id)).methodEnter(jp, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
@@ -519,6 +520,7 @@ public class AJCollector {
 		if (XML_OUTPUT) {
 			try {
 				String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
+//				String folder = "/Volumes/RamDisk/";
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
 				SessionXMLWriter sxmlw = new SessionXMLWriter();
 				sxmlw.write(fName, _session);
@@ -541,7 +543,7 @@ public class AJCollector {
 				for (String name : sortedNames) {
 
 					int elementId = _session.getIdForElement(name);
-					AJMethodAgent methodAgent = _session.getMethod(elementId);
+					AJMethodAgent methodAgent = (AJMethodAgent)_session.getMethod(elementId);
 
 					_log.info(name);
 
@@ -554,7 +556,7 @@ public class AJCollector {
 
 					for (Integer caller : uniqueCallers) {
 
-						AJMethodAgent calledBy = _session.getMethod(caller);
+						AJMethodAgent calledBy = (AJMethodAgent)_session.getMethod(caller);
 						String calledByName = "";
 
 						if (calledBy != null)
@@ -590,7 +592,7 @@ public class AJCollector {
 				}
 				_log.info("Total time (with double counting): " + total);
 
-				for (AJMethodAgent mt : _session.getMethods()) {
+				for (MethodElement mt : _session.getMethods()) {
 					String methodName = mt.getName();
 
 					_log.info("Time: " + _session.getProfile().get(mt.getId()) + " element: " + methodName);

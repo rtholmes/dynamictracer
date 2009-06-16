@@ -15,7 +15,7 @@ import edu.washington.cse.longan.trace.AJMethodAgent;
  */
 public class Session {
 
-	private Hashtable<Integer, AJFieldAgent> _fields = new Hashtable<Integer, AJFieldAgent>();
+	private Hashtable<Integer, FieldElement> _fields = new Hashtable<Integer, FieldElement>();
 
 	/**
 	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
@@ -23,7 +23,7 @@ public class Session {
 	 */
 	// private Integer[] _ids = new Integer[1024];
 
-	private Hashtable<Integer, AJMethodAgent> _methods = new Hashtable<Integer, AJMethodAgent>();
+	private Hashtable<Integer, MethodElement> _methods = new Hashtable<Integer, MethodElement>();
 
 	/**
 	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
@@ -36,7 +36,7 @@ public class Session {
 	 */
 	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
 
-	public AJMethodAgent getMethod(int id) {
+	public MethodElement getMethod(int id) {
 		return _methods.get(id);
 	}
 
@@ -44,15 +44,15 @@ public class Session {
 		return _methods.containsKey(id);
 	}
 
-	public void addMethod(int id, AJMethodAgent method) {
+	public void addMethod(int id, MethodElement method) {
 		_methods.put(id, method);
 	}
 
-	public Collection<AJFieldAgent> getFields() {
+	public Collection<FieldElement> getFields() {
 		return _fields.values();
 	}
 
-	public Collection<AJMethodAgent> getMethods() {
+	public Collection<MethodElement> getMethods() {
 		return _methods.values();
 	}
 

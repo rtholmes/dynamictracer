@@ -17,8 +17,24 @@ public class ParamTraitContainer implements ITraitContainer {
 		_staticType = staticType;
 		_position = position;
 	}
-	
-	public void addTraits(int caller, ITrait[] traits){
+
+	public void addTraits(int caller, ITrait[] traits) {
 		_traits.put(caller, traits);
+	}
+
+	public String getStaticTypeName() {
+		return _staticType;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public int getPosition() {
+		return _position;
+	}
+
+	public ITrait[] getTraitsForCaller(int caller) {
+		return _traits.get(caller);
 	}
 }
