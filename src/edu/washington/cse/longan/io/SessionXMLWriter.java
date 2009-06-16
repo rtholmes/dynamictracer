@@ -23,14 +23,14 @@ import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
-import edu.washington.cse.longan.FieldAgent;
-import edu.washington.cse.longan.MethodAgent;
-import edu.washington.cse.longan.Session;
-import edu.washington.cse.longan.tracker.IObjectTracker;
+import edu.washington.cse.longan.model.Session;
+import edu.washington.cse.longan.trace.AJFieldAgent;
+import edu.washington.cse.longan.trace.AJMethodAgent;
+import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 import edu.washington.cse.longan.trait.AbstractTrait;
 import edu.washington.cse.longan.trait.ITrait;
 
-public class SessionXMLWriter {
+public class SessionXMLWriter implements ILonganIO {
 
 	Logger _log = Logger.getLogger(this.getClass());
 
@@ -41,11 +41,11 @@ public class SessionXMLWriter {
 		format.setIndenting(true);
 
 		try {
-// init output infrastructure
+			// init output infrastructure
 			OutputStream out = new FileOutputStream(new File(fName));
 			ContentHandler handler = new XMLSerializer(out, format);
 			SAXOutputter saxo = new SAXOutputter(handler);
-			
+
 			// create document
 			handler.startDocument();
 
@@ -79,17 +79,17 @@ public class SessionXMLWriter {
 	private Element genStatic(Session session) {
 		Element staticElement = new Element(ILonganIO.STATIC);
 
-		List<MethodAgent> methods = new Vector<MethodAgent>(session.getMethods());
-		List<FieldAgent> fields = new Vector<FieldAgent>(session.getFields());
+		List<AJMethodAgent> methods = new Vector<AJMethodAgent>(session.getMethods());
+		List<AJFieldAgent> fields = new Vector<AJFieldAgent>(session.getFields());
 
-		Collections.sort(methods, new Comparator<MethodAgent>() {
-			public int compare(MethodAgent m1, MethodAgent m2) {
+		Collections.sort(methods, new Comparator<AJMethodAgent>() {
+			public int compare(AJMethodAgent m1, AJMethodAgent m2) {
 				return m1.getName().compareTo(m2.getName());
 			}
 		});
 
-		Collections.sort(fields, new Comparator<FieldAgent>() {
-			public int compare(FieldAgent f1, FieldAgent f2) {
+		Collections.sort(fields, new Comparator<AJFieldAgent>() {
+			public int compare(AJFieldAgent f1, AJFieldAgent f2) {
 				return f1.getName().compareTo(f2.getName());
 			}
 		});
@@ -104,16 +104,16 @@ public class SessionXMLWriter {
 	//
 	// Element dynamicElement = new Element(ILonganIO.DYNAMIC);
 	//
-	// for (MethodAgent method : session.getMethods()) {
+	// for (AJMethodAgent method : session.getMethods()) {
 	//
 	// }
 	// return dynamicElement;
 	// }
 
-	private Element genMethods(Collection<MethodAgent> methods) {
+	private Element genMethods(Collection<AJMethodAgent> methods) {
 		Element methodsElement = new Element(ILonganIO.METHODS);
 
-		for (MethodAgent method : methods) {
+		for (AJMethodAgent method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
@@ -153,7 +153,7 @@ public class SessionXMLWriter {
 		return methodsElement;
 	}
 
-	private Element genFields(Collection<FieldAgent> fields) {
+	private Element genFields(Collection<AJFieldAgent> fields) {
 		Element fieldsElement = new Element(ILonganIO.FIELDS);
 		// TODO: add fields
 		return fieldsElement;
@@ -163,17 +163,17 @@ public class SessionXMLWriter {
 			JDOMException {
 		// Element dynamicElement = new Element(ILonganIO.DYNAMIC);
 
-		List<MethodAgent> methods = new Vector<MethodAgent>(session.getMethods());
-		List<FieldAgent> fields = new Vector<FieldAgent>(session.getFields());
+		List<AJMethodAgent> methods = new Vector<AJMethodAgent>(session.getMethods());
+		List<AJFieldAgent> fields = new Vector<AJFieldAgent>(session.getFields());
 
-		Collections.sort(methods, new Comparator<MethodAgent>() {
-			public int compare(MethodAgent m1, MethodAgent m2) {
+		Collections.sort(methods, new Comparator<AJMethodAgent>() {
+			public int compare(AJMethodAgent m1, AJMethodAgent m2) {
 				return m1.getName().compareTo(m2.getName());
 			}
 		});
 
-		Collections.sort(fields, new Comparator<FieldAgent>() {
-			public int compare(FieldAgent f1, FieldAgent f2) {
+		Collections.sort(fields, new Comparator<AJFieldAgent>() {
+			public int compare(AJFieldAgent f1, AJFieldAgent f2) {
 				return f1.getName().compareTo(f2.getName());
 			}
 		});
@@ -181,7 +181,7 @@ public class SessionXMLWriter {
 		// Element methodsElement = new Element(ILonganIO.METHODS);
 		handler.startElement(null, null, ILonganIO.METHODS, null);
 
-		for (MethodAgent method : methods) {
+		for (AJMethodAgent method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
 			methodElement.setAttribute(ILonganIO.TIME, session.getProfile().get(method.getId()) + "");
@@ -190,7 +190,7 @@ public class SessionXMLWriter {
 
 			for (Integer caller : uniqueCallers) {
 
-				MethodAgent calledBy = session.getMethod(caller);
+				AJMethodAgent calledBy = session.getMethod(caller);
 				String calledByName = "";
 
 				Element calledByElement = new Element(ILonganIO.CALLEDBY);
