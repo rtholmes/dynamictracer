@@ -20,6 +20,8 @@ import com.google.common.collect.Multiset;
 import edu.washington.cse.longan.tracker.IObjectTracker;
 import edu.washington.cse.longan.tracker.ObjectTrackerFactory;
 
+
+//RFE: refactor out all aspectJ references
 public class MethodAgent {
 	private int _id;
 

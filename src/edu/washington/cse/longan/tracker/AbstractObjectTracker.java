@@ -81,6 +81,9 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 			_traits.add(trait);
 	}
 
+	/**
+	 * Note: while the traits are cloned, their contents ARE NOT. 
+	 */
 	public abstract IObjectTracker clone() throws CloneNotSupportedException;
 
 	public abstract void createTraits();
