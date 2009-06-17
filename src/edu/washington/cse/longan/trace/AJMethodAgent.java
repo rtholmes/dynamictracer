@@ -110,9 +110,12 @@ public class AJMethodAgent extends MethodElement {
 			if (!callStack.isEmpty())
 				caller = callStack.peek();
 			try {
-				if (!_returnObjectTrackers.contains(caller)) {
+
+				if (!_returnObjectTrackers.containsKey(caller)) {
 					IObjectTracker tracker = _returnTrackerDefinition.clone();
 					_returnObjectTrackers.put(caller, tracker);
+
+					// _log.debug("putting new rtc in for caller: " + caller + " for method: " + getName());
 
 					// this may seem unnecessary in the AJ tracker (and it is really)
 					// but it keeps things consistent with the parent types

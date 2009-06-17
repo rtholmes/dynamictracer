@@ -14,7 +14,7 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	private boolean _isParameter = false;
 
 	private boolean _isReturn = false;
-	
+
 	private String _staticTypeName = "";
 
 	Logger _log = Logger.getLogger(this.getClass());
@@ -82,7 +82,7 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	}
 
 	/**
-	 * Note: while the traits are cloned, their contents ARE NOT. 
+	 * Note: while the traits are cloned, their contents ARE NOT.
 	 */
 	public abstract IObjectTracker clone() throws CloneNotSupportedException;
 
@@ -123,16 +123,17 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 	public boolean isParameter() {
 		return _isParameter;
 	}
-	
+
 	public boolean isReturn() {
 		return _isReturn;
 	}
 
 	public void track(Object obj) {
-		
+
 		for (ITrait trait : getTraits()) {
 			trait.track(obj);
 		}
+
 	}
 
 	@Override

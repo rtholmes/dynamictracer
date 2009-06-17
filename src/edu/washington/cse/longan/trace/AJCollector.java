@@ -51,7 +51,7 @@ public class AJCollector {
 	public static void clearInstance() {
 		if (_instance != null)
 			_log.warn("AJCollector cleared");
-		
+
 		_instance = null;
 	}
 
@@ -109,7 +109,7 @@ public class AJCollector {
 			LSMRLogger.startLog4J(true, Level.DEBUG);
 			_session = new Session();
 			_log.info("New AJCollector instantiated");
-//			_log.info("Tracing started");
+			// _log.info("Tracing started");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -414,7 +414,9 @@ public class AJCollector {
 		_callStack.pop();
 
 		recordProfileData(jp, delta);
-		getMethodTracker(jp).methodExit(jp, retObject, _callStack);
+
+		AJMethodAgent methodTracker = getMethodTracker(jp);
+		methodTracker.methodExit(jp, retObject, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
