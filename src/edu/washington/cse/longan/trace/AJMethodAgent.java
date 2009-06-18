@@ -45,8 +45,8 @@ public class AJMethodAgent extends MethodElement {
 	 */
 	private Hashtable<Integer, IObjectTracker> _returnObjectTrackers = new Hashtable<Integer, IObjectTracker>();
 
-	public AJMethodAgent(int id, JoinPoint jp) {
-		super(id, jp.getSignature().toString());
+	public AJMethodAgent(int id, JoinPoint jp, boolean isExternal) {
+		super(id, jp.getSignature().toString(),isExternal);
 
 		prepareTrackers(jp);
 	}

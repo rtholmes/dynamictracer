@@ -18,7 +18,7 @@ public class PrimitiveTracker extends AbstractObjectTracker {
 	}
 
 	public void track(Object obj) {
-		// XXX Auto-generated method stub
+		// RFE: primitive tracker doesn't do anything
 
 	}
 
@@ -37,7 +37,7 @@ public class PrimitiveTracker extends AbstractObjectTracker {
 
 	@Override
 	public void createTraits() {
-		// TODO Auto-generated method stub
+		// TODO implement createTraits for a primitive tracker
 
 	}
 

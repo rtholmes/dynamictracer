@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
@@ -25,6 +24,7 @@ import ca.lsmr.common.util.TimeUtility;
 import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.io.SessionXMLWriter;
+import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
 import edu.washington.cse.longan.trace.tracker.IObjectTracker;
@@ -106,7 +106,7 @@ public class AJCollector {
 
 	private AJCollector() {
 		try {
-			LSMRLogger.startLog4J(true, Level.DEBUG);
+			LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 			_session = new Session();
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
@@ -196,7 +196,7 @@ public class AJCollector {
 
 		JoinPoint.StaticPart jps = jp.getStaticPart();
 
-		int id = getMethodId(jp);
+		int id = getMethodId(jp, isExternal, true);
 
 		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
 		// _methods.get(id).methodEnter(jp, _callStack);
@@ -214,7 +214,7 @@ public class AJCollector {
 				_log.debug(out + "|x->| " + sig);
 		}
 
-		_callStack.push(getMethodId(jp));
+		_callStack.push(getMethodId(jp, isExternal, true));
 		_timeStack.push(System.currentTimeMillis());
 
 	}
@@ -271,7 +271,7 @@ public class AJCollector {
 	}
 
 	public void fieldGet(JoinPoint jp) {
-		// XXX: handle field sets
+		// RFE: handle field sets
 		if (OUTPUT) {
 			String out = "";
 
@@ -283,7 +283,7 @@ public class AJCollector {
 	}
 
 	public void fieldSet(JoinPoint jp, Object newValue) {
-		// XXX: handle field sets
+		// RFE: handle field sets
 		if (OUTPUT) {
 			String out = "";
 
@@ -294,7 +294,7 @@ public class AJCollector {
 		}
 	}
 
-	private Integer getMethodId(JoinPoint jp) {
+	private Integer getMethodId(JoinPoint jp, boolean isExternal, boolean isExternalKnown) {
 
 		String name = "";
 		int id = -1;
@@ -310,15 +310,20 @@ public class AJCollector {
 
 			id = _session.getIdForElement(name);
 			if (!_session.methodExists(id)) {
-				_session.addMethod(id, new AJMethodAgent(id, jp));
+				if (!isExternalKnown) {
+					throw new AssertionError(
+							"Can't create a new methodagent if without being sure that it is external or internal.");
+				}
+				
+				// BUG: isExternal is always true for exceptions
+				_session.addMethod(id, new AJMethodAgent(id, jp, isExternal));
 			}
 
 			// _log.trace("id: "+id+" name: "+name);
 			return id;
 
 		} else {
-			// // PERFORMANCE: fix getMethodId
-			// // RFE: fix this
+			// // PERF: fix getMethodId
 			// id = jp.getStaticPart().getId();
 			//
 			// if (_ids[id] != null) {
@@ -357,7 +362,7 @@ public class AJCollector {
 	}
 
 	private AJMethodAgent getMethodTracker(JoinPoint jp) {
-		return (AJMethodAgent) _session.getMethod(getMethodId(jp));
+		return (AJMethodAgent) _session.getMethod(getMethodId(jp, false, false));
 	}
 
 	Collection<Integer> getUniqueCallers(int methodId) {
@@ -373,7 +378,7 @@ public class AJCollector {
 
 	public void methodEnter(JoinPoint jp, boolean isExternal) {
 
-		int id = getMethodId(jp);
+		int id = getMethodId(jp, isExternal, true);
 
 		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
 
@@ -509,7 +514,7 @@ public class AJCollector {
 	}
 
 	private void recordProfileData(JoinPoint jp, long delta) {
-		int id = getMethodId(jp);
+		int id = getMethodId(jp, false, false);
 
 		Long val = _session.getProfile().get(id);
 
@@ -575,9 +580,6 @@ public class AJCollector {
 						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
 						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
 
-						// XXX: param trackers only seem to be hit once (confusingly not consistently), even if a method
-						// is called N times.
-						// XXX: return trackers buggered as well
 						if (paramTracker.length > 0) {
 							for (IObjectTracker tracker : paramTracker) {
 								_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: "

@@ -24,10 +24,13 @@ public class MethodElement {
 
 	private Vector<ParamTraitContainer> _paramTraits = new Vector<ParamTraitContainer>();
 
-	public MethodElement(int id, String name) {
+	private boolean _isExternal;
+
+	public MethodElement(int id, String name, boolean isExternal) {
 		_id = id;
 		_name = name;
-		_log.debug("New MethodElement - " + id + ": " + name);
+		_isExternal = isExternal;
+		_log.debug("New MethodElement - " + id + ": " + name + " isExternal: " + _isExternal);
 	}
 
 	public void addReturnTrait(ReturnTraitContainer rtc) {
@@ -50,7 +53,7 @@ public class MethodElement {
 			throw new AssertionError("Should probably be updating a ptc, not replacing it...");
 		} else {
 			_paramTraits.add(ptc);
-			
+
 			_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - "
 					+ ptc.getStaticTypeName());
 		}
@@ -62,6 +65,10 @@ public class MethodElement {
 
 	public int getId() {
 		return _id;
+	}
+
+	public boolean isExternal() {
+		return _isExternal;
 	}
 
 	public boolean hasVoidReturn() {

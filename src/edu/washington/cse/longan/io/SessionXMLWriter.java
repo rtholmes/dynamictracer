@@ -2,10 +2,12 @@ package edu.washington.cse.longan.io;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +30,7 @@ import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import edu.washington.cse.longan.model.FieldElement;
+import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
 import edu.washington.cse.longan.model.ReturnTraitContainer;
@@ -38,9 +41,10 @@ import edu.washington.cse.longan.trait.ITrait;
 public class SessionXMLWriter implements ILonganIO {
 
 	Logger _log = Logger.getLogger(this.getClass());
-	private static final boolean ZIP = false;
 
 	public void write(String fName, Session session) {
+
+		long start = System.currentTimeMillis();
 
 		Element staticData = genStatic(session);
 
@@ -50,7 +54,7 @@ public class SessionXMLWriter implements ILonganIO {
 		try {
 			// init output infrastructure
 			OutputStream out;
-			if (ZIP) {
+			if (ILonganConstants.OUTPUT_ZIP) {
 				ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(new File(fName
 						+ ".zip"))));
 				ZipEntry ze = new ZipEntry(fName.substring(fName.lastIndexOf(File.separator)));
@@ -68,7 +72,7 @@ public class SessionXMLWriter implements ILonganIO {
 			ContentHandler handler = new XMLSerializer(out, format);
 			SAXOutputter saxo = new SAXOutputter(handler);
 
-			_log.info("Writing to: " + fName);
+			_log.info("Writing trace to: " + fName);
 
 			// create document
 			handler.startDocument();
@@ -100,6 +104,36 @@ public class SessionXMLWriter implements ILonganIO {
 			_log.error(jdome);
 		} catch (IOException ioe) {
 			_log.error(ioe);
+		}
+
+		if (ILonganConstants.OUTPUT_DEBUG) {
+			// In debug mode it can be handy to send the last output to a static file name
+			// for easier manual analysis
+			
+			long end = System.currentTimeMillis();
+			String latestFName = ILonganConstants.OUTPUT_PATH + "latest.xml";
+
+			try {
+				// Create channel on the source
+				FileChannel srcChannel = new FileInputStream(fName).getChannel();
+
+				// Create channel on the destination
+				FileChannel dstChannel = new FileOutputStream(latestFName).getChannel();
+
+				// Copy file contents from source to destination
+				dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
+
+				// Close the channels
+				srcChannel.close();
+				dstChannel.close();
+			} catch (IOException ioe) {
+				_log.error(ioe);
+			}
+
+			_log.info("Trace written in: " + TimeUtility.msToHumanReadable((end - start)) + " (copy took: "
+					+ TimeUtility.msToHumanReadableDelta(end) + ") and copied to: " + latestFName);
+		} else {
+			_log.info("Trace written to: " + fName + " in: " + TimeUtility.msToHumanReadableDelta(start));
 		}
 	}
 
@@ -144,6 +178,7 @@ public class SessionXMLWriter implements ILonganIO {
 			Element methodElement = new Element(ILonganIO.METHOD);
 
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
+			methodElement.setAttribute(ILonganIO.EXTERNAL, method.isExternal() + "");
 			methodElement.setAttribute(ILonganIO.NAME, method.getName() + "");
 
 			Element returnElement = new Element(ILonganIO.RETURN);
@@ -153,9 +188,9 @@ public class SessionXMLWriter implements ILonganIO {
 			if (rtc != null) {
 				returnElement.setAttribute(ILonganIO.TYPE, rtc.getStaticTypeName());
 			} else if (method.hasVoidReturn()) {
-				returnElement.setAttribute(ILonganIO.TYPE, "void");
+				returnElement.setAttribute(ILonganIO.TYPE, ILonganConstants.VOID_RETURN);
 			} else {
-				returnElement.setAttribute(ILonganIO.TYPE, "<init>");
+				returnElement.setAttribute(ILonganIO.TYPE, ILonganConstants.INIT_METHOD);
 			}
 
 			methodElement.addContent(returnElement);
@@ -163,8 +198,6 @@ public class SessionXMLWriter implements ILonganIO {
 			Element paramsElement = new Element(ILonganIO.PARAMETERS);
 
 			Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
-
-			// XXX: params aren't writing
 
 			// IObjectTracker[] paramTrackers = method.getParameterTrackerDefinitions();
 			for (ParamTraitContainer ptc : ptcs) {
@@ -188,7 +221,7 @@ public class SessionXMLWriter implements ILonganIO {
 
 	private Element genFields(Collection<FieldElement> fields) {
 		Element fieldsElement = new Element(ILonganIO.FIELDS);
-		// TODO: add fields
+		// RFE: add fields
 		return fieldsElement;
 	}
 
@@ -217,8 +250,14 @@ public class SessionXMLWriter implements ILonganIO {
 		for (MethodElement method : methods) {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
-			// RFE: make sure null is never printed here
+
+			// BUG: make sure null is never printed here
 			methodElement.setAttribute(ILonganIO.TIME, session.getProfile().get(method.getId()) + "");
+
+			// make the xml files easier to manually inspect (but larger)
+			if (ILonganConstants.OUTPUT_DEBUG) {
+				methodElement.setAttribute(ILonganIO.NAME, method.getName());
+			}
 
 			Collection<Integer> uniqueCallers = method.getCalledBy().elementSet();
 
@@ -239,6 +278,12 @@ public class SessionXMLWriter implements ILonganIO {
 
 				int calledByCount = session.getMethod(method.getId()).getCalledBy().count(caller);
 				calledByElement.setAttribute(ILonganIO.COUNT, calledByCount + "");
+
+				// make the xml files easier to manually inspect (but larger)
+				if (ILonganConstants.OUTPUT_DEBUG) {
+					if (calledBy != null)
+						calledByElement.setAttribute(ILonganIO.NAME, calledBy.getName());
+				}
 
 				// _log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 
@@ -296,13 +341,15 @@ public class SessionXMLWriter implements ILonganIO {
 			}
 
 			// methodsElement.addContent(methodElement);
+			// Note: this adds a xmlns="" to the method nodes
+			// This happens because we can't control the NamespaceStack inside outputFragment
 			saxo.outputFragment(methodElement);
 
 		}
 		handler.endElement(null, null, ILonganIO.METHODS);
 		// dynamicElement.addContent(methodsElement);
 
-		// TODO: add fields
+		// RFE: add fields
 
 		// return dynamicElement;
 	}

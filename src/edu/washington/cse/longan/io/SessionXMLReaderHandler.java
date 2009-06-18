@@ -229,10 +229,13 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	private void parseStaticMethodAttrs(Attributes attributes) {
 		String idString = attributes.getValue(ILonganIO.ID);
 		String name = attributes.getValue(ILonganIO.NAME);
+		String externalString = attributes.getValue(ILonganIO.EXTERNAL);
+
 		_log.info("Method parsed: " + idString + " " + name);
 		int id = Integer.parseInt(idString);
+		boolean external = Boolean.parseBoolean(externalString);
 
-		MethodElement me = new MethodElement(id, name);
+		MethodElement me = new MethodElement(id, name, external);
 		_session.addIDForElement(name, id);
 		_session.addMethod(id, me);
 
@@ -240,7 +243,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	}
 
 	private void parseRootAttributes(Attributes attributes) {
-		// TODO Auto-generated method stub
+		// TODO do something with the root attributes for a project
 
 	}
 

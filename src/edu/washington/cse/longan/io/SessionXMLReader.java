@@ -24,26 +24,21 @@ public class SessionXMLReader implements ILonganIO {
 
 		try {
 			FileInputStream is = new FileInputStream(new File(fName));
-			
-			
+
 			SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
 			DefaultHandler dh = new SessionXMLReaderHandler(session);
 			saxp.parse(is, dh);
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+
+		} catch (FileNotFoundException fnfe) {
+			_log.error(fnfe);
+		} catch (ParserConfigurationException pce) {
+			_log.error(pce);
+		} catch (SAXException saxe) {
+			_log.error(saxe);
+		} catch (IOException ioe) {
+			_log.error(ioe);
 		}
-		
+
 		_log.info("Document read");
 		return session;
 	}

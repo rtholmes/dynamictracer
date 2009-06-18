@@ -33,8 +33,7 @@ public class LogPrinterTrait extends AbstractTrait{
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return null;
+		return "";
 	}
 
 	
