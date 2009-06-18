@@ -13,13 +13,17 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import ca.lsmr.common.util.TimeUtility;
+
 import edu.washington.cse.longan.model.Session;
 
 public class SessionXMLReader implements ILonganIO {
 	Logger _log = Logger.getLogger(this.getClass());
 
 	public Session readXML(String fName) {
-		_log.info("Loading session from: " + fName);
+		long start = System.currentTimeMillis();
+		
+		_log.info("Reading session from: " + fName);
 		Session session = new Session();
 
 		try {
@@ -39,7 +43,7 @@ public class SessionXMLReader implements ILonganIO {
 			_log.error(ioe);
 		}
 
-		_log.info("Document read");
+		_log.info("Session read (in: " + TimeUtility.msToHumanReadableDelta(start) + ")");
 		return session;
 	}
 }

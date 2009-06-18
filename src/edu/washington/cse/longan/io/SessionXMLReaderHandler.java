@@ -54,13 +54,13 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	public void startDocument() throws SAXException {
 		super.startDocument();
 
-		_log.info("startDocument");
+		_log.debug("startDocument");
 	}
 
 	@Override
 	public void endDocument() throws SAXException {
 		super.endDocument();
-		_log.info("endDocument");
+		_log.debug("endDocument");
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		String name = attributes.getValue(ILonganIO.NAME);
 		String externalString = attributes.getValue(ILonganIO.EXTERNAL);
 
-		_log.info("Method parsed: " + idString + " " + name);
+		_log.debug("Method parsed: " + idString + " " + name);
 		int id = Integer.parseInt(idString);
 		boolean external = Boolean.parseBoolean(externalString);
 

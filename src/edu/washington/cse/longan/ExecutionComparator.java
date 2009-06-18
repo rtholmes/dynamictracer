@@ -27,7 +27,8 @@ public class ExecutionComparator {
 		// joda 2
 		// executionFiles.add(path+"joda1371b.xml");
 		// inh run 1
-		executionFiles.add(path + "a.xml");
+		executionFiles.add(path + "inhTesta.xml");
+		executionFiles.add(path + "inhTestb.xml");
 
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.compare(executionFiles);
@@ -37,6 +38,7 @@ public class ExecutionComparator {
 	}
 
 	private void readAndWrite(String fName) {
+		_log.info("Read and Write");
 		SessionXMLReader sxmlr = new SessionXMLReader();
 		Session sess = sxmlr.readXML(fName);
 		SessionXMLWriter sxmlw = new SessionXMLWriter();

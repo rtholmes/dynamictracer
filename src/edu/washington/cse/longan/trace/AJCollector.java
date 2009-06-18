@@ -314,9 +314,15 @@ public class AJCollector {
 					throw new AssertionError(
 							"Can't create a new methodagent if without being sure that it is external or internal.");
 				}
-				
+
 				// BUG: isExternal is always true for exceptions
 				_session.addMethod(id, new AJMethodAgent(id, jp, isExternal));
+
+				// Put a 0 entry into the profile table for new elements
+				// this just avoids a warning for the last test method
+				// which won't have exited (to get a profile value) before
+				// we output the profile table.
+				recordProfileData(jp, 0);
 			}
 
 			// _log.trace("id: "+id+" name: "+name);
