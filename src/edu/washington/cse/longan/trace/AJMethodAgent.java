@@ -206,7 +206,7 @@ public class AJMethodAgent extends MethodElement {
 
 			_log.trace("Unknown caller for: " + _name);
 
-			_calledBy.add(ILonganConstants.UNKNOWN_CALLER_ID);
+			_calledBy.add(ILonganConstants.UNKNOWN_METHOD_ID);
 
 		}
 

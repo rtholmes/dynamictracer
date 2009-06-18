@@ -39,6 +39,16 @@ public class Session {
 
 	public Session() {
 		_log.info("New session instantiated.");
+		createDefaultElements();
+	}
+
+	private void createDefaultElements() {
+
+		addMethod(ILonganConstants.UNKNOWN_METHOD_ID, new MethodElement(ILonganConstants.UNKNOWN_METHOD_ID,
+				ILonganConstants.UNKNOWN_METHOD_NAME, true));
+
+		addIDForElement(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
+		
 	}
 
 	public MethodElement getMethod(int id) {

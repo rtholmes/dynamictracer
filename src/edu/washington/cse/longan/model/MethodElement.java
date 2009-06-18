@@ -87,4 +87,16 @@ public class MethodElement {
 		return _paramTraits;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof MethodElement) {
+			return ((MethodElement) obj).getName().equals(getName());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return getName().hashCode();
+	}
 }

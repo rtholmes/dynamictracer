@@ -182,7 +182,12 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		int count = Integer.parseInt(countString);
 
 		MethodElement me = _session.getMethod(id);
+		
+		if (me == null)
+			throw new AssertionError("Could not find a static method for id: " + id);
+		
 		_currentDynamicMethod.getCalledBy().setCount(id, count);
+		_log.trace("ccbm set to: " + me.getName());
 		_currentCalledByMethod = me;
 	}
 
@@ -289,6 +294,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 					_currentDynamicReturn.addTraits(_currentCalledByMethod.getId(), traits);
 				}
 				_currentDynamicReturn = null;
+				_log.trace("ccbm: " + _currentCalledByMethod.getName() + " nulled");
 				_currentCalledByMethod = null;
 			}
 		} else if (qName.equals(ILonganIO.METHODS)) {

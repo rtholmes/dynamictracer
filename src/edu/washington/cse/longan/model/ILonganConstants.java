@@ -8,7 +8,8 @@ public interface ILonganConstants {
 
 	public static final String INIT_METHOD = "::init::";
 
-	public static final int UNKNOWN_CALLER_ID = -1;
+	public static final int UNKNOWN_METHOD_ID = -1;
+	public static final String UNKNOWN_METHOD_NAME = "::unknownM::";
 
 	public static final Level LOGGING_LEVEL = Level.INFO;
 
