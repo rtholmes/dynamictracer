@@ -109,7 +109,7 @@ public class SessionXMLWriter implements ILonganIO {
 		if (ILonganConstants.OUTPUT_DEBUG) {
 			// In debug mode it can be handy to send the last output to a static file name
 			// for easier manual analysis
-			
+
 			long end = System.currentTimeMillis();
 			String latestFName = ILonganConstants.OUTPUT_PATH + "latest.xml";
 
@@ -251,8 +251,12 @@ public class SessionXMLWriter implements ILonganIO {
 			Element methodElement = new Element(ILonganIO.METHOD);
 			methodElement.setAttribute(ILonganIO.ID, method.getId() + "");
 
-			// BUG: make sure null is never printed here
-			methodElement.setAttribute(ILonganIO.TIME, session.getProfile().get(method.getId()) + "");
+			Long time = session.getProfile().get(method.getId());
+			if (time == null) {
+				_log.warn("Null profile time for: " + method.getName());
+				time = 0L;
+			}
+			methodElement.setAttribute(ILonganIO.TIME, time + "");
 
 			// make the xml files easier to manually inspect (but larger)
 			if (ILonganConstants.OUTPUT_DEBUG) {

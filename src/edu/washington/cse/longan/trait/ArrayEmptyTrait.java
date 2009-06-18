@@ -41,20 +41,20 @@ public class ArrayEmptyTrait extends AbstractTrait {
 	public void track(Object obj) {
 		if (obj != null) {
 
-			// TODO: track primitive arrays
-			// BUG: crashes with primitive arrays
-			boolean isArray = obj.getClass().isArray();
-			boolean isPrim = obj.getClass().isPrimitive();
-			int size = Arrays.asList(obj).size();
-			boolean isNull = (obj == null);
-			String name = obj.getClass().getName();
-			String compKind = obj.getClass().getComponentType().toString();
+			// boolean isArray = obj.getClass().isArray();
+			// boolean isPrim = obj.getClass().isPrimitive();
+			// int size = Arrays.asList(obj).size();
+			// boolean isNull = (obj == null);
+			// String name = obj.getClass().getName();
+			// String compKind = obj.getClass().getComponentType().toString();
 
 			int i = -1;
 
 			if (obj instanceof Object[]) {
+				
 				i = ((Object[]) obj).length;
-			} else { // catch (ClassCastException cce) {
+				
+			} else {
 
 				Class c = obj.getClass();
 				Class cType = c.getComponentType();
@@ -74,10 +74,6 @@ public class ArrayEmptyTrait extends AbstractTrait {
 				}
 			}
 
-			// long[] arr = (long[])obj;
-			// int al = arr.length;
-			//			
-
 			if (i == 0)
 				getData().add(DATA_KINDS.EMPTY);
 			else
@@ -86,26 +82,26 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 	}
 
-//	@Override
-//	public Element toXML() {
-//		Element element = new Element(ILonganIO.TRAIT);
-//		element.setAttribute(ILonganIO.KEY, getName());
-//
-//		int empty = getData().count(DATA_KINDS.EMPTY);
-//		int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
-//
-//		Element valueElement = new Element(ILonganIO.DATA);
-//		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.EMPTY + "");
-//		valueElement.setAttribute(ILonganIO.DATA, empty + "");
-//		element.addContent(valueElement);
-//
-//		valueElement = new Element(ILonganIO.DATA);
-//		valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.NOT_EMPTY + "");
-//		valueElement.setAttribute(ILonganIO.DATA, notEmpty + "");
-//		element.addContent(valueElement);
-//
-//		return element;
-//	}
+	// @Override
+	// public Element toXML() {
+	// Element element = new Element(ILonganIO.TRAIT);
+	// element.setAttribute(ILonganIO.KEY, getName());
+	//
+	// int empty = getData().count(DATA_KINDS.EMPTY);
+	// int notEmpty = getData().count(DATA_KINDS.NOT_EMPTY);
+	//
+	// Element valueElement = new Element(ILonganIO.DATA);
+	// valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.EMPTY + "");
+	// valueElement.setAttribute(ILonganIO.DATA, empty + "");
+	// element.addContent(valueElement);
+	//
+	// valueElement = new Element(ILonganIO.DATA);
+	// valueElement.setAttribute(ILonganIO.KEY, DATA_KINDS.NOT_EMPTY + "");
+	// valueElement.setAttribute(ILonganIO.DATA, notEmpty + "");
+	// element.addContent(valueElement);
+	//
+	// return element;
+	// }
 
 	@SuppressWarnings("unchecked")
 	public static ITrait parseXML(Element element) {
@@ -115,16 +111,16 @@ public class ArrayEmptyTrait extends AbstractTrait {
 
 			int empty = -1;
 			int notEmpty = -1;
-			
-			for (Element child : (List<Element>)element.getChildren()){
+
+			for (Element child : (List<Element>) element.getChildren()) {
 				if (child.getAttributeValue(ILonganIO.KEY).equals(DATA_KINDS.EMPTY.toString()))
 					empty = Integer.parseInt(child.getAttributeValue(ILonganIO.VALUE));
 				else if (child.getAttributeValue(ILonganIO.KEY).equals(DATA_KINDS.NOT_EMPTY.toString()))
 					notEmpty = Integer.parseInt(child.getAttributeValue(ILonganIO.VALUE));
 				else
-					throw new AssertionError("Unhanlded key: "+child.getAttributeValue(ILonganIO.KEY));
+					throw new AssertionError("Unhanlded key: " + child.getAttributeValue(ILonganIO.KEY));
 			}
-			
+
 			trait.getData().setCount(DATA_KINDS.EMPTY, empty);
 			trait.getData().setCount(DATA_KINDS.NOT_EMPTY, notEmpty);
 
