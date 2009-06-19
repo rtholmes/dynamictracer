@@ -49,7 +49,15 @@ public class ExecutionComparator {
 
 			// BUG: NPE
 			executionFiles.add(path + "1311-1.xml");
-			executionFiles.add(path + "1322-1.xml");
+			executionFiles.add(path + "1311-2.xml");
+			executionFiles.add(path + "1311-3.xml");
+			executionFiles.add(path + "1311-4.xml");
+			executionFiles.add(path + "1311-5.xml");
+			executionFiles.add(path + "1311-6.xml");
+			executionFiles.add(path + "1311-7.xml");
+			executionFiles.add(path + "1311-8.xml");
+			executionFiles.add(path + "1311-9.xml");
+
 			// } else {
 			// inh run
 			// executionFiles.add(path + "inhTesta.xml");
@@ -94,13 +102,12 @@ public class ExecutionComparator {
 
 		Session previousSession = null;
 		for (Session currentSession : sessions) {
+			
 			if (previousSession != null) {
-
 				compare(previousSession, currentSession);
-
-			} else {
-				previousSession = currentSession;
 			}
+			
+			previousSession = currentSession;
 		}
 
 	}
@@ -424,7 +431,7 @@ public class ExecutionComparator {
 			}
 
 			for (String cbName : newCBNames) {
-				
+
 				boolean newTarget = _newElementNames.contains(eName);
 				boolean newSource = _newElementNames.contains(cbName);
 
@@ -440,7 +447,7 @@ public class ExecutionComparator {
 				} else {
 					// both exist already
 					Preconditions.checkArgument(!newSource && !newTarget);
-					_log.warn("New path added from: " + cbName + " to: " + eName);	
+					_log.warn("New path added from: " + cbName + " to: " + eName);
 				}
 			}
 
