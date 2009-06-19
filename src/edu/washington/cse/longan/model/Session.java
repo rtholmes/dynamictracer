@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
@@ -48,8 +49,8 @@ public class Session {
 
 	private void createDefaultElements() {
 
-		addMethod(ILonganConstants.UNKNOWN_METHOD_ID, new MethodElement(ILonganConstants.UNKNOWN_METHOD_ID,
-				ILonganConstants.UNKNOWN_METHOD_NAME, true));
+		addMethod(ILonganConstants.UNKNOWN_METHOD_ID, new MethodElement(ILonganConstants.UNKNOWN_METHOD_ID, ILonganConstants.UNKNOWN_METHOD_NAME,
+				true));
 
 		addIDForElement(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
 
@@ -78,6 +79,7 @@ public class Session {
 	}
 
 	public int getIdForElement(String name) {
+		Preconditions.checkArgument(_nameToBaseIdMap.containsKey(name), "check with hasID first");
 		return _nameToBaseIdMap.get(name);
 	}
 
@@ -107,5 +109,9 @@ public class Session {
 			returnSet.add(getMethod(id));
 		}
 		return returnSet;
+	}
+
+	public MethodElement getElementForName(String name) {
+		return getMethod(getIdForElement(name));
 	}
 }

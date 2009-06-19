@@ -1,5 +1,6 @@
 package edu.washington.cse.longan;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
@@ -37,18 +38,22 @@ public class ExecutionComparator {
 		boolean complete = true;
 		if (complete) {
 			// joda
-//			executionFiles.add(path + "joda1283a.xml");
-//			executionFiles.add(path + "joda1283b.xml");
-//			executionFiles.add(path + "joda1311a.xml");
-			executionFiles.add(path + "joda1311b.xml");
-//			executionFiles.add(path + "joda1322a.xml");
-			executionFiles.add(path + "joda1322b.xml");
-//			executionFiles.add(path + "joda1371a.xml");
-//			executionFiles.add(path + "joda1371b.xml");
-		} else {
+			// executionFiles.add(path + "joda1283a.xml");
+			// executionFiles.add(path + "joda1283b.xml");
+			// executionFiles.add(path + "joda1311a.xml");
+			// executionFiles.add(path + "joda1311b.xml");
+			// executionFiles.add(path + "joda1322a.xml");
+			// executionFiles.add(path + "joda1322b.xml");
+			// executionFiles.add(path + "joda1371a.xml");
+			// executionFiles.add(path + "joda1371b.xml");
+
+			// BUG: NPE
+			executionFiles.add(path + "1311-1.xml");
+			executionFiles.add(path + "1322-1.xml");
+			// } else {
 			// inh run
-			executionFiles.add(path + "inhTesta.xml");
-			executionFiles.add(path + "inhTestb.xml");
+			// executionFiles.add(path + "inhTesta.xml");
+			// executionFiles.add(path + "inhTestb.xml");
 		}
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.start();
@@ -142,8 +147,13 @@ public class ExecutionComparator {
 		ReturnTraitContainer mArtc = mA.getReturnTraitContainer();
 		ReturnTraitContainer mBrtc = mB.getReturnTraitContainer();
 
-		ITrait[] aTraits = mArtc.getTraitsForCaller(sA.getIdForElement(calledByName));
-		ITrait[] bTraits = mBrtc.getTraitsForCaller(sB.getIdForElement(calledByName));
+		ITrait[] aTraits = null;
+		if (sA.hasIDForElement(calledByName))
+			aTraits = mArtc.getTraitsForCaller(sA.getIdForElement(calledByName));
+
+		ITrait[] bTraits = null;
+		if (sB.hasIDForElement(calledByName))
+			bTraits = mBrtc.getTraitsForCaller(sB.getIdForElement(calledByName));
 
 		compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, -1);
 	}
@@ -184,17 +194,29 @@ public class ExecutionComparator {
 
 			Preconditions.checkArgument(mAptc.getClass().equals(mBptc.getClass()));
 
-			ITrait[] aTraits = mAptc.getTraitsForCaller(sA.getIdForElement(calledByName));
-			ITrait[] bTraits = mBptc.getTraitsForCaller(sB.getIdForElement(calledByName));
+			ITrait[] aTraits = null;
+			if (sA.hasIDForElement(calledByName))
+				aTraits = mAptc.getTraitsForCaller(sA.getIdForElement(calledByName));
+
+			ITrait[] bTraits = null;
+			if (sB.hasIDForElement(calledByName))
+				bTraits = mBptc.getTraitsForCaller(sB.getIdForElement(calledByName));
 
 			compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, j);
 		}
 	}
 
-	private void compareTraitDifferences(ITrait[] aTraits, ITrait[] bTraits, String elemName, String calledByName,
-			int paramIndex) {
-		if (aTraits == null && bTraits == null)
+	private void compareTraitDifferences(ITrait[] aTraits, ITrait[] bTraits, String elemName, String calledByName, int paramIndex) {
+
+		if (aTraits == null && bTraits == null) {
 			return;
+		}
+
+		String preamble = "";
+		if (paramIndex >= 0)
+			preamble = " param ( " + paramIndex + " ) ";
+		else
+			preamble = " return ";
 
 		if (aTraits != null && bTraits != null) {
 
@@ -208,48 +230,40 @@ public class ExecutionComparator {
 				Set<DATA_KINDS> bMissing = Sets.difference(at.getData().elementSet(), bt.getData().elementSet());
 				Set<DATA_KINDS> bAdds = Sets.difference(bt.getData().elementSet(), at.getData().elementSet());
 
-				String preamble = "";
-				if (paramIndex >= 0)
-					preamble = " param ( " + paramIndex + " ) ";
-				else
-					preamble = " return ";
 				if (bMissing.size() > 0) {
 					for (DATA_KINDS kind : bMissing) {
-						_log.info("\tMissing" + preamble + "trait: " + kind + " in: " + elemName + " when called by: "
-								+ calledByName);
+						_log.info("\tMissing" + preamble + "trait: " + kind + " in: " + elemName + " when called by: " + calledByName);
 					}
 				}
 				if (bAdds.size() > 0) {
 					for (DATA_KINDS kind : bAdds) {
-						_log.info("\tAdded" + preamble + "trait: " + kind + " to: " + elemName + " when called by: "
-								+ calledByName);
+						_log.info("\tAdded" + preamble + "trait: " + kind + " to: " + elemName + " when called by: " + calledByName);
 					}
 				}
 
 			}
 
 		} else {
-			
-			// BUG: it really shoudln't be possible to get here
-//			Preconditions.checkArgument((aTraits == null && bTraits == null), "Shouldn't be possible.");
+
+			Preconditions.checkArgument(!(aTraits == null && bTraits == null), "Shouldn't be possible.");
 
 			ITrait[] singleTrait = null;
-			if (aTraits == null) {
+			if (bTraits != null) {
 				singleTrait = bTraits;
-				_log.info("\tNew traits:");
+				_log.info("\tNew" + preamble + "traits for: " + elemName + " when called by: " + calledByName);
 			}
-			if (bTraits == null) {
+			if (aTraits != null) {
 				singleTrait = aTraits;
-				_log.info("\tMissing traits:");
+				_log.info("\tMissing" + preamble + "traits for: " + elemName + " when called by: " + calledByName);
 			}
 
 			Preconditions.checkNotNull(singleTrait);
 
 			for (ITrait trait : singleTrait) {
 				for (DATA_KINDS kind : trait.getData().elementSet())
-					_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + ")");
+					_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
 				for (String key : trait.getSupplementalData().elementSet())
-					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + ")");
+					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
 			}
 		}
 	}
@@ -257,94 +271,200 @@ public class ExecutionComparator {
 	private void checkPathCounts(Session sA, Session sB) {
 		_log.info("CHECK PATH COUNTS");
 
-		// for every method in sA ...
-		for (MethodElement mA : sA.getMethods()) {
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
 
-			// that is also in sB
-			if (sB.hasIDForElement(mA.getName())) {
-				int mBid = sB.getIdForElement(mA.getName());
-				MethodElement mB = sB.getMethod(mBid);
+		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> newNames = Sets.difference(eBnames, eAnames).immutableCopy();
 
-				// find the method caller elements that both mA and mB call in common
-				Set<MethodElement> inter = Sets.intersection(sA.getElementSet(mA.getCalledBy().elementSet()), sB
-						.getElementSet(mB.getCalledBy().elementSet()));
+		for (String eName : interNames) {
 
-				// consider each of the calledbys in the intersection
-				for (MethodElement mACBinter : inter) {
+			MethodElement mA = sA.getElementForName(eName);
+			MethodElement mB = sB.getElementForName(eName);
 
-					// A id from the intersection
-					int mACBid = mACBinter.getId();
-					// B id equivalent to the same element as the A id
-					int mBCBid = sB.getIdForElement(mACBinter.getName());
+			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
 
-					// int calledByCount = session.getMethod(method.getId()).getCalledBy().count(caller);
+			Set<String> mACBnames = extractNames(mACBs);
+			Set<String> mBCBnames = extractNames(mBCBs);
 
-					int sAcount = mA.getCalledBy().count(mACBid);
-					int sBcount = mB.getCalledBy().count(mBCBid);
+			ImmutableSet<String> interCBNames = Sets.intersection(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> missingCBNames = Sets.difference(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
 
-					if (sAcount != sBcount) {
-						_log.warn("Differing count ( " + sAcount + " to: " + sBcount + " ) for: "
-								+ sA.getMethod(mACBid).getName() + " calling: " + mA.getName());
-					} else {
-						_log.debug("Same count ( " + sAcount + " to: " + sBcount + " ) for: "
-								+ sA.getMethod(mACBid).getName() + " calling: " + mA.getName());
-					}
+			for (String cbName : interCBNames) {
+
+				int sAcount = mA.getCalledBy().count(sA.getIdForElement(cbName));
+				int sBcount = mB.getCalledBy().count(sB.getIdForElement(cbName));
+
+				if (sAcount != sBcount) {
+					_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+				} else {
+					_log.debug("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
 				}
-			} else {
-				_log.debug("Missing element: " + mA.getName());
+
 			}
+
+			for (String cbName : missingCBNames) {
+				// RFE: report path counts that have disappeared?
+			}
+
+			for (String cbName : newCBNames) {
+				// RFE: report path counts for new paths?
+			}
+
 		}
+
+	}
+
+	private Set<String> extractNames(Set<MethodElement> mElements) {
+		HashSet<String> set = new HashSet<String>();
+		for (MethodElement me : mElements)
+			set.add(me.getName());
+
+		return set;
 	}
 
 	private void checkForMissingPaths(Session sA, Session sB) {
 
 		_log.info("CHECK FOR MISSING PATHS");
-		for (MethodElement mA : sA.getMethods()) {
 
-			if (sB.hasIDForElement(mA.getName())) {
-				MethodElement mB = sB.getMethod(sB.getIdForElement(mA.getName()));
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
 
-				// BUG: broken, comparing on element ids unsafe safe
-				Set<Integer> diff = Sets.difference(mA.getCalledBy().elementSet(), mB.getCalledBy().elementSet());
-				if (diff.size() > 0) {
-					_log.warn("Path(s) to: " + mA.getName() + " missing.");
-					for (int aId : diff) {
-						_log.info("\tCall missing from: " + sA.getMethod(aId).getName());
-					}
-				} else {
+		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> newNames = Sets.difference(eBnames, eAnames).immutableCopy();
 
-				}
+		for (String eName : interNames) {
 
-			} else {
-				_log.debug("Missing element (and paths to it): " + mA.getName());
+			MethodElement mA = sA.getElementForName(eName);
+			MethodElement mB = sB.getElementForName(eName);
+
+			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+
+			Set<String> mACBnames = extractNames(mACBs);
+			Set<String> mBCBnames = extractNames(mBCBs);
+
+			ImmutableSet<String> interCBNames = Sets.intersection(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> missingCBNames = Sets.difference(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
+
+			for (String cbName : interCBNames) {
+				// common paths
 			}
+
+			for (String cbName : missingCBNames) {
+
+				boolean missingTarget = _missingElementNames.contains(eName);
+				boolean missingSource = _missingElementNames.contains(cbName);
+
+				if (missingSource && missingTarget) {
+					// if the source and target are missing nothing can happen
+					_log.info("Path missing ( non-exersized source & target ) to: " + eName + " from: " + cbName);
+				} else if (missingSource) {
+					// if a source is missing, it isn't call is gone
+					_log.info("Path missing ( non-exersized source ) to: " + eName + " from: " + cbName);
+				} else if (missingTarget) {
+					// if a target is missing, it isn't surprising that it can't be called
+					_log.info("Path missing ( non-exersized target ) to: " + eName + " from: " + cbName);
+				} else {
+					Preconditions.checkArgument(!missingSource && !missingTarget);
+					_log.warn("Path removed to: " + eName + " from: " + cbName);
+				}
+			}
+
+			for (String cbName : newCBNames) {
+				// RFE: report path counts for new paths?
+			}
+
 		}
 
 	}
 
+	ImmutableSet<String> _newElementNames = null;
+	ImmutableSet<String> _missingElementNames = null;
+
 	private void checkForNewPaths(Session sA, Session sB) {
 
 		_log.info("CHECK FOR NEW PATHS");
-		for (MethodElement mA : sA.getMethods()) {
 
-			if (sB.hasIDForElement(mA.getName())) {
-				MethodElement mB = sB.getMethod(sB.getIdForElement(mA.getName()));
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
 
-				// BUG: broken, comparing on element ids unsafe safe
-				Set<Integer> diff = Sets.difference(mB.getCalledBy().elementSet(), mA.getCalledBy().elementSet());
-				if (diff.size() > 0) {
-					_log.warn("New path(s) added to: " + mA.getName());
-					for (int bId : diff) {
-						_log.info("\tCall added from: " + sB.getMethod(bId).getName());
-					}
-				} else {
-					// no new paths
-				}
+		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
+		ImmutableSet<String> newNames = Sets.difference(eBnames, eAnames).immutableCopy();
 
-			} else {
-				_log.debug("Missing element: " + mA.getName());
+		// RFE: consider edges missing from one set or other
+		// check in edges that are present in both sets...
+		for (String eName : interNames) {
+
+			MethodElement mA = sA.getElementForName(eName);
+			MethodElement mB = sB.getElementForName(eName);
+
+			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+
+			Set<String> mACBnames = extractNames(mACBs);
+			Set<String> mBCBnames = extractNames(mBCBs);
+
+			ImmutableSet<String> interCBNames = Sets.intersection(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> missingCBNames = Sets.difference(mACBnames, mBCBnames).immutableCopy();
+			ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
+
+			for (String cbName : interCBNames) {
+				// common paths
 			}
+
+			for (String cbName : missingCBNames) {
+
+			}
+
+			for (String cbName : newCBNames) {
+				
+				boolean newTarget = _newElementNames.contains(eName);
+				boolean newSource = _newElementNames.contains(cbName);
+
+				if (newSource && newTarget) {
+					// source and target are new
+					_log.warn("New path ( new source and target ) added from: " + cbName + " to: " + eName);
+				} else if (newSource) {
+					// new source, existing target
+					_log.warn("New path ( new source ) added from: " + cbName + " to: " + eName);
+				} else if (newTarget) {
+					// new target, existing source
+					_log.warn("New path ( new target ) added from: " + cbName + " to: " + eName);
+				} else {
+					// both exist already
+					Preconditions.checkArgument(!newSource && !newTarget);
+					_log.warn("New path added from: " + cbName + " to: " + eName);	
+				}
+			}
+
 		}
+		// for (MethodElement mA : sA.getMethods()) {
+		//
+		// if (sB.hasIDForElement(mA.getName())) {
+		// MethodElement mB = sB.getMethod(sB.getIdForElement(mA.getName()));
+		//
+		// // BUG: broken, comparing on element ids unsafe safe
+		// Set<Integer> diff = Sets.difference(mB.getCalledBy().elementSet(), mA.getCalledBy().elementSet());
+		// if (diff.size() > 0) {
+		// _log.warn("New path(s) added to: " + mA.getName());
+		// for (int bId : diff) {
+		// _log.info("\tCall added from: " + sB.getMethod(bId).getName());
+		// }
+		// } else {
+		// // no new paths
+		// }
+		//
+		// } else {
+		// _log.debug("Missing element: " + mA.getName());
+		// }
+		// }
 
 	}
 
@@ -352,10 +472,9 @@ public class ExecutionComparator {
 
 		_log.info("CHECK FOR MISSING ELEMENTS");
 
-		// works, comparing on element names safe
-		Set<String> diff = Sets.difference(sessionA.getElementNames(), sessionB.getElementNames());
-
-		for (String elemName : diff) {
+		ImmutableSet<String> missingNames = Sets.difference(sessionA.getElementNames(), sessionB.getElementNames()).immutableCopy();
+		_missingElementNames = missingNames;
+		for (String elemName : _missingElementNames) {
 			_log.warn("Session B lacks element: " + elemName);
 		}
 
@@ -365,9 +484,10 @@ public class ExecutionComparator {
 
 		_log.info("CHECK FOR NEW ELEMENTS");
 
-		// works, comparing on element names safe
-		Set<String> diff = Sets.difference(sessionB.getElementNames(), sessionA.getElementNames());
-		for (String elemName : diff) {
+		ImmutableSet<String> newNames = Sets.difference(sessionB.getElementNames(), sessionA.getElementNames()).immutableCopy();
+		_newElementNames = newNames;
+		for (String elemName : _newElementNames) {
+			boolean fp = false;
 			_log.warn("Session B adds new element: " + elemName);
 
 		}
