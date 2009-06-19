@@ -25,4 +25,13 @@ public class ReturnTraitContainer implements ITraitContainer {
 	public ITrait[] getTraitsForCaller(int caller) {
 		return _traits.get(caller);
 	}
+
+	public static ReturnTraitContainer combine(ReturnTraitContainer mArtc, ReturnTraitContainer mBrtc) {
+		
+		// XXX: impl combine
+		
+		
+		
+		return null;
+	}
 }

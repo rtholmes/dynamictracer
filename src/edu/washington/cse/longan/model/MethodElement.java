@@ -44,15 +44,19 @@ public class MethodElement {
 	}
 
 	protected ParamTraitContainer getParamTraitContainer(int position) {
-		Preconditions.checkArgument(position >= 0 && position < _paramTraits.size());
+		// Preconditions.checkArgument(position >= 0 && position < _paramTraits.size(), "position: %s, size: %s",
+		// position, _paramTraits.size());
 
-		return _paramTraits.get(position);
+		if (position < 0 || position >= _paramTraits.size())
+			return null;
+		else
+			return _paramTraits.get(position);
 	}
 
 	public void addParamTraitContainer(ParamTraitContainer ptc, int position) {
 
 		Preconditions.checkArgument(position == _paramTraits.size(),
-				"Should probably be updating a ptc, not replacing it... %s != %s",_paramTraits.size(),position);
+				"Should probably be updating a ptc, not replacing it... %s != %s", _paramTraits.size(), position);
 
 		_paramTraits.add(ptc);
 

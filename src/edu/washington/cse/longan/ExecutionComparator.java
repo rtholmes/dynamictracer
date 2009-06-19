@@ -15,7 +15,11 @@ import edu.washington.cse.longan.io.SessionXMLReader;
 import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
+import edu.washington.cse.longan.model.ParamTraitContainer;
+import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.model.Session;
+import edu.washington.cse.longan.trait.ITrait;
+import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
 
 public class ExecutionComparator {
 	Logger _log = Logger.getLogger(this.getClass());
@@ -33,8 +37,14 @@ public class ExecutionComparator {
 		boolean complete = true;
 		if (complete) {
 			// joda
-			executionFiles.add(path + "joda1371a.xml");
-			executionFiles.add(path + "joda1371b.xml");
+//			executionFiles.add(path + "joda1283a.xml");
+//			executionFiles.add(path + "joda1283b.xml");
+//			executionFiles.add(path + "joda1311a.xml");
+			executionFiles.add(path + "joda1311b.xml");
+//			executionFiles.add(path + "joda1322a.xml");
+			executionFiles.add(path + "joda1322b.xml");
+//			executionFiles.add(path + "joda1371a.xml");
+//			executionFiles.add(path + "joda1371b.xml");
 		} else {
 			// inh run
 			executionFiles.add(path + "inhTesta.xml");
@@ -104,27 +114,144 @@ public class ExecutionComparator {
 	}
 
 	private void checkReturnDifferences(Session sA, Session sB) {
-		
+
+		_log.info("CHECK RETURN DIFFERENCES");
+
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
 
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
-			
+
 			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
 			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
-			
+
 			Preconditions.checkNotNull(mA);
 			Preconditions.checkNotNull(mB);
 
-			
-			
-		}
+			for (int mACBid : mA.getCalledBy().elementSet()) {
+				String callerName = sA.getElementNameForID(mACBid);
 
+				compareReturnTraits(sA, sB, mA, mB, callerName);
+
+			}
+		}
+	}
+
+	private void compareReturnTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
+
+		ReturnTraitContainer mArtc = mA.getReturnTraitContainer();
+		ReturnTraitContainer mBrtc = mB.getReturnTraitContainer();
+
+		ITrait[] aTraits = mArtc.getTraitsForCaller(sA.getIdForElement(calledByName));
+		ITrait[] bTraits = mBrtc.getTraitsForCaller(sB.getIdForElement(calledByName));
+
+		compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, -1);
 	}
 
 	private void checkParamDifferences(Session sA, Session sB) {
-		// TODO Auto-generated method stub
+		_log.info("CHECK PARAM DIFFERENCES");
 
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+
+			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+
+			Preconditions.checkNotNull(mA);
+			Preconditions.checkNotNull(mB);
+
+			for (int mACBid : mA.getCalledBy().elementSet()) {
+				String callerName = sA.getElementNameForID(mACBid);
+
+				compareParamTraits(sA, sB, mA, mB, callerName);
+
+			}
+		}
+	}
+
+	private void compareParamTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
+
+		Vector<ParamTraitContainer> mAptcs = mA.getParamTraitContainers();
+		Vector<ParamTraitContainer> mBptcs = mB.getParamTraitContainers();
+
+		Preconditions.checkArgument(mAptcs.size() == mBptcs.size());
+
+		for (int j = 0; j < mAptcs.size(); j++) {
+			ParamTraitContainer mAptc = mAptcs.get(j);
+			ParamTraitContainer mBptc = mBptcs.get(j);
+
+			Preconditions.checkArgument(mAptc.getClass().equals(mBptc.getClass()));
+
+			ITrait[] aTraits = mAptc.getTraitsForCaller(sA.getIdForElement(calledByName));
+			ITrait[] bTraits = mBptc.getTraitsForCaller(sB.getIdForElement(calledByName));
+
+			compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, j);
+		}
+	}
+
+	private void compareTraitDifferences(ITrait[] aTraits, ITrait[] bTraits, String elemName, String calledByName,
+			int paramIndex) {
+		if (aTraits == null && bTraits == null)
+			return;
+
+		if (aTraits != null && bTraits != null) {
+
+			Preconditions.checkArgument(aTraits.length == bTraits.length);
+			for (int i = 0; i < aTraits.length; i++) {
+				ITrait at = aTraits[i];
+				ITrait bt = bTraits[i];
+
+				Preconditions.checkArgument(at.getClass().equals(bt.getClass()));
+
+				Set<DATA_KINDS> bMissing = Sets.difference(at.getData().elementSet(), bt.getData().elementSet());
+				Set<DATA_KINDS> bAdds = Sets.difference(bt.getData().elementSet(), at.getData().elementSet());
+
+				String preamble = "";
+				if (paramIndex >= 0)
+					preamble = " param ( " + paramIndex + " ) ";
+				else
+					preamble = " return ";
+				if (bMissing.size() > 0) {
+					for (DATA_KINDS kind : bMissing) {
+						_log.info("\tMissing" + preamble + "trait: " + kind + " in: " + elemName + " when called by: "
+								+ calledByName);
+					}
+				}
+				if (bAdds.size() > 0) {
+					for (DATA_KINDS kind : bAdds) {
+						_log.info("\tAdded" + preamble + "trait: " + kind + " to: " + elemName + " when called by: "
+								+ calledByName);
+					}
+				}
+
+			}
+
+		} else {
+			
+			// BUG: it really shoudln't be possible to get here
+//			Preconditions.checkArgument((aTraits == null && bTraits == null), "Shouldn't be possible.");
+
+			ITrait[] singleTrait = null;
+			if (aTraits == null) {
+				singleTrait = bTraits;
+				_log.info("\tNew traits:");
+			}
+			if (bTraits == null) {
+				singleTrait = aTraits;
+				_log.info("\tMissing traits:");
+			}
+
+			Preconditions.checkNotNull(singleTrait);
+
+			for (ITrait trait : singleTrait) {
+				for (DATA_KINDS kind : trait.getData().elementSet())
+					_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + ")");
+				for (String key : trait.getSupplementalData().elementSet())
+					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + ")");
+			}
+		}
 	}
 
 	private void checkPathCounts(Session sA, Session sB) {
@@ -180,7 +307,7 @@ public class ExecutionComparator {
 				// BUG: broken, comparing on element ids unsafe safe
 				Set<Integer> diff = Sets.difference(mA.getCalledBy().elementSet(), mB.getCalledBy().elementSet());
 				if (diff.size() > 0) {
-					_log.warn("Paths to: " + mA.getName() + " missing.");
+					_log.warn("Path(s) to: " + mA.getName() + " missing.");
 					for (int aId : diff) {
 						_log.info("\tCall missing from: " + sA.getMethod(aId).getName());
 					}
@@ -206,7 +333,7 @@ public class ExecutionComparator {
 				// BUG: broken, comparing on element ids unsafe safe
 				Set<Integer> diff = Sets.difference(mB.getCalledBy().elementSet(), mA.getCalledBy().elementSet());
 				if (diff.size() > 0) {
-					_log.warn("New paths added to: " + mA.getName());
+					_log.warn("New path(s) added to: " + mA.getName());
 					for (int bId : diff) {
 						_log.info("\tCall added from: " + sB.getMethod(bId).getName());
 					}

@@ -7,6 +7,9 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 /**
  * Contains the dynamic details of any single session.
  * 
@@ -31,7 +34,7 @@ public class Session {
 	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
 	 * the common base id can be found.
 	 */
-	private Hashtable<String, Integer> _nameToBaseIdMap = new Hashtable<String, Integer>();
+	private BiMap<String, Integer> _nameToBaseIdMap = HashBiMap.create();
 
 	/**
 	 * id -> milliseconds
@@ -49,6 +52,8 @@ public class Session {
 				ILonganConstants.UNKNOWN_METHOD_NAME, true));
 
 		addIDForElement(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
+
+		_profile.put(ILonganConstants.UNKNOWN_METHOD_ID, 0L);
 
 	}
 
@@ -74,6 +79,10 @@ public class Session {
 
 	public int getIdForElement(String name) {
 		return _nameToBaseIdMap.get(name);
+	}
+
+	public String getElementNameForID(int id) {
+		return _nameToBaseIdMap.inverse().get(id);
 	}
 
 	public boolean hasIDForElement(String name) {

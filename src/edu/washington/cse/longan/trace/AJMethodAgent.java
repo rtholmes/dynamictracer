@@ -158,9 +158,9 @@ public class AJMethodAgent extends MethodElement {
 					IObjectTracker[] pTrackers = new IObjectTracker[_parameterTrackerDefinitions.length];
 					for (int i = 0; i < _parameterTrackerDefinitions.length; i++) {
 						IObjectTracker ot = _parameterTrackerDefinitions[i];
-
 						pTrackers[i] = ot.clone();
-
+						_parameterTrackers.put(caller, pTrackers);
+						
 						// this may seem unnecessary in the AJ tracker (and it is really)
 						// but it keeps things consistent with the parent types
 						// which is what we're really after anyways for the analysis
@@ -174,7 +174,7 @@ public class AJMethodAgent extends MethodElement {
 						ptc.addTraits(caller, traits);
 
 					}
-					_parameterTrackers.put(caller, pTrackers);
+					
 
 				} catch (CloneNotSupportedException e) {
 					_log.error(e);
