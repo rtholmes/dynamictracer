@@ -7,6 +7,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.google.common.base.Preconditions;
+
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
 import edu.washington.cse.longan.model.ReturnTraitContainer;
@@ -90,7 +92,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			if (staticElem && methodElem) {
 				parseStaticMethodReturn(attributes);
 			} else if (dynamicElem && calledByElem) {
-				_currentDynamicReturn = _currentDynamicMethod.getReturnTraitContainers();
+				_currentDynamicReturn = _currentDynamicMethod.getReturnTraitContainer();
 			}
 		} else if (qName.equals(ILonganIO.PARAMETER)) {
 			paramElem = true;
@@ -182,10 +184,9 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		int count = Integer.parseInt(countString);
 
 		MethodElement me = _session.getMethod(id);
-		
-		if (me == null)
-			throw new AssertionError("Could not find a static method for id: " + id);
-		
+
+		Preconditions.checkNotNull(me, "Could not find a static method for id: " + id);
+
 		_currentDynamicMethod.getCalledBy().setCount(id, count);
 		_log.trace("ccbm set to: " + me.getName());
 		_currentCalledByMethod = me;
@@ -216,7 +217,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		// <return type="void"/>
 		String typeName = attributes.getValue(ILonganIO.TYPE);
 		ReturnTraitContainer rtc = new ReturnTraitContainer(typeName);
-		_currentStaticMethod.addReturnTrait(rtc);
+		_currentStaticMethod.setReturnTraitContainer(rtc);
 	}
 
 	private void parseStaticMethodParam(Attributes attributes) {
@@ -228,7 +229,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		int pos = Integer.parseInt(posString);
 
 		ParamTraitContainer ptc = new ParamTraitContainer(name, typeName, pos);
-		_currentStaticMethod.addParamTrait(ptc, pos);
+		_currentStaticMethod.addParamTraitContainer(ptc, pos);
 	}
 
 	private void parseStaticMethodAttrs(Attributes attributes) {

@@ -120,12 +120,12 @@ public class AJMethodAgent extends MethodElement {
 					// this may seem unnecessary in the AJ tracker (and it is really)
 					// but it keeps things consistent with the parent types
 					// which is what we're really after anyways for the analysis
-					ReturnTraitContainer rtc = getReturnTraitContainers();
+					ReturnTraitContainer rtc = getReturnTraitContainer();
 					ITrait[] traits = new ITrait[0];
 					traits = tracker.getTraits().toArray(traits);
 					if (rtc == null) {
 						rtc = new ReturnTraitContainer(tracker.getStaticTypeName());
-						addReturnTrait(rtc);
+						setReturnTraitContainer(rtc);
 					}
 					rtc.addTraits(caller, traits);
 
@@ -164,12 +164,12 @@ public class AJMethodAgent extends MethodElement {
 						// this may seem unnecessary in the AJ tracker (and it is really)
 						// but it keeps things consistent with the parent types
 						// which is what we're really after anyways for the analysis
-						ParamTraitContainer ptc = getParamTrait(i);
+						ParamTraitContainer ptc = getParamTraitContainer(i);
 						ITrait[] traits = new ITrait[0];
 						traits = pTrackers[i].getTraits().toArray(traits);
 						if (ptc == null) {
 							ptc = new ParamTraitContainer(ot.getName(), ot.getStaticTypeName(), ot.getPosition());
-							addParamTrait(ptc, i);
+							addParamTraitContainer(ptc, i);
 						}
 						ptc.addTraits(caller, traits);
 

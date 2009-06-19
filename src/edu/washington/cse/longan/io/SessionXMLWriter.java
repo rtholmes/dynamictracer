@@ -182,7 +182,7 @@ public class SessionXMLWriter implements ILonganIO {
 			methodElement.setAttribute(ILonganIO.NAME, method.getName() + "");
 
 			Element returnElement = new Element(ILonganIO.RETURN);
-			ReturnTraitContainer rtc = method.getReturnTraitContainers();
+			ReturnTraitContainer rtc = method.getReturnTraitContainer();
 			// IObjectTracker returnTracker = method.getReturnTrackerDefinition();
 
 			if (rtc != null) {
@@ -292,8 +292,8 @@ public class SessionXMLWriter implements ILonganIO {
 				// _log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 
 				ITrait[] returnTraits = null;
-				if (method.getReturnTraitContainers() != null)
-					returnTraits = method.getReturnTraitContainers().getTraitsForCaller(caller);
+				if (method.getReturnTraitContainer() != null)
+					returnTraits = method.getReturnTraitContainer().getTraitsForCaller(caller);
 
 				// IObjectTracker returnTracker = method.getReturnTrackers().get(caller);
 

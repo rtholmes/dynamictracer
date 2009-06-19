@@ -4,6 +4,8 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -33,7 +35,7 @@ public class MethodElement {
 		_log.debug("New MethodElement - " + id + ": " + name + " isExternal: " + _isExternal);
 	}
 
-	public void addReturnTrait(ReturnTraitContainer rtc) {
+	public void setReturnTraitContainer(ReturnTraitContainer rtc) {
 		if (_returnTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
@@ -41,22 +43,22 @@ public class MethodElement {
 		_returnTraits = rtc;
 	}
 
-	protected ParamTraitContainer getParamTrait(int position) {
-		if (position >= 0 && position < _paramTraits.size())
-			return _paramTraits.get(position);
+	protected ParamTraitContainer getParamTraitContainer(int position) {
+		Preconditions.checkArgument(position >= 0 && position < _paramTraits.size());
 
-		return null;
+		return _paramTraits.get(position);
 	}
 
-	public void addParamTrait(ParamTraitContainer ptc, int position) {
-		if (position != _paramTraits.size()) {
-			throw new AssertionError("Should probably be updating a ptc, not replacing it...");
-		} else {
-			_paramTraits.add(ptc);
+	public void addParamTraitContainer(ParamTraitContainer ptc, int position) {
 
-			_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - "
-					+ ptc.getStaticTypeName());
-		}
+		Preconditions.checkArgument(position == _paramTraits.size(),
+				"Should probably be updating a ptc, not replacing it... %s != %s",_paramTraits.size(),position);
+
+		_paramTraits.add(ptc);
+
+		_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - "
+				+ ptc.getStaticTypeName());
+
 	}
 
 	public String getName() {
@@ -79,7 +81,7 @@ public class MethodElement {
 		return _calledBy;
 	}
 
-	public ReturnTraitContainer getReturnTraitContainers() {
+	public ReturnTraitContainer getReturnTraitContainer() {
 		return _returnTraits;
 	}
 
@@ -90,13 +92,14 @@ public class MethodElement {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof MethodElement) {
-			return ((MethodElement) obj).getName().equals(getName());
+			MethodElement that = (MethodElement) obj;
+			return Objects.equal(getName(), that.getName());
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return getName().hashCode();
+		return Objects.hashCode(getName());
 	}
 }

@@ -1,6 +1,7 @@
 package edu.washington.cse.longan.model;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public class Session {
 				ILonganConstants.UNKNOWN_METHOD_NAME, true));
 
 		addIDForElement(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
-		
+
 	}
 
 	public MethodElement getMethod(int id) {
@@ -89,5 +90,13 @@ public class Session {
 
 	public Set<String> getElementNames() {
 		return _nameToBaseIdMap.keySet();
+	}
+
+	public Set<MethodElement> getElementSet(Set<Integer> elementSet) {
+		HashSet<MethodElement> returnSet = new HashSet<MethodElement>();
+		for (int id : elementSet) {
+			returnSet.add(getMethod(id));
+		}
+		return returnSet;
 	}
 }
