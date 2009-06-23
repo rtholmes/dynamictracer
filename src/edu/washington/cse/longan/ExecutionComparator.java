@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 
 import ca.lsmr.common.log.LSMRLogger;
@@ -38,25 +39,42 @@ public class ExecutionComparator {
 		boolean complete = true;
 		if (complete) {
 			// joda
-			// executionFiles.add(path + "joda1283a.xml");
+//			 executionFiles.add(path + "joda1283a.xml");
 			// executionFiles.add(path + "joda1283b.xml");
 			// executionFiles.add(path + "joda1311a.xml");
-			// executionFiles.add(path + "joda1311b.xml");
-			// executionFiles.add(path + "joda1322a.xml");
+			 executionFiles.add(path + "joda1311b.xml");
+			 executionFiles.add(path + "joda1322a.xml");
 			// executionFiles.add(path + "joda1322b.xml");
 			// executionFiles.add(path + "joda1371a.xml");
 			// executionFiles.add(path + "joda1371b.xml");
 
-			// BUG: NPE
-			executionFiles.add(path + "1311-1.xml");
-			executionFiles.add(path + "1311-2.xml");
-			executionFiles.add(path + "1311-3.xml");
-			executionFiles.add(path + "1311-4.xml");
-			executionFiles.add(path + "1311-5.xml");
-			executionFiles.add(path + "1311-6.xml");
-			executionFiles.add(path + "1311-7.xml");
-			executionFiles.add(path + "1311-8.xml");
-			executionFiles.add(path + "1311-9.xml");
+			// executionFiles.add(path + "1311-1.xml");
+			// executionFiles.add(path + "1311-2.xml");
+			// executionFiles.add(path + "1311-3.xml");
+			// executionFiles.add(path + "1311-4.xml");
+			// executionFiles.add(path + "1311-5.xml");
+			// executionFiles.add(path + "1311-6.xml");
+			// executionFiles.add(path + "1311-7.xml");
+			// executionFiles.add(path + "1311-8.xml");
+			// executionFiles.add(path + "1311-9.xml");
+
+			// matching pairs
+			// executionFiles.add(path + "cntA.xml");
+			// executionFiles.add(path + "cntB.xml");
+
+			// different pairs
+//			executionFiles.add(path + "cntC.xml");
+//			executionFiles.add(path + "cntD.xml");
+
+			// executionFiles.add(path + "cntE.xml");
+			// executionFiles.add(path + "cntF.xml");
+			// executionFiles.add(path + "cntG.xml");
+
+			// executionFiles.add(path + "inhA.xml");
+			// executionFiles.add(path + "inhB.xml");
+			// executionFiles.add(path + "inhC.xml");
+			// executionFiles.add(path + "inhD.xml");
+			// executionFiles.add(path + "inhE.xml");
 
 			// } else {
 			// inh run
@@ -95,6 +113,7 @@ public class ExecutionComparator {
 
 		Vector<Session> sessions = new Vector<Session>();
 		for (String fName : executionFiles) {
+
 			SessionXMLReader sxmlr = new SessionXMLReader();
 			Session sess = sxmlr.readXML(fName);
 			sessions.add(sess);
@@ -102,17 +121,21 @@ public class ExecutionComparator {
 
 		Session previousSession = null;
 		for (Session currentSession : sessions) {
-			
+
 			if (previousSession != null) {
 				compare(previousSession, currentSession);
 			}
-			
+
 			previousSession = currentSession;
 		}
 
 	}
 
 	private void compare(Session sA, Session sB) {
+
+		_log.info("Comparing: " + sA.getSessionName() + " to: " + sB.getSessionName());
+
+		checkTotalMethodInvocationCounts(sA, sB);
 
 		checkForMissingElements(sA, sB);
 		checkForNewElements(sA, sB);
@@ -125,9 +148,41 @@ public class ExecutionComparator {
 		checkReturnDifferences(sA, sB);
 	}
 
+	private void checkTotalMethodInvocationCounts(Session sA, Session sB) {
+		_log.info("CHECK INVOCATION COUNTS");
+
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+
+			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+
+			int aInvokationTotal = 0;
+			int bInvokationTotal = 0;
+
+			Multiset<Integer> calledBys;
+
+			calledBys = mA.getCalledBy();
+			for (int calledBy : calledBys.elementSet()) {
+				aInvokationTotal += calledBys.count(calledBy);
+			}
+
+			calledBys = mB.getCalledBy();
+			for (int calledBy : calledBys.elementSet()) {
+				bInvokationTotal += calledBys.count(calledBy);
+			}
+
+			if (aInvokationTotal != bInvokationTotal) {
+				_log.warn("Invocation differences ( " + aInvokationTotal + " -> " + bInvokationTotal + " ) for: " + mA.getName());
+			}
+		}
+
+	}
+
 	private void checkReturnDifferences(Session sA, Session sB) {
 
-		_log.info("CHECK RETURN DIFFERENCES");
+		_log.info("CHECK COMBINED RETURN DIFFERENCES");
 
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
@@ -140,16 +195,36 @@ public class ExecutionComparator {
 			Preconditions.checkNotNull(mA);
 			Preconditions.checkNotNull(mB);
 
+			compareCombinedReturnTraits(mA, mB);
+		}
+
+		_log.info("CHECK CALLEDBY RETURN DIFFERENCES");
+
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+
+			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+
+			Preconditions.checkNotNull(mA);
+			Preconditions.checkNotNull(mB);
+
 			for (int mACBid : mA.getCalledBy().elementSet()) {
 				String callerName = sA.getElementNameForID(mACBid);
 
-				compareReturnTraits(sA, sB, mA, mB, callerName);
+				compareCalledByReturnTraits(sA, sB, mA, mB, callerName);
 
 			}
 		}
 	}
 
-	private void compareReturnTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
+	private void compareCombinedReturnTraits(MethodElement mA, MethodElement mB) {
+		ReturnTraitContainer mArtc = mA.getReturnTraitContainer();
+		ReturnTraitContainer mBrtc = mB.getReturnTraitContainer();
+
+		compareTraitDifferences(mArtc.getTraitsCollapsed(), mBrtc.getTraitsCollapsed(), mA.getName(), null, -1, true);
+	}
+
+	private void compareCalledByReturnTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
 
 		ReturnTraitContainer mArtc = mA.getReturnTraitContainer();
 		ReturnTraitContainer mBrtc = mB.getReturnTraitContainer();
@@ -162,11 +237,12 @@ public class ExecutionComparator {
 		if (sB.hasIDForElement(calledByName))
 			bTraits = mBrtc.getTraitsForCaller(sB.getIdForElement(calledByName));
 
-		compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, -1);
+		compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, -1, false);
 	}
 
 	private void checkParamDifferences(Session sA, Session sB) {
-		_log.info("CHECK PARAM DIFFERENCES");
+
+		_log.info("CHECK COMBINED PARAM DIFFERENCES");
 
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
@@ -179,16 +255,42 @@ public class ExecutionComparator {
 			Preconditions.checkNotNull(mA);
 			Preconditions.checkNotNull(mB);
 
+			Vector<ParamTraitContainer> mAptcs = mA.getParamTraitContainers();
+			Vector<ParamTraitContainer> mBptcs = mB.getParamTraitContainers();
+
+			Preconditions.checkArgument(mAptcs.size() == mBptcs.size());
+
+			for (int j = 0; j < mAptcs.size(); j++) {
+				ParamTraitContainer mAptc = mAptcs.get(j);
+				ParamTraitContainer mBptc = mBptcs.get(j);
+
+				Preconditions.checkArgument(mAptc.getClass().equals(mBptc.getClass()));
+
+				compareTraitDifferences(mAptc.getTraitsCollapsed(), mBptc.getTraitsCollapsed(), mA.getName(), null, j, true);
+			}
+
+		}
+
+		_log.info("CHECK CALLEDBY PARAM DIFFERENCES");
+
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+
+			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+
+			Preconditions.checkNotNull(mA);
+			Preconditions.checkNotNull(mB);
+
 			for (int mACBid : mA.getCalledBy().elementSet()) {
 				String callerName = sA.getElementNameForID(mACBid);
 
-				compareParamTraits(sA, sB, mA, mB, callerName);
+				compareCalledByParamTraits(sA, sB, mA, mB, callerName);
 
 			}
 		}
 	}
 
-	private void compareParamTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
+	private void compareCalledByParamTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
 
 		Vector<ParamTraitContainer> mAptcs = mA.getParamTraitContainers();
 		Vector<ParamTraitContainer> mBptcs = mB.getParamTraitContainers();
@@ -209,21 +311,27 @@ public class ExecutionComparator {
 			if (sB.hasIDForElement(calledByName))
 				bTraits = mBptc.getTraitsForCaller(sB.getIdForElement(calledByName));
 
-			compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, j);
+			compareTraitDifferences(aTraits, bTraits, mA.getName(), calledByName, j, false);
 		}
 	}
 
-	private void compareTraitDifferences(ITrait[] aTraits, ITrait[] bTraits, String elemName, String calledByName, int paramIndex) {
+	private void compareTraitDifferences(ITrait[] aTraits, ITrait[] bTraits, String elemName, String calledByName, int paramIndex, boolean combined) {
 
 		if (aTraits == null && bTraits == null) {
 			return;
 		}
 
-		String preamble = "";
+		String preFix = "";
 		if (paramIndex >= 0)
-			preamble = " param ( " + paramIndex + " ) ";
+			preFix = " param ( " + paramIndex + " ) ";
 		else
-			preamble = " return ";
+			preFix = " return ";
+
+		String postFix = "";
+		if (combined)
+			postFix = "";
+		else
+			postFix = " when called by: " + calledByName;
 
 		if (aTraits != null && bTraits != null) {
 
@@ -239,12 +347,14 @@ public class ExecutionComparator {
 
 				if (bMissing.size() > 0) {
 					for (DATA_KINDS kind : bMissing) {
-						_log.info("\tMissing" + preamble + "trait: " + kind + " in: " + elemName + " when called by: " + calledByName);
+						if (checkTraitRelevance(elemName, at, kind))
+							_log.info("\tMissing" + preFix + "trait: " + kind + " in: " + elemName + postFix);
 					}
 				}
 				if (bAdds.size() > 0) {
 					for (DATA_KINDS kind : bAdds) {
-						_log.info("\tAdded" + preamble + "trait: " + kind + " to: " + elemName + " when called by: " + calledByName);
+						if (checkTraitRelevance(elemName, at, kind))
+							_log.info("\tAdded" + preFix + "trait: " + kind + " to: " + elemName + postFix);
 					}
 				}
 
@@ -257,11 +367,11 @@ public class ExecutionComparator {
 			ITrait[] singleTrait = null;
 			if (bTraits != null) {
 				singleTrait = bTraits;
-				_log.info("\tNew" + preamble + "traits for: " + elemName + " when called by: " + calledByName);
+				_log.info("\tNew" + preFix + "traits for: " + elemName + postFix);
 			}
 			if (aTraits != null) {
 				singleTrait = aTraits;
-				_log.info("\tMissing" + preamble + "traits for: " + elemName + " when called by: " + calledByName);
+				_log.info("\tMissing" + preFix + "traits for: " + elemName + postFix);
 			}
 
 			Preconditions.checkNotNull(singleTrait);
@@ -273,6 +383,15 @@ public class ExecutionComparator {
 					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
 			}
 		}
+	}
+
+	private boolean checkTraitRelevance(String elementName, ITrait trait, DATA_KINDS kind) {
+		boolean isRelevant = true;
+
+		if (elementName.endsWith(".hashCode()"))
+			isRelevant = false;
+
+		return isRelevant;
 	}
 
 	private void checkPathCounts(Session sA, Session sB) {
@@ -452,27 +571,6 @@ public class ExecutionComparator {
 			}
 
 		}
-		// for (MethodElement mA : sA.getMethods()) {
-		//
-		// if (sB.hasIDForElement(mA.getName())) {
-		// MethodElement mB = sB.getMethod(sB.getIdForElement(mA.getName()));
-		//
-		// // BUG: broken, comparing on element ids unsafe safe
-		// Set<Integer> diff = Sets.difference(mB.getCalledBy().elementSet(), mA.getCalledBy().elementSet());
-		// if (diff.size() > 0) {
-		// _log.warn("New path(s) added to: " + mA.getName());
-		// for (int bId : diff) {
-		// _log.info("\tCall added from: " + sB.getMethod(bId).getName());
-		// }
-		// } else {
-		// // no new paths
-		// }
-		//
-		// } else {
-		// _log.debug("Missing element: " + mA.getName());
-		// }
-		// }
-
 	}
 
 	private void checkForMissingElements(Session sessionA, Session sessionB) {

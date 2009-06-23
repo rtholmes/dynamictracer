@@ -1,37 +1,9 @@
 package edu.washington.cse.longan.model;
 
-import java.util.Hashtable;
-
-import edu.washington.cse.longan.trait.ITrait;
-import edu.washington.cse.longan.trait.ITraitContainer;
-
-public class ReturnTraitContainer implements ITraitContainer {
-
-	private String _staticType;
-	private Hashtable<Integer, ITrait[]> _traits = new Hashtable<Integer, ITrait[]>();
+public class ReturnTraitContainer extends AbstractTraitContainer {
 
 	public ReturnTraitContainer(String staticType) {
-		_staticType = staticType;
+		super(staticType, CONTAINER_KIND.RETURN);
 	}
 
-	public void addTraits(int caller, ITrait[] traits) {
-		_traits.put(caller, traits);
-	}
-
-	public String getStaticTypeName() {
-		return _staticType;
-	}
-
-	public ITrait[] getTraitsForCaller(int caller) {
-		return _traits.get(caller);
-	}
-
-	public static ReturnTraitContainer combine(ReturnTraitContainer mArtc, ReturnTraitContainer mBrtc) {
-		
-		// XXX: impl combine
-		
-		
-		
-		return null;
-	}
 }

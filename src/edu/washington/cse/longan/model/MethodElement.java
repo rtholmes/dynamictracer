@@ -44,9 +44,6 @@ public class MethodElement {
 	}
 
 	protected ParamTraitContainer getParamTraitContainer(int position) {
-		// Preconditions.checkArgument(position >= 0 && position < _paramTraits.size(), "position: %s, size: %s",
-		// position, _paramTraits.size());
-
 		if (position < 0 || position >= _paramTraits.size())
 			return null;
 		else

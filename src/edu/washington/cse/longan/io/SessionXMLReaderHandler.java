@@ -47,8 +47,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	private Vector<ITrait> _currentDynamicParamTraits;
 	private Vector<ITrait> _currentDynamicReturnTraits;
 
-	public SessionXMLReaderHandler(Session session) {
-		_session = session;
+	public SessionXMLReaderHandler() {
 		_traitFactory = new TraitFactory();
 	}
 
@@ -249,8 +248,16 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	}
 
 	private void parseRootAttributes(Attributes attributes) {
-		// TODO do something with the root attributes for a project
 
+		String sessionDate = attributes.getValue(ILonganIO.DATE);
+		String sessionName = attributes.getValue(ILonganIO.NAME);
+
+		if (sessionDate == null)
+			sessionDate = "";
+		if (sessionName == null)
+			sessionName = "";
+		
+		_session = new Session(sessionDate + sessionName);
 	}
 
 	@Override
@@ -307,5 +314,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		} else if (qName.equals(ILonganIO.STATIC)) {
 			staticElem = false;
 		}
+	}
+
+	public Session getSession() {
+		Preconditions.checkNotNull(_session);
+		return _session;
 	}
 }

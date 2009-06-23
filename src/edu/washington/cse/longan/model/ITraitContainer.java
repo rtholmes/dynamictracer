@@ -1,4 +1,6 @@
-package edu.washington.cse.longan.trait;
+package edu.washington.cse.longan.model;
+
+import edu.washington.cse.longan.trait.ITrait;
 
 public interface ITraitContainer {
 

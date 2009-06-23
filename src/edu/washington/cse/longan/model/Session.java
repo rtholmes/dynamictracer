@@ -42,9 +42,16 @@ public class Session {
 	 */
 	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
 
-	public Session() {
+	private String _sessionName;
+
+	public Session(String sessionName) {
 		_log.info("New session instantiated.");
+		_sessionName = sessionName;
 		createDefaultElements();
+	}
+
+	public String getSessionName() {
+		return _sessionName;
 	}
 
 	private void createDefaultElements() {

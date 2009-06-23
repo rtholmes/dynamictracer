@@ -13,6 +13,8 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import com.google.common.base.Preconditions;
+
 import ca.lsmr.common.util.TimeUtility;
 
 import edu.washington.cse.longan.model.Session;
@@ -24,14 +26,18 @@ public class SessionXMLReader implements ILonganIO {
 		long start = System.currentTimeMillis();
 		
 		_log.info("Reading session from: " + fName);
-		Session session = new Session();
+		
+		Session session = null;
 
 		try {
 			FileInputStream is = new FileInputStream(new File(fName));
 
 			SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
-			DefaultHandler dh = new SessionXMLReaderHandler(session);
+			SessionXMLReaderHandler dh = new SessionXMLReaderHandler();
+		
 			saxp.parse(is, dh);
+			
+			session = dh.getSession();
 
 		} catch (FileNotFoundException fnfe) {
 			_log.error(fnfe);
@@ -43,6 +49,7 @@ public class SessionXMLReader implements ILonganIO {
 			_log.error(ioe);
 		}
 
+		Preconditions.checkNotNull(session);
 		_log.info("Session read (in: " + TimeUtility.msToHumanReadableDelta(start) + ")");
 		return session;
 	}

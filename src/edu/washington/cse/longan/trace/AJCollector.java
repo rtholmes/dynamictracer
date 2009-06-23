@@ -107,7 +107,7 @@ public class AJCollector {
 	private AJCollector() {
 		try {
 			LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
-			_session = new Session();
+			_session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
 		} catch (Exception e) {
