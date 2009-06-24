@@ -50,8 +50,9 @@ public class ExceptionTrait extends AbstractTrait {
 		_throws = isThrowing;
 		_rethrows = isRethrowing;
 		_catches = isCatching;
-		
+
 		// PERFORMANCE: including the exception message in these makes for larger traces.
+		_exceptionMessage = ILonganConstants.ELIDED_STRING;
 
 		String tmp = "";
 		for (Integer i : _callStack) {
