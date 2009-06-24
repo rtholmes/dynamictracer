@@ -7,16 +7,23 @@ import org.jdom.Element;
 import com.google.common.base.Preconditions;
 
 import edu.washington.cse.longan.io.ILonganIO;
+import edu.washington.cse.longan.model.ILonganConstants;
 
 public class ExceptionTrait extends AbstractTrait {
 
-	private Stack<String> _callStack;
+	private Stack<Integer> _callStack;
 
 	private boolean _throws;
+
+	private boolean _rethrows;
 
 	private boolean _catches;
 
 	private String _stringRep;
+
+	private String _exceptionType;
+
+	private String _exceptionMessage;
 
 	public static String ID = "ExceptionTrait";
 
@@ -24,6 +31,7 @@ public class ExceptionTrait extends AbstractTrait {
 	 * 
 	 * @param stack
 	 *            call stack when the exception was raised
+	 * @param exceptionObject
 	 * @param isThrowing
 	 *            XXX can this param go away? if an element isn't at the head of the call stack, obviously they're not
 	 *            the originator. might need it after all; the stack isn't going to be constant, it's going to be
@@ -32,19 +40,25 @@ public class ExceptionTrait extends AbstractTrait {
 	 *            is the exception being caught here?
 	 */
 	@SuppressWarnings("unchecked")
-	public void init(Stack<String> stack, boolean isThrowing, boolean isCatching) {
+	public void init(Stack<Integer> stack, String exceptionType, String exceptionMessage, boolean isThrowing, boolean isRethrowing, boolean isCatching) {
 		Preconditions.checkArgument(_stringRep == null);
 		Preconditions.checkArgument(_callStack == null);
 
-		_callStack = (Stack<String>) stack.clone();
+		_callStack = (Stack<Integer>) stack.clone();
+		_exceptionType = exceptionType;
+		_exceptionMessage = exceptionMessage;
 		_throws = isThrowing;
+		_rethrows = isRethrowing;
 		_catches = isCatching;
+		
+		// PERFORMANCE: including the exception message in these makes for larger traces.
 
 		String tmp = "";
-		for (String s : _callStack) {
-			tmp += s + ":::";
+		for (Integer i : _callStack) {
+			tmp += i.toString() + ILonganConstants.SEPARATOR;
 		}
-		tmp += _throws + ":::" + _catches;
+		tmp += _exceptionType + ILonganConstants.SEPARATOR + _exceptionMessage + ILonganConstants.SEPARATOR;
+		tmp += _throws + ILonganConstants.SEPARATOR + _rethrows + ILonganConstants.SEPARATOR + _catches;
 
 		_stringRep = tmp;
 	}

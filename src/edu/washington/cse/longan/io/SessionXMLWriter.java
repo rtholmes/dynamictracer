@@ -36,6 +36,7 @@ import edu.washington.cse.longan.model.ParamTraitContainer;
 import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.model.Session;
 import edu.washington.cse.longan.trait.AbstractTrait;
+import edu.washington.cse.longan.trait.ExceptionTrait;
 import edu.washington.cse.longan.trait.ITrait;
 
 public class SessionXMLWriter implements ILonganIO {
@@ -55,8 +56,7 @@ public class SessionXMLWriter implements ILonganIO {
 			// init output infrastructure
 			OutputStream out;
 			if (ILonganConstants.OUTPUT_ZIP) {
-				ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(new File(fName
-						+ ".zip"))));
+				ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(new File(fName + ".zip"))));
 				ZipEntry ze = new ZipEntry(fName.substring(fName.lastIndexOf(File.separator)));
 				zos.putNextEntry(ze);
 				out = zos;
@@ -130,8 +130,8 @@ public class SessionXMLWriter implements ILonganIO {
 				_log.error(ioe);
 			}
 
-			_log.info("Trace written in: " + TimeUtility.msToHumanReadable((end - start)) + " (copy took: "
-					+ TimeUtility.msToHumanReadableDelta(end) + ") and copied to: " + latestFName);
+			_log.info("Trace written in: " + TimeUtility.msToHumanReadable((end - start)) + " (copy took: " + TimeUtility.msToHumanReadableDelta(end)
+					+ ") and copied to: " + latestFName);
 		} else {
 			_log.info("Trace written to: " + fName + " in: " + TimeUtility.msToHumanReadableDelta(start));
 		}
@@ -225,8 +225,7 @@ public class SessionXMLWriter implements ILonganIO {
 		return fieldsElement;
 	}
 
-	private void genDynamic(Session session, ContentHandler handler, SAXOutputter saxo) throws SAXException,
-			JDOMException {
+	private void genDynamic(Session session, ContentHandler handler, SAXOutputter saxo) throws SAXException, JDOMException {
 		// Element dynamicElement = new Element(ILonganIO.DYNAMIC);
 
 		List<MethodElement> methods = new Vector<MethodElement>(session.getMethods());
@@ -261,6 +260,17 @@ public class SessionXMLWriter implements ILonganIO {
 			// make the xml files easier to manually inspect (but larger)
 			if (ILonganConstants.OUTPUT_DEBUG) {
 				methodElement.setAttribute(ILonganIO.NAME, method.getName());
+			}
+
+			if (method.getExceptions().size() > 0) {
+				Element exceptionsElement = new Element(ILonganIO.EXCEPTIONS);
+
+				for (ExceptionTrait et : method.getExceptions().elementSet()) {
+					Element exceptionElement = new Element(ILonganIO.EXCEPTION);
+					exceptionElement.setAttribute(ILonganIO.SERIAL, et.toString());
+					exceptionsElement.addContent(exceptionElement);
+				}
+				methodElement.addContent(exceptionsElement);
 			}
 
 			Collection<Integer> uniqueCallers = method.getCalledBy().elementSet();

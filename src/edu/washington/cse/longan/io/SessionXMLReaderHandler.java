@@ -1,5 +1,6 @@
 package edu.washington.cse.longan.io;
 
+import java.util.Stack;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -9,10 +10,12 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.google.common.base.Preconditions;
 
+import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
 import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.model.Session;
+import edu.washington.cse.longan.trait.ExceptionTrait;
 import edu.washington.cse.longan.trait.ITrait;
 import edu.washington.cse.longan.trait.TraitFactory;
 import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
@@ -31,7 +34,9 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	boolean paramElem = false;
 	boolean returnElem = false;
 	boolean calledByElem = false;
-	private boolean supplementalDataElem = false;
+	boolean supplementalDataElem = false;
+	boolean exceptionElem = false;
+	boolean exceptionsElem = false;
 
 	private Session _session;
 
@@ -119,6 +124,13 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 				parseDynamicCalledBy(attributes);
 				_currentDynamicReturnTraits = new Vector<ITrait>();
 			}
+		} else if (qName.equals(ILonganIO.EXCEPTION)) {
+			exceptionElem = true;
+			if (exceptionsElem) {
+				parseException(attributes);
+			}
+		} else if (qName.equals(ILonganIO.EXCEPTIONS)) {
+			exceptionsElem = true;
 		} else if (qName.equals(ILonganIO.METHODS)) {
 			methodsElem = true;
 		} else if (qName.equals(ILonganIO.ROOT)) {
@@ -129,6 +141,46 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		} else if (qName.equals(ILonganIO.STATIC)) {
 			staticElem = true;
 		}
+	}
+
+	private void parseException(Attributes attributes) {
+		String serial = attributes.getValue(ILonganIO.SERIAL);
+
+		String[] parts = serial.split(ILonganConstants.SEPARATOR);
+
+		Stack<Integer> exceptionStack = new Stack<Integer>();
+		boolean isThrowing = false;
+		boolean isReThrowing = false;
+		boolean isCatching = false;
+		String throwableType = "";
+		String throwableMessage = "";
+
+		for (int i = 0; i < parts.length - 5; i++) {
+			exceptionStack.push(Integer.parseInt(parts[i]));
+		}
+
+		throwableType = parts[parts.length - 5];
+		throwableMessage = parts[parts.length - 4];
+
+		isThrowing = Boolean.parseBoolean(parts[parts.length - 3]);
+		isReThrowing = Boolean.parseBoolean(parts[parts.length - 2]);
+		isCatching = Boolean.parseBoolean(parts[parts.length - 1]);
+
+		ExceptionTrait et = new ExceptionTrait();
+		et.init(exceptionStack, throwableType, throwableMessage, isThrowing, isReThrowing, isCatching);
+
+		Preconditions.checkArgument(et.toString().equals(serial));
+
+		if (isThrowing) {
+			_currentDynamicMethod.throwException(exceptionStack, throwableType, throwableMessage);
+		} else if (isReThrowing) {
+			_currentDynamicMethod.reThrowException(exceptionStack, throwableType, throwableMessage);
+		} else if (isCatching) {
+			_currentDynamicMethod.handleException(exceptionStack, throwableType, throwableMessage);
+		} else {
+			Preconditions.checkArgument(false, ILonganConstants.NOT_POSSIBLE);
+		}
+
 	}
 
 	private void parseSupplementalTraitData(Attributes attributes) {
@@ -256,7 +308,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			sessionDate = "";
 		if (sessionName == null)
 			sessionName = "";
-		
+
 		_session = new Session(sessionDate + sessionName);
 	}
 
@@ -305,6 +357,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 				_log.trace("ccbm: " + _currentCalledByMethod.getName() + " nulled");
 				_currentCalledByMethod = null;
 			}
+		} else if (qName.equals(ILonganIO.EXCEPTION)) {
+			exceptionElem = false;
+		} else if (qName.equals(ILonganIO.EXCEPTIONS)) {
+			exceptionsElem = false;
 		} else if (qName.equals(ILonganIO.METHODS)) {
 			methodsElem = false;
 		} else if (qName.equals(ILonganIO.ROOT)) {

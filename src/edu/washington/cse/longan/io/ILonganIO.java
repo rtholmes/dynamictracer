@@ -29,6 +29,9 @@ public interface ILonganIO {
 	public static final String CALLEDBY = "calledBy";
 	public static final String UNKNOWN_ID = "-1";
 	public static final String COUNT = "count";
+	public static final String EXCEPTIONS = "exceptions";
+	public static final String EXCEPTION = "exception";
+	public static final String SERIAL = "serial";
 	
 //	public static final String ROOT = "executionSession";
 //	public static final String DATE = "date";

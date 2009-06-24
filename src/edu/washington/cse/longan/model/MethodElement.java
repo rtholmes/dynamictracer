@@ -1,5 +1,6 @@
 package edu.washington.cse.longan.model;
 
+import java.util.Stack;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
@@ -29,7 +30,7 @@ public class MethodElement {
 	private Vector<ParamTraitContainer> _paramTraits = new Vector<ParamTraitContainer>();
 
 	private Multiset<ExceptionTrait> _exceptions = HashMultiset.create();
-	
+
 	private boolean _isExternal;
 
 	public MethodElement(int id, String name, boolean isExternal) {
@@ -110,5 +111,27 @@ public class MethodElement {
 	@Override
 	public String toString() {
 		return getName();
+	}
+
+	public void handleException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
+		ExceptionTrait et = new ExceptionTrait();
+		et.init(exceptionStack, exceptionType, exceptionMessage, false, false, true);
+		_exceptions.add(et);
+	}
+
+	public void throwException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
+		ExceptionTrait et = new ExceptionTrait();
+		et.init(exceptionStack, exceptionType, exceptionMessage,true, false, false);
+		_exceptions.add(et);
+	}
+
+	public void reThrowException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
+		ExceptionTrait et = new ExceptionTrait();
+		et.init(exceptionStack, exceptionType, exceptionMessage,false, true, false);
+		_exceptions.add(et);
+	}
+
+	public Multiset<ExceptionTrait> getExceptions() {
+		return _exceptions;
 	}
 }

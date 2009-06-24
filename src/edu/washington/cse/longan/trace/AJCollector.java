@@ -21,6 +21,7 @@ import org.aspectj.lang.reflect.CodeSignature;
 import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.io.SessionXMLWriter;
@@ -40,11 +41,10 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = true;
-	public static final boolean SUMMARY_OUTPUT = true;
+	public static final boolean OUTPUT = ILonganConstants.OUTPUT_SCREEN;
+	public static final boolean SUMMARY_OUTPUT = ILonganConstants.OUTPUT_SUMMARY;
 
-
-	public static final String UNKNOWN_CALLER = "Unknown";
+	// public static final String UNKNOWN_CALLER = "Unknown";
 
 	public static void clearInstance() {
 		if (_instance != null)
@@ -93,6 +93,7 @@ public class AJCollector {
 	 */
 	private Stack<Long> _timeStack = new Stack<Long>();
 
+	private Stack<Integer> _exceptionStack = null;
 	/**
 	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single
 	 * class. We can use pertypewithin on the aspect description but that will violate what we have happening here.
@@ -109,10 +110,15 @@ public class AJCollector {
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
 		} catch (Exception e) {
-			e.printStackTrace();
+			_log.error(e);
 		}
 	}
 
+	/**
+	 * Not currently used.
+	 * 
+	 * @param jp
+	 */
 	public void afterClassInit(JoinPoint jp) {
 		try {
 			if (OUTPUT) {
@@ -122,11 +128,26 @@ public class AJCollector {
 				_log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			_log.error(e);
 		}
 	}
 
+	/**
+	 * 
+	 * 
+	 * @param jp
+	 */
+	@SuppressWarnings("unchecked")
 	public void afterCreateException(JoinPoint jp) {
+
+		// NOTE: if exception tracking seems screwed up, check to see if this is
+		// the culprit; I don't really like this solution at all, but for some reason
+		// the exceptionThrown method isn't being triggered by exceptions arising
+		// from constructors.
+
+		// Needed to capture call stack for exceptions arising in constructors
+		_exceptionStack = (Stack<Integer>) _callStack.clone();
+
 		constructorExit(jp, true);
 		if (OUTPUT) {
 			String out = "";
@@ -136,6 +157,11 @@ public class AJCollector {
 		}
 	}
 
+	/**
+	 * Not currently used.
+	 * 
+	 * @param jp
+	 */
 	public void afterObjectInit(JoinPoint jp) {
 		if (OUTPUT) {
 			String out = "";
@@ -149,6 +175,11 @@ public class AJCollector {
 		}
 	}
 
+	/**
+	 * Not currently used.
+	 * 
+	 * @param jp
+	 */
 	public void beforeClassInit(JoinPoint jp) {
 		try {
 			if (OUTPUT) {
@@ -162,6 +193,11 @@ public class AJCollector {
 		}
 	}
 
+	/**
+	 * Not currently used; it just passes through to constructorEnter. Mainly exists for future extension.
+	 * 
+	 * @param jp
+	 */
 	public void beforeCreateException(JoinPoint jp) {
 
 		if (OUTPUT) {
@@ -173,28 +209,58 @@ public class AJCollector {
 		constructorEnter(jp, true);
 	}
 
-	// XXX: next: deal with exceptions, differentiate between throws, handles, and passes on
 	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
+		MethodElement mt = _session.getMethod(_callStack.peek());
+
+		Preconditions.checkNotNull(_exceptionStack, "There should be a current exception stack if one is to be caught. "
+				+ "Null exception stack: %s; ex type: %s; ex msg: %s;", mt.getName(), exception.getClass().getName(), ((Throwable) exception)
+				.getMessage());
+
+		Preconditions.checkArgument(exception instanceof Throwable);
+
+		mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+
+		// this is a new exception
+		_exceptionStack = null;
+
+		if (OUTPUT) {
+			_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName()
+					+ " ex msg: " + ((Throwable) exception).getMessage());
+		}
 
 		if (OUTPUT) {
 			String out = "";
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
-
-			MethodElement mt = _session.getMethod(_callStack.peek());
 
 			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
+		MethodElement mt = _session.getMethod(_callStack.peek());
+
+		if (_exceptionStack == null) {
+			// this is a new exception
+			_exceptionStack = (Stack<Integer>) _callStack.clone();
+			mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+			if (OUTPUT) {
+				_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: " + exception.getClass().getName()
+						+ " ex msg: " + ((Throwable) exception).getMessage());
+			}
+		} else {
+			mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+			if (OUTPUT) {
+				_log.debug("Rethrowing existing exception. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
+						+ ((Throwable) exception).getMessage());
+			}
+		}
 
 		if (OUTPUT) {
 			String out = "";
 			for (int i = _callStack.size(); i > 0; i--)
 				out += "\t";
-
-			// MethodTracker mt = _methods.get(_callStack.peek());
 
 			if (!isExternal)
 				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
@@ -202,7 +268,7 @@ public class AJCollector {
 				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
 		}
 	}
-	
+
 	public void beforeObjectInit(JoinPoint jp) {
 		if (OUTPUT) {
 			String out = "";
@@ -268,8 +334,6 @@ public class AJCollector {
 		}
 
 	}
-
-
 
 	public void fieldGet(JoinPoint jp) {
 		// RFE: handle field sets
@@ -570,13 +634,13 @@ public class AJCollector {
 
 					for (Integer caller : uniqueCallers) {
 
-						MethodElement calledBy =  _session.getMethod(caller);
+						MethodElement calledBy = _session.getMethod(caller);
 						String calledByName = "";
 
 						if (calledBy != null)
 							calledByName = calledBy.getName();
 						else
-							calledByName = UNKNOWN_CALLER;
+							calledByName = ILonganConstants.UNKNOWN_METHOD_NAME; // UNKNOWN_CALLER;
 
 						int calledByCount = _session.getMethod(elementId).getCalledBy().count(caller);
 						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);

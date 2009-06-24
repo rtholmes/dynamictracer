@@ -11,11 +11,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
-import com.google.common.base.Preconditions;
 
 import ca.lsmr.common.util.TimeUtility;
+
+import com.google.common.base.Preconditions;
 
 import edu.washington.cse.longan.model.Session;
 
@@ -24,9 +23,9 @@ public class SessionXMLReader implements ILonganIO {
 
 	public Session readXML(String fName) {
 		long start = System.currentTimeMillis();
-		
+
 		_log.info("Reading session from: " + fName);
-		
+
 		Session session = null;
 
 		try {
@@ -34,9 +33,9 @@ public class SessionXMLReader implements ILonganIO {
 
 			SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
 			SessionXMLReaderHandler dh = new SessionXMLReaderHandler();
-		
+
 			saxp.parse(is, dh);
-			
+
 			session = dh.getSession();
 
 		} catch (FileNotFoundException fnfe) {
