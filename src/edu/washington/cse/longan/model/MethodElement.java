@@ -9,6 +9,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.trait.ExceptionTrait;
+
 public class MethodElement {
 	private Logger _log = Logger.getLogger(this.getClass());
 
@@ -26,6 +28,8 @@ public class MethodElement {
 
 	private Vector<ParamTraitContainer> _paramTraits = new Vector<ParamTraitContainer>();
 
+	private Multiset<ExceptionTrait> _exceptions = HashMultiset.create();
+	
 	private boolean _isExternal;
 
 	public MethodElement(int id, String name, boolean isExternal) {
@@ -52,13 +56,12 @@ public class MethodElement {
 
 	public void addParamTraitContainer(ParamTraitContainer ptc, int position) {
 
-		Preconditions.checkArgument(position == _paramTraits.size(),
-				"Should probably be updating a ptc, not replacing it... %s != %s", _paramTraits.size(), position);
+		Preconditions.checkArgument(position == _paramTraits.size(), "Should probably be updating a ptc, not replacing it... %s != %s", _paramTraits
+				.size(), position);
 
 		_paramTraits.add(ptc);
 
-		_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - "
-				+ ptc.getStaticTypeName());
+		_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - " + ptc.getStaticTypeName());
 
 	}
 
@@ -102,5 +105,10 @@ public class MethodElement {
 	@Override
 	public int hashCode() {
 		return Objects.hashCode(getName());
+	}
+
+	@Override
+	public String toString() {
+		return getName();
 	}
 }

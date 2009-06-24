@@ -23,6 +23,8 @@ public class TraitFactory {
 			trait = new TypeTrait();
 		} else if (traitKey.equals(ValueTrait.ID)) {
 			trait = new ValueTrait();
+		} else if (traitKey.equals(ExceptionTrait.ID)) {
+			trait = new ExceptionTrait();
 		} else {
 			throw new AssertionError("Unknown trait kind: " + traitKey);
 		}

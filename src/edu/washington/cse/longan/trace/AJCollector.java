@@ -40,11 +40,9 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = false;
+	public static final boolean OUTPUT = true;
+	public static final boolean SUMMARY_OUTPUT = true;
 
-	public static final boolean SUMMARY_OUTPUT = false;
-
-	public static final boolean XML_OUTPUT = true;
 
 	public static final String UNKNOWN_CALLER = "Unknown";
 
@@ -175,6 +173,36 @@ public class AJCollector {
 		constructorEnter(jp, true);
 	}
 
+	// XXX: next: deal with exceptions, differentiate between throws, handles, and passes on
+	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			MethodElement mt = _session.getMethod(_callStack.peek());
+
+			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
+		}
+	}
+
+	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = _callStack.size(); i > 0; i--)
+				out += "\t";
+
+			// MethodTracker mt = _methods.get(_callStack.peek());
+
+			if (!isExternal)
+				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+			else
+				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+		}
+	}
+	
 	public void beforeObjectInit(JoinPoint jp) {
 		if (OUTPUT) {
 			String out = "";
@@ -241,34 +269,7 @@ public class AJCollector {
 
 	}
 
-	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
 
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-
-			MethodElement mt = _session.getMethod(_callStack.peek());
-
-			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
-		}
-	}
-
-	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
-
-			// MethodTracker mt = _methods.get(_callStack.peek());
-
-			if (!isExternal)
-				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-			else
-				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-		}
-	}
 
 	public void fieldGet(JoinPoint jp) {
 		// RFE: handle field sets
@@ -311,8 +312,7 @@ public class AJCollector {
 			id = _session.getIdForElement(name);
 			if (!_session.methodExists(id)) {
 				if (!isExternalKnown) {
-					throw new AssertionError(
-							"Can't create a new methodagent if without being sure that it is external or internal.");
+					throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
 				}
 
 				// BUG: isExternal is always true for exceptions
@@ -484,20 +484,17 @@ public class AJCollector {
 					} else if (arg instanceof Set) {
 
 						if (OUTPUT)
-							_log.debug(out + "\tArg " + i + ", Set, size: " + ((Set) arg).size() + " ( "
-									+ arg.getClass() + " )");
+							_log.debug(out + "\tArg " + i + ", Set, size: " + ((Set) arg).size() + " ( " + arg.getClass() + " )");
 
 					} else if (arg instanceof List) {
 
 						if (OUTPUT)
-							_log.debug(out + "\tArg " + i + ", List, size: " + ((List) arg).size() + " ( "
-									+ arg.getClass() + " )");
+							_log.debug(out + "\tArg " + i + ", List, size: " + ((List) arg).size() + " ( " + arg.getClass() + " )");
 
 					} else if (arg instanceof Collection) {
 
 						if (OUTPUT)
-							_log.debug(out + "\tArg " + i + ", Collection, size: " + ((Collection) arg).size() + " ( "
-									+ arg.getClass() + " )");
+							_log.debug(out + "\tArg " + i + ", Collection, size: " + ((Collection) arg).size() + " ( " + arg.getClass() + " )");
 
 					} else {
 
@@ -533,7 +530,7 @@ public class AJCollector {
 	}
 
 	public void writeToDisk() {
-		if (XML_OUTPUT) {
+		if (ILonganConstants.OUTPUT_XML) {
 			try {
 				String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
 				// String folder = "/Volumes/RamDisk/";
@@ -559,7 +556,8 @@ public class AJCollector {
 				for (String name : sortedNames) {
 
 					int elementId = _session.getIdForElement(name);
-					AJMethodAgent methodAgent = (AJMethodAgent) _session.getMethod(elementId);
+
+					MethodElement methodAgent = _session.getMethod(elementId);
 
 					_log.info(name);
 
@@ -572,7 +570,7 @@ public class AJCollector {
 
 					for (Integer caller : uniqueCallers) {
 
-						AJMethodAgent calledBy = (AJMethodAgent) _session.getMethod(caller);
+						MethodElement calledBy =  _session.getMethod(caller);
 						String calledByName = "";
 
 						if (calledBy != null)
@@ -583,21 +581,24 @@ public class AJCollector {
 						int calledByCount = _session.getMethod(elementId).getCalledBy().count(caller);
 						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
 
-						IObjectTracker[] paramTracker = methodAgent.getParameterTrackers().get(caller);
-						IObjectTracker returnTracker = methodAgent.getReturnTrackers().get(caller);
+						IObjectTracker[] paramTracker = new IObjectTracker[0];
+						IObjectTracker returnTracker = null;
 
-						if (paramTracker.length > 0) {
+						if (methodAgent instanceof AJMethodAgent) {
+							returnTracker = ((AJMethodAgent) methodAgent).getReturnTrackers().get(caller);
+							paramTracker = ((AJMethodAgent) methodAgent).getParameterTrackers().get(caller);
+						}
+
+						if (paramTracker != null && paramTracker.length > 0) {
 							for (IObjectTracker tracker : paramTracker) {
-								_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: "
-										+ tracker.getPosition() + " ] name: " + tracker.getName() + " static type: "
-										+ tracker.getStaticTypeName());
+								_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition() + " ] name: "
+										+ tracker.getName() + " static type: " + tracker.getStaticTypeName());
 								_log.info("\t\t\t" + tracker.toString());
 							}
 						}
 
 						if (returnTracker != null) {
-							_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
-									+ returnTracker.getStaticTypeName());
+							_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: " + returnTracker.getStaticTypeName());
 							_log.info("\t\t\t" + returnTracker.toString());
 						}
 					}
@@ -645,5 +646,4 @@ public class AJCollector {
 			_log.error(e);
 		}
 	}
-
 }

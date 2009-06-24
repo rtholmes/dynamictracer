@@ -39,13 +39,13 @@ public class ExecutionComparator {
 		boolean complete = true;
 		if (complete) {
 			// joda
-//			 executionFiles.add(path + "joda1283a.xml");
+			executionFiles.add(path + "joda1283a.xml");
 			// executionFiles.add(path + "joda1283b.xml");
 			// executionFiles.add(path + "joda1311a.xml");
-			 executionFiles.add(path + "joda1311b.xml");
-			 executionFiles.add(path + "joda1322a.xml");
+			// executionFiles.add(path + "joda1311b.xml");
+			// executionFiles.add(path + "joda1322a.xml");
 			// executionFiles.add(path + "joda1322b.xml");
-			// executionFiles.add(path + "joda1371a.xml");
+			executionFiles.add(path + "joda1371a.xml");
 			// executionFiles.add(path + "joda1371b.xml");
 
 			// executionFiles.add(path + "1311-1.xml");
@@ -63,8 +63,8 @@ public class ExecutionComparator {
 			// executionFiles.add(path + "cntB.xml");
 
 			// different pairs
-//			executionFiles.add(path + "cntC.xml");
-//			executionFiles.add(path + "cntD.xml");
+			// executionFiles.add(path + "cntC.xml");
+			// executionFiles.add(path + "cntD.xml");
 
 			// executionFiles.add(path + "cntE.xml");
 			// executionFiles.add(path + "cntF.xml");
@@ -153,6 +153,7 @@ public class ExecutionComparator {
 
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
 
 			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
@@ -176,6 +177,19 @@ public class ExecutionComparator {
 			if (aInvokationTotal != bInvokationTotal) {
 				_log.warn("Invocation differences ( " + aInvokationTotal + " -> " + bInvokationTotal + " ) for: " + mA.getName());
 			}
+		}
+
+		// Iterates through elements that exist in A but not in B
+		// e.g., this gives an indication of new elements in B
+		for (String eName : Sets.difference(eAnames, eBnames)) {
+
+		}
+
+		// Iterates through elements that exist in B but not in C
+		// e.g., this gives an indication of elements in A that
+		// are no longer present in B
+		for (String eName : Sets.difference(eBnames, eAnames)) {
+
 		}
 
 	}

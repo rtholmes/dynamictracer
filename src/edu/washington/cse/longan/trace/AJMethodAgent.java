@@ -46,7 +46,7 @@ public class AJMethodAgent extends MethodElement {
 	private Hashtable<Integer, IObjectTracker> _returnObjectTrackers = new Hashtable<Integer, IObjectTracker>();
 
 	public AJMethodAgent(int id, JoinPoint jp, boolean isExternal) {
-		super(id, jp.getSignature().toString(),isExternal);
+		super(id, jp.getSignature().toString(), isExternal);
 
 		prepareTrackers(jp);
 	}
@@ -92,8 +92,7 @@ public class AJMethodAgent extends MethodElement {
 			}
 
 		} else {
-			_log.error("Signature associated with: " + jp.getSignature() + " is of type: "
-					+ jp.getSignature().getClass());
+			_log.error("Signature associated with: " + jp.getSignature() + " is of type: " + jp.getSignature().getClass());
 		}
 
 	}
@@ -160,7 +159,7 @@ public class AJMethodAgent extends MethodElement {
 						IObjectTracker ot = _parameterTrackerDefinitions[i];
 						pTrackers[i] = ot.clone();
 						_parameterTrackers.put(caller, pTrackers);
-						
+
 						// this may seem unnecessary in the AJ tracker (and it is really)
 						// but it keeps things consistent with the parent types
 						// which is what we're really after anyways for the analysis
@@ -174,7 +173,6 @@ public class AJMethodAgent extends MethodElement {
 						ptc.addTraits(caller, traits);
 
 					}
-					
 
 				} catch (CloneNotSupportedException e) {
 					_log.error(e);
@@ -237,4 +235,8 @@ public class AJMethodAgent extends MethodElement {
 	public boolean hasVoidReturn() {
 		return _hasVoidReturn;
 	}
+
+//	public static AJMethodAgent cloneFromMethodElement(MethodElement me) {
+//		return new AJMethodAgent();
+//	}
 }
