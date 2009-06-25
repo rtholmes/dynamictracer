@@ -9,7 +9,7 @@ import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
 public abstract class AbstractTraitContainer implements ITraitContainer {
 
 	public enum CONTAINER_KIND {
-		PARAM, RETURN
+		PARAM, RETURN, FIELD
 	};
 
 	private final CONTAINER_KIND _containerKind;

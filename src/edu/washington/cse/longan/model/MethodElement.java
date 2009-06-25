@@ -121,13 +121,13 @@ public class MethodElement {
 
 	public void throwException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
 		ExceptionTrait et = new ExceptionTrait();
-		et.init(exceptionStack, exceptionType, exceptionMessage,true, false, false);
+		et.init(exceptionStack, exceptionType, exceptionMessage, true, false, false);
 		_exceptions.add(et);
 	}
 
 	public void reThrowException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
 		ExceptionTrait et = new ExceptionTrait();
-		et.init(exceptionStack, exceptionType, exceptionMessage,false, true, false);
+		et.init(exceptionStack, exceptionType, exceptionMessage, false, true, false);
 		_exceptions.add(et);
 	}
 

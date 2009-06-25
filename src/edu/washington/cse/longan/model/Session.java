@@ -69,6 +69,10 @@ public class Session {
 		return _methods.get(id);
 	}
 
+	public FieldElement getField(int id) {
+		return _fields.get(id);
+	}
+
 	public boolean methodExists(int id) {
 		return _methods.containsKey(id);
 	}
@@ -121,4 +125,14 @@ public class Session {
 	public MethodElement getElementForName(String name) {
 		return getMethod(getIdForElement(name));
 	}
+
+	public void addField(int id, FieldElement field) {
+		_fields.put(id, field);
+
+	}
+
+	public boolean fieldExists(int id) {
+		return _fields.containsKey(id);
+	}
+
 }

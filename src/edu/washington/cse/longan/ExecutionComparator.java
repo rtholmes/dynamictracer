@@ -39,13 +39,13 @@ public class ExecutionComparator {
 		boolean complete = true;
 		if (complete) {
 			// joda
-			executionFiles.add(path + "joda1283a.xml");
+			// executionFiles.add(path + "joda1283a.xml");
 			// executionFiles.add(path + "joda1283b.xml");
 			// executionFiles.add(path + "joda1311a.xml");
 			// executionFiles.add(path + "joda1311b.xml");
 			// executionFiles.add(path + "joda1322a.xml");
 			// executionFiles.add(path + "joda1322b.xml");
-			executionFiles.add(path + "joda1371a.xml");
+			// executionFiles.add(path + "joda1371a.xml");
 			// executionFiles.add(path + "joda1371b.xml");
 
 			// executionFiles.add(path + "1311-1.xml");
@@ -80,6 +80,8 @@ public class ExecutionComparator {
 			// inh run
 			// executionFiles.add(path + "inhTesta.xml");
 			// executionFiles.add(path + "inhTestb.xml");
+			executionFiles.add(path + "latest.xml");
+			executionFiles.add(path + "latest.xml");
 		}
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.start();

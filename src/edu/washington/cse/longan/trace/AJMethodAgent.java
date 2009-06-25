@@ -61,7 +61,7 @@ public class AJMethodAgent extends MethodElement {
 
 			Class returnType = methodSig.getReturnType();
 
-			if (returnType.getName().equals("void")) {
+			if (returnType.getName().equals(ILonganConstants.VOID_RETURN)) {
 				// null return types require no analysis at runtime
 				_hasVoidReturn = true;
 			} else {
@@ -236,7 +236,7 @@ public class AJMethodAgent extends MethodElement {
 		return _hasVoidReturn;
 	}
 
-//	public static AJMethodAgent cloneFromMethodElement(MethodElement me) {
-//		return new AJMethodAgent();
-//	}
+	// public static AJMethodAgent cloneFromMethodElement(MethodElement me) {
+	// return new AJMethodAgent();
+	// }
 }

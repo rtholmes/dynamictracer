@@ -25,11 +25,13 @@ import org.xml.sax.SAXException;
 
 import ca.lsmr.common.util.TimeUtility;
 
+import com.google.common.base.Preconditions;
 import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 import edu.washington.cse.longan.model.FieldElement;
+import edu.washington.cse.longan.model.FieldTraitContainer;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
@@ -221,7 +223,25 @@ public class SessionXMLWriter implements ILonganIO {
 
 	private Element genFields(Collection<FieldElement> fields) {
 		Element fieldsElement = new Element(ILonganIO.FIELDS);
-		// RFE: add fields
+
+		for (FieldElement field : fields) {
+			Element fieldElement = new Element(ILonganIO.FIELD);
+
+			FieldTraitContainer ftc = null;
+			ftc = field.getFieldGetTraitContainer();
+			if (ftc == null)
+				ftc = field.getFieldSetTraitContainer();
+
+			Preconditions.checkNotNull(ftc, "We shouldn't know about it if there was never a get or set.");
+
+			String fieldType = ftc.getStaticTypeName();
+
+			fieldElement.setAttribute(ILonganIO.ID, field.getId() + "");
+			fieldElement.setAttribute(ILonganIO.NAME, field.getName() + "");
+			fieldElement.setAttribute(ILonganIO.TYPE, fieldType);
+
+			fieldsElement.addContent(fieldElement);
+		}
 		return fieldsElement;
 	}
 
@@ -243,7 +263,6 @@ public class SessionXMLWriter implements ILonganIO {
 			}
 		});
 
-		// Element methodsElement = new Element(ILonganIO.METHODS);
 		handler.startElement(null, null, ILonganIO.METHODS, null);
 
 		for (MethodElement method : methods) {
@@ -299,15 +318,10 @@ public class SessionXMLWriter implements ILonganIO {
 						calledByElement.setAttribute(ILonganIO.NAME, calledBy.getName());
 				}
 
-				// _log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
-
 				ITrait[] returnTraits = null;
 				if (method.getReturnTraitContainer() != null)
 					returnTraits = method.getReturnTraitContainer().getTraitsForCaller(caller);
 
-				// IObjectTracker returnTracker = method.getReturnTrackers().get(caller);
-
-				// IObjectTracker[] paramTracker = method.getParameterTrackers().get(caller);
 				Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
 
 				Element paramsElement = new Element(ILonganIO.PARAMETERS);
@@ -315,12 +329,6 @@ public class SessionXMLWriter implements ILonganIO {
 				for (ParamTraitContainer ptc : ptcs) {
 					Element paramElement = new Element(ILonganIO.PARAMETER);
 					paramElement.setAttribute(ILonganIO.POSITION, ptc.getPosition() + "");
-
-					// IObjectTracker tracker = paramTracker[i];
-
-					// _log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition()
-					// + " ] name: " + tracker.getName() + " static type: " + tracker.getStaticTypeName());
-					// _log.info("\t\t\t" + tracker.toString());
 
 					// don't record tracker details, it's the traits that hold the useful information
 					for (ITrait trait : ptc.getTraitsForCaller(caller)) {
@@ -333,14 +341,7 @@ public class SessionXMLWriter implements ILonganIO {
 				calledByElement.addContent(paramsElement);
 
 				if (returnTraits != null) {
-					// _log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: "
-					// + returnTracker.getStaticTypeName());
-					// _log.info("\t\t\t" + returnTracker.toString());
 					Element returnElement = new Element(ILonganIO.RETURN);
-
-					// _log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition()
-					// + " ] name: " + tracker.getName() + " static type: " + tracker.getStaticTypeName());
-					// _log.info("\t\t\t" + tracker.toString());
 
 					// don't record tracker details, it's the traits that hold the useful information
 					for (ITrait trait : returnTraits) {
@@ -361,11 +362,79 @@ public class SessionXMLWriter implements ILonganIO {
 
 		}
 		handler.endElement(null, null, ILonganIO.METHODS);
-		// dynamicElement.addContent(methodsElement);
 
 		// RFE: add fields
 
-		// return dynamicElement;
-	}
+		handler.startElement(null, null, ILonganIO.FIELDS, null);
 
+		for (FieldElement field : fields) {
+			Element fieldElement = new Element(ILonganIO.FIELD);
+			fieldElement.setAttribute(ILonganIO.ID, field.getId() + "");
+
+			// make the xml files easier to manually inspect (but larger)
+			if (ILonganConstants.OUTPUT_DEBUG) {
+				fieldElement.setAttribute(ILonganIO.NAME, field.getName());
+			}
+
+			// get traits
+			FieldTraitContainer gftc = field.getFieldGetTraitContainer();
+			FieldTraitContainer sftc = field.getFieldSetTraitContainer();
+			Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
+
+			if (gftc != null) {
+//				Element getsElement = new Element(ILonganIO.GETBY);
+
+				Collection<Integer> uniqueGetters = field.getGetBy().elementSet();
+				for (Integer getById : uniqueGetters) {
+					Element getElement = new Element(ILonganIO.GET);
+
+					getElement.setAttribute(ILonganIO.ID, getById + "");
+					getElement.setAttribute(ILonganIO.COUNT, field.getGetBy().count(getById) + "");
+
+					if (ILonganConstants.OUTPUT_DEBUG) {
+						getElement.setAttribute(ILonganIO.NAME, session.getElementNameForID(getById));
+					}
+
+					for (ITrait trait : field.getFieldGetTraitContainer().getTraitsForCaller(getById)) {
+						getElement.addContent(((AbstractTrait) trait).toXML());
+					}
+
+//					getsElement.addContent(getElement);
+					fieldElement.addContent(getElement);
+				}
+				
+			}
+
+			// set traits
+			if (sftc != null) {
+				// Element setsElement = new Element(ILonganIO.SETBY);
+
+				Collection<Integer> uniqueSetters = field.getSetBy().elementSet();
+				for (Integer setById : uniqueSetters) {
+					Element setElement = new Element(ILonganIO.SET);
+
+					setElement.setAttribute(ILonganIO.ID, setById + "");
+					setElement.setAttribute(ILonganIO.COUNT, field.getSetBy().count(setById) + "");
+
+					if (ILonganConstants.OUTPUT_DEBUG) {
+						setElement.setAttribute(ILonganIO.NAME, session.getElementNameForID(setById));
+					}
+
+					for (ITrait trait : field.getFieldSetTraitContainer().getTraitsForCaller(setById)) {
+						setElement.addContent(((AbstractTrait) trait).toXML());
+					}
+
+					// setsElement.addContent(setElement);
+					fieldElement.addContent(setElement);
+				}
+				// fieldElement.addContent(setsElement);
+			}
+
+			saxo.outputFragment(fieldElement);
+
+		}
+
+		handler.endElement(null, null, ILonganIO.FIELDS);
+
+	}
 }

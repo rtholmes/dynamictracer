@@ -101,7 +101,7 @@ public class AJCollector {
 	 * @param jps
 	 * @return
 	 */
-	private int methodidcounter = 0;
+	private int _masterCounter = 0;
 
 	private AJCollector() {
 		try {
@@ -335,20 +335,25 @@ public class AJCollector {
 
 	}
 
-	public void fieldGet(JoinPoint jp) {
-		// RFE: handle field sets
+	public void fieldGet(JoinPoint jp, Object fieldValue) {
+
+		int id = getFieldID(jp);
+		((AJFieldAgent) _session.getField(id)).fieldGet(jp, _callStack, fieldValue);
+
 		if (OUTPUT) {
 			String out = "";
 
 			for (int t = _callStack.size(); t > 0; t--)
 				out += "\t";
 
-			_log.debug(out + "Field get: " + jp.toString());
+			_log.debug(out + "Field get: " + jp.getSignature() + " value: " + fieldValue);
 		}
 	}
 
 	public void fieldSet(JoinPoint jp, Object newValue) {
-		// RFE: handle field sets
+		int id = getFieldID(jp);
+		((AJFieldAgent) _session.getField(id)).fieldSet(jp, _callStack, newValue);
+
 		if (OUTPUT) {
 			String out = "";
 
@@ -357,6 +362,26 @@ public class AJCollector {
 
 			_log.debug(out + "Field set: " + jp.getSignature().toString() + " to: " + newValue);
 		}
+	}
+
+	private Integer getFieldID(JoinPoint jp) {
+		// MethodElement mt = _session.getMethod(_callStack.peek());
+		String name = "";
+		int id = -1;
+
+		name = jp.getSignature().toString();
+
+		if (!_session.hasIDForElement(name)) {
+			_session.addIDForElement(name, _masterCounter++);
+		}
+
+		id = _session.getIdForElement(name);
+		if (!_session.fieldExists(id)) {
+			_session.addField(id, new AJFieldAgent(id, jp));
+		}
+
+		// _log.trace("id: "+id+" name: "+name);
+		return id;
 	}
 
 	private Integer getMethodId(JoinPoint jp, boolean isExternal, boolean isExternalKnown) {
@@ -369,7 +394,7 @@ public class AJCollector {
 			name = jp.getSignature().toString();
 
 			if (!_session.hasIDForElement(name)) {
-				_session.addIDForElement(name, methodidcounter++);
+				_session.addIDForElement(name, _masterCounter++);
 				// _nameToBaseIdMap.put(name, methodidcounter++);
 			}
 

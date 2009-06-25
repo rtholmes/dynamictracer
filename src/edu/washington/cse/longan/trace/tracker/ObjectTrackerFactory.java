@@ -36,7 +36,7 @@ public class ObjectTrackerFactory {
 
 			if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
 					|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
-				return new NumberTracker(clazz);
+				return new PrimitiveNumberTracker(clazz);
 			}
 
 			if (clazz.getName().equals("char")) {
@@ -77,7 +77,7 @@ public class ObjectTrackerFactory {
 
 			if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
 					|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
-				return new NumberTracker(clazz, index, name);
+				return new PrimitiveNumberTracker(clazz, index, name);
 			}
 
 			if (clazz.getName().equals("char")) {
