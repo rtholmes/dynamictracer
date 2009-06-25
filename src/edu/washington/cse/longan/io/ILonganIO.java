@@ -32,8 +32,6 @@ public interface ILonganIO {
 	public static final String EXCEPTIONS = "exceptions";
 	public static final String EXCEPTION = "exception";
 	public static final String SERIAL = "serial";
-	public static final String GETBY = "getBy";
-	public static final String SETBY = "setBy";
 	public static final String GET = "get";
 	public static final String SET = "set";
 

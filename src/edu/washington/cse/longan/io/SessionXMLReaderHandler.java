@@ -10,6 +10,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import com.google.common.base.Preconditions;
 
+import edu.washington.cse.longan.model.FieldElement;
+import edu.washington.cse.longan.model.FieldTraitContainer;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
@@ -37,6 +39,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	boolean supplementalDataElem = false;
 	boolean exceptionElem = false;
 	boolean exceptionsElem = false;
+	boolean fieldsElem = false;
+	boolean fieldElem = false;
+	boolean getElem = false;
+	boolean setElem = false;
 
 	private Session _session;
 
@@ -47,10 +53,16 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	private MethodElement _currentCalledByMethod;
 	private ParamTraitContainer _currentDynamicParam;
 	private ReturnTraitContainer _currentDynamicReturn;
+	private FieldTraitContainer _currentDynamicField;
 	private ITrait _currentDynamicTrait;
+	private FieldElement _currentDyamicField;
+	private MethodElement _currentSetMethod;
+	private MethodElement _currentGetMethod;
 
 	private Vector<ITrait> _currentDynamicParamTraits;
 	private Vector<ITrait> _currentDynamicReturnTraits;
+	private Vector<ITrait> _currentDynamicGetTraits;
+	private Vector<ITrait> _currentDynamicSetTraits;
 
 	public SessionXMLReaderHandler() {
 		_traitFactory = new TraitFactory();
@@ -87,6 +99,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		} else if (qName.equals(ILonganIO.TRAIT)) {
 			traitElem = true;
 			if (dynamicElem && calledByElem) {
+				parseDynamicTrait(attributes);
+			}
+
+			if (dynamicElem && (getElem || setElem)) {
 				parseDynamicTrait(attributes);
 			}
 		} else if (qName.equals(ILonganIO.PARAMETERS)) {
@@ -129,10 +145,29 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			if (exceptionsElem) {
 				parseException(attributes);
 			}
+
+		} else if (qName.equals(ILonganIO.GET)) {
+			getElem = true;
+			parseDynamicFieldGet(attributes);
+		} else if (qName.equals(ILonganIO.SET)) {
+			setElem = true;
+			parseDynamicFieldSet(attributes);
+		} else if (qName.equals(ILonganIO.FIELD)) {
+			fieldElem = true;
+
+			if (dynamicElem) {
+				parseDynamicFieldAttrs(attributes);
+			}
+
+			if (staticElem) {
+				parseStaticFieldAttrs(attributes);
+			}
 		} else if (qName.equals(ILonganIO.EXCEPTIONS)) {
 			exceptionsElem = true;
 		} else if (qName.equals(ILonganIO.METHODS)) {
 			methodsElem = true;
+		} else if (qName.equals(ILonganIO.FIELDS)) {
+			fieldsElem = true;
 		} else if (qName.equals(ILonganIO.ROOT)) {
 			rootElem = true;
 			parseRootAttributes(attributes);
@@ -141,6 +176,59 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		} else if (qName.equals(ILonganIO.STATIC)) {
 			staticElem = true;
 		}
+	}
+
+	private void parseDynamicFieldSet(Attributes attributes) {
+		String idString = attributes.getValue(ILonganIO.ID);
+		String countString = attributes.getValue(ILonganIO.COUNT);
+
+		int id = Integer.parseInt(idString);
+		int count = Integer.parseInt(countString);
+
+		_currentDyamicField.getSetBy().setCount(id, count);
+		_currentSetMethod = _session.getMethod(id);
+		
+		_currentDynamicSetTraits= new Vector<ITrait>();
+	}
+
+	private void parseDynamicFieldGet(Attributes attributes) {
+		String idString = attributes.getValue(ILonganIO.ID);
+		String countString = attributes.getValue(ILonganIO.COUNT);
+
+		int id = Integer.parseInt(idString);
+		int count = Integer.parseInt(countString);
+
+		_currentDyamicField.getGetBy().setCount(id, count);
+		_currentGetMethod = _session.getMethod(id);
+		
+		_currentDynamicGetTraits= new Vector<ITrait>();
+	}
+
+	private void parseDynamicFieldAttrs(Attributes attributes) {
+		String idString = attributes.getValue(ILonganIO.ID);
+
+		int id = Integer.parseInt(idString);
+
+		_currentDyamicField = _session.getField(id);
+
+		Preconditions.checkNotNull(_currentDyamicField);
+	}
+
+	private void parseStaticFieldAttrs(Attributes attributes) {
+		String idString = attributes.getValue(ILonganIO.ID);
+		String name = attributes.getValue(ILonganIO.NAME);
+		String type = attributes.getValue(ILonganIO.TYPE);
+
+		int id = Integer.parseInt(idString);
+
+		FieldElement fe = new FieldElement(id, name);
+		_session.addIDForElement(name, id);
+		_session.addField(id, fe);
+
+		FieldTraitContainer ftcg = new FieldTraitContainer(type);
+		FieldTraitContainer ftcs = new FieldTraitContainer(type);
+		fe.setFieldGetTraitContainer(ftcg);
+		fe.setFieldSetTraitContainer(ftcs);
 	}
 
 	private void parseException(Attributes attributes) {
@@ -204,7 +292,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 	private void parseDynamicTrait(Attributes attributes) {
 		_log.trace("parseDynamicTrait");
-		// <trait key="IsNullTrait">
+
 		String traitKey = attributes.getValue(ILonganIO.KEY);
 
 		_currentDynamicTrait = _traitFactory.createTrait(traitKey);
@@ -213,6 +301,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			_currentDynamicParamTraits.add(_currentDynamicTrait);
 		} else if (returnElem) {
 			_currentDynamicReturnTraits.add(_currentDynamicTrait);
+		} else if (setElem) {
+			_currentDynamicSetTraits.add(_currentDynamicTrait);
+		} else if (getElem) {
+			_currentDynamicGetTraits.add(_currentDynamicTrait);
 		} else {
 			throw new AssertionError("This shouldn't happen");
 		}
@@ -326,6 +418,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			if (dynamicElem && calledByElem && paramElem) {
 				_currentDynamicTrait = null;
 			}
+
+			if (dynamicElem && fieldsElem)
+				_currentDynamicTrait = null;
+
 		} else if (qName.equals(ILonganIO.PARAMETERS)) {
 			paramsElem = false;
 		} else if (qName.equals(ILonganIO.RETURN)) {
@@ -357,12 +453,47 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 				_log.trace("ccbm: " + _currentCalledByMethod.getName() + " nulled");
 				_currentCalledByMethod = null;
 			}
+		} else if (qName.equals(ILonganIO.GET)) {
+			getElem = false;
+			
+			if (dynamicElem && fieldElem) {
+				if (_currentDynamicGetTraits.size() != 0) {
+					ITrait[] traits = new ITrait[_currentDynamicGetTraits.size()];
+					traits = _currentDynamicGetTraits.toArray(traits);
+
+					_currentDyamicField.getFieldGetTraitContainer().addTraits(_currentGetMethod.getId(), traits);
+				}
+				_currentDynamicGetTraits = null; 
+				_currentGetMethod = null;
+			}
+			
+		} else if (qName.equals(ILonganIO.SET)) {
+			setElem = false;
+			if (dynamicElem && fieldElem) {
+				if (_currentDynamicSetTraits.size() != 0) {
+					ITrait[] traits = new ITrait[_currentDynamicSetTraits.size()];
+					traits = _currentDynamicSetTraits.toArray(traits);
+
+					_currentDyamicField.getFieldSetTraitContainer().addTraits(_currentSetMethod.getId(), traits);
+				}
+				_currentDynamicSetTraits = null; 
+				_currentSetMethod = null;
+			}
+			
+		} else if (qName.equals(ILonganIO.FIELD)) {
+			fieldElem = false;
+			if (dynamicElem) {
+
+				_currentDyamicField = null;
+			}
 		} else if (qName.equals(ILonganIO.EXCEPTION)) {
 			exceptionElem = false;
 		} else if (qName.equals(ILonganIO.EXCEPTIONS)) {
 			exceptionsElem = false;
 		} else if (qName.equals(ILonganIO.METHODS)) {
 			methodsElem = false;
+		} else if (qName.equals(ILonganIO.FIELDS)) {
+			fieldsElem = false;
 		} else if (qName.equals(ILonganIO.ROOT)) {
 			rootElem = false;
 		} else if (qName.equals(ILonganIO.DYNAMIC)) {

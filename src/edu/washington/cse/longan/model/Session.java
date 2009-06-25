@@ -37,6 +37,10 @@ public class Session {
 	 */
 	private BiMap<String, Integer> _nameToBaseIdMap = HashBiMap.create();
 
+	private BiMap<String, Integer> _fieldNameToBaseIdMap = HashBiMap.create();
+
+	private BiMap<String, Integer> _methodNameToBaseIdMap = HashBiMap.create();
+
 	/**
 	 * id -> milliseconds
 	 */
@@ -79,6 +83,9 @@ public class Session {
 
 	public void addMethod(int id, MethodElement method) {
 		_methods.put(id, method);
+
+		if (!_methodNameToBaseIdMap.containsKey(method.getName()))
+			_methodNameToBaseIdMap.put(method.getName(), id);
 	}
 
 	public Collection<FieldElement> getFields() {
@@ -129,10 +136,16 @@ public class Session {
 	public void addField(int id, FieldElement field) {
 		_fields.put(id, field);
 
+		if (!_fieldNameToBaseIdMap.containsKey(field.getName()))
+			_fieldNameToBaseIdMap.put(field.getName(), id);
 	}
 
 	public boolean fieldExists(int id) {
 		return _fields.containsKey(id);
+	}
+
+	public Set<String> getMethodNames() {
+		return _methodNameToBaseIdMap.keySet();
 	}
 
 }

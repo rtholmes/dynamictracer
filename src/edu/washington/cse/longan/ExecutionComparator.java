@@ -33,6 +33,8 @@ public class ExecutionComparator {
 	public static void main(String[] args) {
 		LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 
+		long start = System.currentTimeMillis();
+		
 		String path = ILonganConstants.OUTPUT_PATH;
 
 		Vector<String> executionFiles = new Vector<String>();
@@ -88,10 +90,10 @@ public class ExecutionComparator {
 
 		ec.compare(executionFiles);
 
-		// ec = new ExecutionComparator();
-		// ec.readAndWrite(executionFiles.firstElement());
+		ec = new ExecutionComparator();
+		ec.readAndWrite(executionFiles.firstElement());
 
-		ec.done();
+		ec.done(start);
 	}
 
 	private void start() {
@@ -99,8 +101,8 @@ public class ExecutionComparator {
 
 	}
 
-	private void done() {
-		_log.info("Done in: " + TimeUtility.msToHumanReadableDelta(_start));
+	private void done(long start) {
+		_log.info("Done in: " + TimeUtility.msToHumanReadableDelta(start));
 	}
 
 	private void readAndWrite(String fName) {
@@ -153,8 +155,8 @@ public class ExecutionComparator {
 	private void checkTotalMethodInvocationCounts(Session sA, Session sB) {
 		_log.info("CHECK INVOCATION COUNTS");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
 
@@ -200,8 +202,8 @@ public class ExecutionComparator {
 
 		_log.info("CHECK COMBINED RETURN DIFFERENCES");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
 
@@ -260,8 +262,8 @@ public class ExecutionComparator {
 
 		_log.info("CHECK COMBINED PARAM DIFFERENCES");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
 
@@ -413,8 +415,8 @@ public class ExecutionComparator {
 	private void checkPathCounts(Session sA, Session sB) {
 		_log.info("CHECK PATH COUNTS");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
 		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
@@ -443,7 +445,7 @@ public class ExecutionComparator {
 				if (sAcount != sBcount) {
 					_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
 				} else {
-					_log.debug("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+					_log.trace("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
 				}
 
 			}
@@ -472,8 +474,8 @@ public class ExecutionComparator {
 
 		_log.info("CHECK FOR MISSING PATHS");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
 		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
@@ -533,8 +535,8 @@ public class ExecutionComparator {
 
 		_log.info("CHECK FOR NEW PATHS");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
 		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
 		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
