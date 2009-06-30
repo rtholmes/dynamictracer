@@ -83,13 +83,13 @@ public class ExecutionComparator {
 
 			// } else {
 			// inh run
-			executionFiles.add(path + "6-30_1283.xml");
-//			executionFiles.add(path + "6-30_1311.xml");
-//			executionFiles.add(path + "6-30_1322.xml");
-			executionFiles.add(path + "6-30_1371.xml");
+			// executionFiles.add(path + "6-30_1283.xml");
+			// executionFiles.add(path + "6-30_1311.xml");
+			// executionFiles.add(path + "6-30_1322.xml");
+			// executionFiles.add(path + "6-30_1371.xml");
 
-			// executionFiles.add(path + "inhA.xml");
-			// executionFiles.add(path + "inhB.xml");
+			executionFiles.add(path + "inhA.xml");
+			executionFiles.add(path + "inhB.xml");
 			// executionFiles.add(path + "latest.xml");
 			// executionFiles.add(path + "latest.xml");
 		}
@@ -176,8 +176,6 @@ public class ExecutionComparator {
 			FieldElement fA = sA.getField(sA.getIdForElement(eName));
 			FieldElement fB = sB.getField(sB.getIdForElement(eName));
 
-			// XXX: implement
-
 			FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
 			FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
 
@@ -236,8 +234,6 @@ public class ExecutionComparator {
 			FieldElement fA = sA.getField(sA.getIdForElement(eName));
 			FieldElement fB = sB.getField(sB.getIdForElement(eName));
 
-			// XXX: implement
-
 			FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
 			FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
 
@@ -253,7 +249,7 @@ public class ExecutionComparator {
 					traitsB = ftgB.getTraitsForCaller(sB.getIdForElement(elemName));
 
 				// compare trait arrays
-				compareTraitDifferences(traitsA, traitsB, elemName + " referenced by: " + elemName);
+				compareTraitDifferences(traitsA, traitsB, fA.getName() + " referenced by: " + elemName);
 			}
 
 			for (int setById : fB.getSetBy().elementSet()) {
@@ -267,15 +263,37 @@ public class ExecutionComparator {
 					traitsA = ftgA.getTraitsForCaller(sA.getIdForElement(elemName));
 
 				// compare trait arrays
-				compareTraitDifferences(traitsA, traitsB, elemName + " referenced by: " + elemName);
+				compareTraitDifferences(traitsA, traitsB, fB.getName() + " referenced by: " + elemName);
 			}
 
 		}
-		
+
+		// XXX: not workign?
 		_log.info("CHECK COMBINED FIELD GET DIFFERENCES");
-		// XXX: todo
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+			_log.debug("common field: " + eName);
+
+			FieldElement fA = sA.getField(sA.getIdForElement(eName));
+			FieldElement fB = sB.getField(sB.getIdForElement(eName));
+
+			FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
+			FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
+
+			compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
+		}
+
 		_log.info("CHECK COMBINED FIELD SET DIFFERENCES");
-		
+		for (String eName : Sets.intersection(eAnames, eBnames)) {
+			_log.debug("common field: " + eName);
+
+			FieldElement fA = sA.getField(sA.getIdForElement(eName));
+			FieldElement fB = sB.getField(sB.getIdForElement(eName));
+
+			FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
+			FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
+
+			compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
+		}
 	}
 
 	private void checkExceptionDifferences(Session sA, Session sB) {
@@ -531,7 +549,7 @@ public class ExecutionComparator {
 			return;
 		}
 
-		if (aTraits != null && bTraits != null) {
+		if (aTraits != null && bTraits != null && aTraits.length > 0 && bTraits.length > 0) {
 
 			Preconditions.checkArgument(aTraits.length == bTraits.length);
 			for (int i = 0; i < aTraits.length; i++) {
@@ -641,7 +659,6 @@ public class ExecutionComparator {
 							_log.info("\tAdded" + preFix + "trait: " + kind + " to: " + elemName + postFix);
 					}
 				}
-				
 
 				Set<String> bMissingSD = Sets.difference(at.getSupplementalData().elementSet(), bt.getSupplementalData().elementSet());
 				Set<String> bAddsSD = Sets.difference(bt.getSupplementalData().elementSet(), at.getSupplementalData().elementSet());
@@ -649,13 +666,13 @@ public class ExecutionComparator {
 				if (bMissingSD.size() > 0) {
 					for (String key : bMissingSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tMissing"+preFix+"trait: " + key + " in: " + elemName);
+						_log.info("\tMissing" + preFix + "trait: " + key + " in: " + elemName);
 					}
 				}
 				if (bAddsSD.size() > 0) {
 					for (String key : bAddsSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tAdded"+preFix+"trait: " + key + " to: " + elemName);
+						_log.info("\tAdded" + preFix + "trait: " + key + " to: " + elemName);
 					}
 				}
 
