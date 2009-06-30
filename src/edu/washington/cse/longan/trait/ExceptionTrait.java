@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 
 import edu.washington.cse.longan.io.ILonganIO;
 import edu.washington.cse.longan.model.ILonganConstants;
+import edu.washington.cse.longan.model.Session;
 
 public class ExceptionTrait extends AbstractTrait {
 
@@ -99,6 +100,35 @@ public class ExceptionTrait extends AbstractTrait {
 
 	}
 
+	public Stack<Integer> getCallStack() {
+		return _callStack;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Stack<String> getCallStackNames(Session session) {
+
+		Stack<String> callStackNames = new Stack<String>();
+		Stack<Integer> cs = (Stack<Integer>) _callStack.clone();
+
+		for (Integer id : cs) {
+			callStackNames.add(0, session.getElementNameForID(id));
+		}
+
+		return callStackNames;
+	}
+
+	public boolean getThrows() {
+		return _throws;
+	}
+
+	public boolean getReThrows() {
+		return _rethrows;
+	}
+
+	public boolean getCatches() {
+		return _catches;
+	}
+
 	@Override
 	public Element toXML() {
 		Element element = super.toXML();
@@ -113,4 +143,13 @@ public class ExceptionTrait extends AbstractTrait {
 		return element;
 	}
 
+	public static boolean equals(ExceptionTrait tA, ExceptionTrait tB, Session sA, Session sB) {
+
+		if (tA.getCatches() == tB.getCatches() && tA.getReThrows() == tB.getReThrows() && tA.getThrows() == tB.getThrows()) {
+			boolean equivStacks = tA.getCallStackNames(sA).equals(tB.getCallStackNames(sB));
+			return equivStacks;
+		}
+
+		return false;
+	}
 }

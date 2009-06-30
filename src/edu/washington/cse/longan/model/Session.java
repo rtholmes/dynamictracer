@@ -144,8 +144,12 @@ public class Session {
 		return _fields.containsKey(id);
 	}
 
+	
 	public Set<String> getMethodNames() {
 		return _methodNameToBaseIdMap.keySet();
 	}
 
+	public Set<String> getFieldNames() {
+		return _fieldNameToBaseIdMap.keySet();
+	}
 }

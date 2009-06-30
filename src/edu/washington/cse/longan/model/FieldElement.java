@@ -63,4 +63,9 @@ public class FieldElement {
 	public Multiset<Integer> getSetBy() {
 		return _setBy;
 	}
+
+	@Override
+	public String toString() {
+		return _name;
+	}
 }

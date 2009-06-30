@@ -13,12 +13,12 @@ public interface ILonganConstants {
 	public static final int UNKNOWN_METHOD_ID = -1;
 	public static final String UNKNOWN_METHOD_NAME = SEPARATOR + "unknownM" + SEPARATOR;
 
-	public static final Level LOGGING_LEVEL = Level.DEBUG;
+	public static final Level LOGGING_LEVEL = Level.INFO;
 
 	public static final boolean OUTPUT_DEBUG = true;
 
 	// WARNING: if you set this true make sure that LOGGING_LEVEL is TRACE or DEBUG
-	public static final boolean OUTPUT_SCREEN = true;
+	public static final boolean OUTPUT_SCREEN = false;
 
 	public static final boolean OUTPUT_SUMMARY = false;
 
