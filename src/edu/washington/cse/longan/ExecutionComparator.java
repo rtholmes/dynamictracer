@@ -83,13 +83,13 @@ public class ExecutionComparator {
 
 			// } else {
 			// inh run
-			// executionFiles.add(path + "6-30_1283.xml");
-			// executionFiles.add(path + "6-30_1311.xml");
-			// executionFiles.add(path + "6-30_1322.xml");
-			// executionFiles.add(path + "6-30_1371.xml");
+			 executionFiles.add(path + "6-30_1283.xml");
+//			 executionFiles.add(path + "6-30_1311.xml");
+//			 executionFiles.add(path + "6-30_1322.xml");
+			 executionFiles.add(path + "6-30_1371.xml");
 
-			executionFiles.add(path + "inhA.xml");
-			executionFiles.add(path + "inhB.xml");
+//			executionFiles.add(path + "inhA.xml");
+//			executionFiles.add(path + "inhB.xml");
 			// executionFiles.add(path + "latest.xml");
 			// executionFiles.add(path + "latest.xml");
 		}
@@ -267,8 +267,7 @@ public class ExecutionComparator {
 			}
 
 		}
-
-		// XXX: not workign?
+		
 		_log.info("CHECK COMBINED FIELD GET DIFFERENCES");
 		for (String eName : Sets.intersection(eAnames, eBnames)) {
 			_log.debug("common field: " + eName);
@@ -564,13 +563,13 @@ public class ExecutionComparator {
 				if (bMissing.size() > 0) {
 					for (DATA_KINDS kind : bMissing) {
 						if (checkTraitRelevance(elemName, at, kind))
-							_log.info("\tMissing trait: " + kind + " in: " + elemName);
+							_log.info("\tMissing trait: " + kind + " ( " + at.getData().count(kind) + " )" + " in: " + elemName);
 					}
 				}
 				if (bAdds.size() > 0) {
 					for (DATA_KINDS kind : bAdds) {
-						if (checkTraitRelevance(elemName, at, kind))
-							_log.info("\tAdded trait: " + kind + " to: " + elemName);
+						if (checkTraitRelevance(elemName, bt, kind))
+							_log.info("\tAdded trait: " + kind + " ( " + bt.getData().count(kind) + " )" + " to: " + elemName);
 					}
 				}
 
@@ -596,23 +595,27 @@ public class ExecutionComparator {
 
 			Preconditions.checkArgument(!(aTraits == null && bTraits == null), "Shouldn't be possible.");
 
-			ITrait[] singleTrait = null;
-			if (bTraits != null) {
-				singleTrait = bTraits;
-				_log.info("\tNew traits for: " + elemName);
-			}
-			if (aTraits != null) {
-				singleTrait = aTraits;
-				_log.info("\tMissing traits for: " + elemName);
-			}
+			if (aTraits != null && bTraits != null && aTraits.length < 1 && bTraits.length < 1) {
+				// if they're both 0 then there's nothing missing and nothing gained
+			} else {
+				ITrait[] singleTrait = null;
+				if (bTraits != null && bTraits.length > 0) {
+					singleTrait = bTraits;
+					_log.info("\tNew traits for: " + elemName);
+				}
+				if (aTraits != null && aTraits.length > 0) {
+					singleTrait = aTraits;
+					_log.info("\tMissing traits for: " + elemName);
+				}
 
-			Preconditions.checkNotNull(singleTrait);
+				Preconditions.checkNotNull(singleTrait);
 
-			for (ITrait trait : singleTrait) {
-				for (DATA_KINDS kind : trait.getData().elementSet())
-					_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
-				for (String key : trait.getSupplementalData().elementSet())
-					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
+				for (ITrait trait : singleTrait) {
+					for (DATA_KINDS kind : trait.getData().elementSet())
+						_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
+					for (String key : trait.getSupplementalData().elementSet())
+						_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
+				}
 			}
 		}
 	}
