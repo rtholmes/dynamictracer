@@ -1,4 +1,3 @@
-package edu.washington.cse.longan.trace;
 //package edu.washington.cse.longan;
 //
 ///**
@@ -8,7 +7,7 @@ package edu.washington.cse.longan.trace;
 //
 //import org.aspectj.lang.JoinPoint;
 //
-//import edu.washington.cse.longan.Collector;
+//import edu.washington.cse.longan.trace.AJCollector;
 //
 //privileged aspect Tracer {
 //
@@ -16,23 +15,23 @@ package edu.washington.cse.longan.trace;
 //
 //	// all scoped method calls (super can't be captured)
 //	// pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
-//	pointcut methodEntry() : execution(* org.ulti.dev.dynamic.test..*.* (..)) &&
+//	pointcut methodEntry() : execution(* org.joda.time..*.* (..)) &&
 //		!throwableCreation();
 //
 //	// all scoped constructors
 //	// pointcut constructor() : call(edu.washington.cse..*.new(..));
-//	pointcut constructor() : call(org.ulti.dev.dynamic.test..*.new(..)) &&
+//	pointcut constructor() : call(org.joda.time..*.new(..)) &&
 //		!throwableCreation();
 //
 //	// all scoped object initializers [not sure how to use these yet]
 //	// pointcut objectInitialization() :
 //	// initialization(edu.washington.cse..*.new(..)) && !within(Tracer);
-//	pointcut objectInitialization() : initialization(org.ulti.dev.dynamic.test..*.new(..)) && !within(Tracer);
+//	pointcut objectInitialization() : initialization(org.joda.time..*.new(..)) && !within(Tracer);
 //
 //	// all scoped class initializers [not sure how to use these yet]
 //	// pointcut classInitialization() :
 //	// staticinitialization(edu.washington.cse..*.*) && !within(Tracer);
-//	pointcut classInitialization() : staticinitialization(org.ulti.dev.dynamic.test..*.*) && !within(Tracer);
+//	pointcut classInitialization() : staticinitialization(org.joda.time..*.*) && !within(Tracer);
 //
 //	// all library method calls (e.g., all non-scoped calls)
 //	// 2nd clause loses us static calls to instrumenter suite for some reason,
@@ -40,7 +39,7 @@ package edu.washington.cse.longan.trace;
 //	// pointcut libraryEntry() : call(* *.* (..)) && ! call(*
 //	// edu.washington.cse..*.* (..)) && !within(Tracer);
 //	pointcut libraryEntry() : call(* *.* (..)) &&
-//		!call(* org.ulti.dev.dynamic.test..*.* (..)) && // ignore regular methods
+//		!call(* org.joda.time..*.* (..)) && // ignore regular methods
 //		!call(* edu.washington.cse..*.* (..)) && 		// ignore tracer code
 //		!throwableCreation() &&
 //		!within(Tracer);
@@ -67,13 +66,12 @@ package edu.washington.cse.longan.trace;
 //
 //	pointcut throwableCreation() : call(java.lang.Exception+.new(..));
 //
-//	pointcut lastThing() : execution(void org.ulti.dev.dynamic.test.test.InheritanceTest.lastThing()) && !within(Tracer);
-//	
-//	after() : lastThing() {
-////		System.err.println("adsf");
-////		_collector.point();
-//		_collector.writeToScreen();
-//	}
+////	pointcut lastThing() : execution(void org.joda.time.LongAnWriter.testWriteCollection()) && !within(Tracer);
+////	
+////	after() : lastThing() {
+////		_collector.writeToScreen();
+////		_collector.writeToDisk();
+////	}
 //	
 //	// //////////////////////////
 //	// //////// ADVICE //////////
@@ -82,10 +80,14 @@ package edu.washington.cse.longan.trace;
 //		_collector.exceptionHandled(thisJoinPoint, instance, exception);
 //	}
 //
-//	before() : fieldGet() {
-//		_collector.fieldGet(thisJoinPoint);
-//	}
+////	before() : fieldGet() {
+////		_collector.fieldGet(thisJoinPoint);
+////	}
 //
+//	after() returning(Object fieldValue): fieldGet() {
+//		_collector.fieldGet(thisJoinPoint, fieldValue);
+//	}
+//	
 //	before(Object newValue) : fieldSet() && args(newValue) {
 //		_collector.fieldSet(thisJoinPoint, newValue);
 //	}

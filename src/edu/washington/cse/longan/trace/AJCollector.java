@@ -56,6 +56,7 @@ public class AJCollector {
 	public static AJCollector getInstance() {
 		if (_instance == null) {
 			_instance = new AJCollector();
+
 		}
 		return _instance;
 	}
@@ -109,6 +110,16 @@ public class AJCollector {
 			_session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
+
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+
+				public void run() {
+					_log.info("Shtudown is happening now");
+					writeToScreen();
+					writeToDisk();
+				}
+			});
+			
 		} catch (Exception e) {
 			_log.error(e);
 		}
