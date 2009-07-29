@@ -30,10 +30,19 @@ public class ExecutionComparator {
 	Logger _log = Logger.getLogger(this.getClass());
 	private long _start;
 
+	private boolean _outputInvocationDifferences = false;
+	private boolean _outputCountDifferences = false;
+	private boolean _outputMissing = false;
+	private boolean _outputAdded = true;
+	private boolean _outputCombined = true;
+	private boolean _outputIndividual = false;
+	private boolean _outputPaths = false;
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		// LOGGING
 		LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 
 		long start = System.currentTimeMillis();
@@ -83,15 +92,29 @@ public class ExecutionComparator {
 
 			// } else {
 			// inh run
-			 executionFiles.add(path + "6-30_1283.xml");
-//			 executionFiles.add(path + "6-30_1311.xml");
-//			 executionFiles.add(path + "6-30_1322.xml");
-			 executionFiles.add(path + "6-30_1371.xml");
+			// executionFiles.add(path + "6-30_1283.xml");
+			// executionFiles.add(path + "6-30_1311.xml");
+			// executionFiles.add(path + "6-30_1322.xml");
+			// executionFiles.add(path + "6-30_1371.xml");
 
-//			executionFiles.add(path + "inhA.xml");
-//			executionFiles.add(path + "inhB.xml");
+			// executionFiles.add(path + "inhA.xml");
+			// executionFiles.add(path + "inhB.xml");
 			// executionFiles.add(path + "latest.xml");
 			// executionFiles.add(path + "latest.xml");
+
+			// executionFiles.add(path + "log4j_v1_2_15_rc1.xml");
+			// executionFiles.add(path + "log4j_v1_2_15_rc6.xml");
+
+			// executionFiles.add(path + "joda1371c.xml");
+			// executionFiles.add(path + "jibx-core.xml");
+			// executionFiles.add(path + "kaching-api.xml");
+			// executionFiles.add(path + "google-rfc-2445.xml");
+
+//			executionFiles.add(path + "static_JodaTime_1322.xml");
+			executionFiles.add(path + "static_JodaTime_1322.xml");
+			 executionFiles.add(path + "static_JodaTime_1371.xml");
+			// executionFiles.add(path + "latestA.xml");
+			// executionFiles.add(path + "latestB.xml");
 		}
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.start();
@@ -147,14 +170,17 @@ public class ExecutionComparator {
 
 		_log.info("Comparing: " + sA.getSessionName() + " to: " + sB.getSessionName());
 
-		checkTotalMethodInvocationCounts(sA, sB);
+		if (_outputCountDifferences)
+			checkTotalMethodInvocationCounts(sA, sB);
 
 		checkForMissingElements(sA, sB);
 		checkForNewElements(sA, sB);
 
-		checkForMissingPaths(sA, sB);
-		checkForNewPaths(sA, sB);
-		checkPathCounts(sA, sB);
+		if (_outputPaths) {
+			checkForMissingPaths(sA, sB);
+			checkForNewPaths(sA, sB);
+			checkPathCounts(sA, sB);
+		}
 
 		checkParamDifferences(sA, sB);
 		checkReturnDifferences(sA, sB);
@@ -168,130 +194,145 @@ public class ExecutionComparator {
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getFieldNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getFieldNames());
 
-		_log.info("CHECK FIELD GET DIFFERENCES");
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
+		if (_outputIndividual) {
+			_log.info("CHECK FIELD GET DIFFERENCES");
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
 
-			_log.debug("common field: " + eName);
+				_log.debug("common field: " + eName);
 
-			FieldElement fA = sA.getField(sA.getIdForElement(eName));
-			FieldElement fB = sB.getField(sB.getIdForElement(eName));
+				FieldElement fA = sA.getField(sA.getIdForElement(eName));
+				FieldElement fB = sB.getField(sB.getIdForElement(eName));
 
-			FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
-			FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
+				FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
+				FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
 
-			_log.debug("\tA gets: " + fA.getGetBy().size() + "\tsets: " + fA.getSetBy().size());
-			_log.debug("\tB gets: " + fB.getGetBy().size() + "\tsets: " + fB.getSetBy().size());
+				_log.debug("\tA gets: " + fA.getGetBy().size() + "\tsets: " + fA.getSetBy().size());
+				_log.debug("\tB gets: " + fB.getGetBy().size() + "\tsets: " + fB.getSetBy().size());
 
-			for (int getById : fA.getGetBy().elementSet()) {
-				String elemName = sA.getElementNameForID(getById);
+				for (int getById : fA.getGetBy().elementSet()) {
+					String elemName = sA.getElementNameForID(getById);
 
-				ITrait traitsA[] = null;
-				ITrait traitsB[] = null;
+					ITrait traitsA[] = null;
+					ITrait traitsB[] = null;
 
-				traitsA = ftgA.getTraitsForCaller(getById);
-				if (sB.hasIDForElement(elemName))
-					traitsB = ftgB.getTraitsForCaller(sB.getIdForElement(elemName));
+					traitsA = ftgA.getTraitsForCaller(getById);
+					if (sB.hasIDForElement(elemName))
+						traitsB = ftgB.getTraitsForCaller(sB.getIdForElement(elemName));
 
-				// compare trait arrays
+					// compare trait arrays
 
-				compareTraitDifferences(traitsA, traitsB, fA.getName() + " referenced by: " + elemName);
+					compareTraitDifferences(traitsA, traitsB, fA.getName() + " referenced by: " + elemName);
+				}
+
+				for (int getById : fB.getGetBy().elementSet()) {
+					String elemName = sB.getElementNameForID(getById);
+
+					ITrait traitsB[] = null;
+					ITrait traitsA[] = null;
+
+					traitsB = ftgB.getTraitsForCaller(getById);
+					if (sA.hasIDForElement(elemName))
+						traitsA = ftgA.getTraitsForCaller(sA.getIdForElement(elemName));
+
+					// compare trait arrays
+					compareTraitDifferences(traitsA, traitsB, fB.getName() + " referenced by: " + elemName);
+				}
+
 			}
 
-			for (int getById : fB.getGetBy().elementSet()) {
-				String elemName = sB.getElementNameForID(getById);
+			// Iterates through elements that exist in A but not in B
+			// e.g., this gives an indication of new elements in B
+			for (String eName : Sets.difference(eAnames, eBnames)) {
 
-				ITrait traitsB[] = null;
-				ITrait traitsA[] = null;
-
-				traitsB = ftgB.getTraitsForCaller(getById);
-				if (sA.hasIDForElement(elemName))
-					traitsA = ftgA.getTraitsForCaller(sA.getIdForElement(elemName));
-
-				// compare trait arrays
-				compareTraitDifferences(traitsA, traitsB, fB.getName() + " referenced by: " + elemName);
 			}
 
-		}
+			// Iterates through elements that exist in B but not in C
+			// e.g., this gives an indication of elements in A that
+			// are no longer present in B
+			for (String eName : Sets.difference(eBnames, eAnames)) {
 
-		// Iterates through elements that exist in A but not in B
-		// e.g., this gives an indication of new elements in B
-		for (String eName : Sets.difference(eAnames, eBnames)) {
-
-		}
-
-		// Iterates through elements that exist in B but not in C
-		// e.g., this gives an indication of elements in A that
-		// are no longer present in B
-		for (String eName : Sets.difference(eBnames, eAnames)) {
-
-		}
-
-		_log.info("CHECK FIELD SET DIFFERENCES");
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
-
-			_log.debug("common field: " + eName);
-
-			FieldElement fA = sA.getField(sA.getIdForElement(eName));
-			FieldElement fB = sB.getField(sB.getIdForElement(eName));
-
-			FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
-			FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
-
-			_log.debug("\tgets: " + fA.getGetBy().size() + "\tsets: " + fA.getSetBy().size());
-			for (int setById : fA.getSetBy().elementSet()) {
-				String elemName = sA.getElementNameForID(setById);
-
-				ITrait traitsA[] = null;
-				ITrait traitsB[] = null;
-
-				traitsA = ftgA.getTraitsForCaller(setById);
-				if (sB.hasIDForElement(elemName))
-					traitsB = ftgB.getTraitsForCaller(sB.getIdForElement(elemName));
-
-				// compare trait arrays
-				compareTraitDifferences(traitsA, traitsB, fA.getName() + " referenced by: " + elemName);
 			}
+		}
 
-			for (int setById : fB.getSetBy().elementSet()) {
-				String elemName = sB.getElementNameForID(setById);
+		if (_outputIndividual) {
+			_log.info("CHECK FIELD SET DIFFERENCES");
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
 
-				ITrait traitsB[] = null;
-				ITrait traitsA[] = null;
+				_log.debug("common field: " + eName);
 
-				traitsB = ftgB.getTraitsForCaller(setById);
-				if (sA.hasIDForElement(elemName))
-					traitsA = ftgA.getTraitsForCaller(sA.getIdForElement(elemName));
+				FieldElement fA = sA.getField(sA.getIdForElement(eName));
+				FieldElement fB = sB.getField(sB.getIdForElement(eName));
 
-				// compare trait arrays
-				compareTraitDifferences(traitsA, traitsB, fB.getName() + " referenced by: " + elemName);
+				FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
+				FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
+
+				_log.debug("\tgets: " + fA.getGetBy().size() + "\tsets: " + fA.getSetBy().size());
+				for (int setById : fA.getSetBy().elementSet()) {
+					String elemName = sA.getElementNameForID(setById);
+
+					ITrait traitsA[] = null;
+					ITrait traitsB[] = null;
+
+					traitsA = ftgA.getTraitsForCaller(setById);
+					if (sB.hasIDForElement(elemName))
+						traitsB = ftgB.getTraitsForCaller(sB.getIdForElement(elemName));
+
+					// compare trait arrays
+					compareTraitDifferences(traitsA, traitsB, fA.getName() + " referenced by: " + elemName);
+				}
+
+				for (int setById : fB.getSetBy().elementSet()) {
+					String elemName = sB.getElementNameForID(setById);
+
+					ITrait traitsB[] = null;
+					ITrait traitsA[] = null;
+
+					traitsB = ftgB.getTraitsForCaller(setById);
+					if (sA.hasIDForElement(elemName))
+						traitsA = ftgA.getTraitsForCaller(sA.getIdForElement(elemName));
+
+					// compare trait arrays
+					compareTraitDifferences(traitsA, traitsB, fB.getName() + " referenced by: " + elemName);
+				}
+
 			}
-
-		}
-		
-		_log.info("CHECK COMBINED FIELD GET DIFFERENCES");
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
-			_log.debug("common field: " + eName);
-
-			FieldElement fA = sA.getField(sA.getIdForElement(eName));
-			FieldElement fB = sB.getField(sB.getIdForElement(eName));
-
-			FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
-			FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
-
-			compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
 		}
 
-		_log.info("CHECK COMBINED FIELD SET DIFFERENCES");
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
-			_log.debug("common field: " + eName);
+		if (_outputCombined) {
+			_log.info("CHECK COMBINED FIELD GET DIFFERENCES");
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
+				_log.debug("common field: " + eName);
 
-			FieldElement fA = sA.getField(sA.getIdForElement(eName));
-			FieldElement fB = sB.getField(sB.getIdForElement(eName));
+				FieldElement fA = sA.getField(sA.getIdForElement(eName));
+				FieldElement fB = sB.getField(sB.getIdForElement(eName));
 
-			FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
-			FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
+				FieldTraitContainer ftgA = fA.getFieldGetTraitContainer();
+				FieldTraitContainer ftgB = fB.getFieldGetTraitContainer();
 
-			compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
+				if (ftgA != null && ftgB != null) {
+					compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
+				} else {
+					// this won't happen for dynamic traces but might for static
+				}
+			}
+		}
+
+		if (_outputCombined) {
+			_log.info("CHECK COMBINED FIELD SET DIFFERENCES");
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
+				_log.debug("common field: " + eName);
+
+				FieldElement fA = sA.getField(sA.getIdForElement(eName));
+				FieldElement fB = sB.getField(sB.getIdForElement(eName));
+
+				FieldTraitContainer ftgA = fA.getFieldSetTraitContainer();
+				FieldTraitContainer ftgB = fB.getFieldSetTraitContainer();
+				if (ftgA != null && ftgB != null) {
+					compareTraitDifferences(ftgA.getTraitsCollapsed(), ftgB.getTraitsCollapsed(), fA.getName());
+				} else {
+					// this won't happen for dynamic traces but might for static
+				}
+			}
 		}
 	}
 
@@ -318,7 +359,8 @@ public class ExecutionComparator {
 				if (matched) {
 
 				} else {
-					_log.info("Exception disappeared from: " + mA + " ex: " + etA);
+					if (_outputMissing)
+						_log.info("Exception disappeared from: " + mA + " ex: " + etA);
 				}
 			}
 
@@ -332,7 +374,8 @@ public class ExecutionComparator {
 				if (matched) {
 
 				} else {
-					_log.info("Exception added to: " + mB + " ex: " + etB);
+					if (_outputAdded)
+						_log.info("Exception added to: " + mB + " ex: " + etB);
 				}
 			}
 
@@ -380,7 +423,8 @@ public class ExecutionComparator {
 			}
 
 			if (aInvokationTotal != bInvokationTotal) {
-				_log.warn("Invocation differences ( " + aInvokationTotal + " -> " + bInvokationTotal + " ) for: " + mA.getName());
+				if (_outputInvocationDifferences)
+					_log.warn("Invocation differences ( " + aInvokationTotal + " -> " + bInvokationTotal + " ) for: " + mA.getName());
 			}
 		}
 
@@ -417,21 +461,23 @@ public class ExecutionComparator {
 			compareCombinedReturnTraits(mA, mB);
 		}
 
-		_log.info("CHECK CALLEDBY RETURN DIFFERENCES");
+		if (_outputIndividual) {
+			_log.info("CHECK CALLEDBY RETURN DIFFERENCES");
 
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
 
-			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
-			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+				MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+				MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
 
-			Preconditions.checkNotNull(mA);
-			Preconditions.checkNotNull(mB);
+				Preconditions.checkNotNull(mA);
+				Preconditions.checkNotNull(mB);
 
-			for (int mACBid : mA.getCalledBy().elementSet()) {
-				String callerName = sA.getElementNameForID(mACBid);
+				for (int mACBid : mA.getCalledBy().elementSet()) {
+					String callerName = sA.getElementNameForID(mACBid);
 
-				compareCalledByReturnTraits(sA, sB, mA, mB, callerName);
+					compareCalledByReturnTraits(sA, sB, mA, mB, callerName);
 
+				}
 			}
 		}
 	}
@@ -440,7 +486,11 @@ public class ExecutionComparator {
 		ReturnTraitContainer mArtc = mA.getReturnTraitContainer();
 		ReturnTraitContainer mBrtc = mB.getReturnTraitContainer();
 
-		compareTraitDifferences(mArtc.getTraitsCollapsed(), mBrtc.getTraitsCollapsed(), mA.getName(), null, -1, true);
+		if (mArtc != null && mBrtc != null) {
+			compareTraitDifferences(mArtc.getTraitsCollapsed(), mBrtc.getTraitsCollapsed(), mA.getName(), null, -1, true);
+		} else {
+			// this won't happen for dynamic traces but it is ok for static traces
+		}
 	}
 
 	private void compareCalledByReturnTraits(Session sA, Session sB, MethodElement mA, MethodElement mB, String calledByName) {
@@ -461,50 +511,53 @@ public class ExecutionComparator {
 
 	private void checkParamDifferences(Session sA, Session sB) {
 
-		_log.info("CHECK COMBINED PARAM DIFFERENCES");
-
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
+		if (_outputCombined) {
+			_log.info("CHECK COMBINED PARAM DIFFERENCES");
 
-			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
-			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
 
-			Preconditions.checkNotNull(mA);
-			Preconditions.checkNotNull(mB);
+				MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+				MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
 
-			Vector<ParamTraitContainer> mAptcs = mA.getParamTraitContainers();
-			Vector<ParamTraitContainer> mBptcs = mB.getParamTraitContainers();
+				Preconditions.checkNotNull(mA);
+				Preconditions.checkNotNull(mB);
 
-			Preconditions.checkArgument(mAptcs.size() == mBptcs.size());
+				Vector<ParamTraitContainer> mAptcs = mA.getParamTraitContainers();
+				Vector<ParamTraitContainer> mBptcs = mB.getParamTraitContainers();
 
-			for (int j = 0; j < mAptcs.size(); j++) {
-				ParamTraitContainer mAptc = mAptcs.get(j);
-				ParamTraitContainer mBptc = mBptcs.get(j);
+				Preconditions.checkArgument(mAptcs.size() == mBptcs.size());
 
-				Preconditions.checkArgument(mAptc.getClass().equals(mBptc.getClass()));
+				for (int j = 0; j < mAptcs.size(); j++) {
+					ParamTraitContainer mAptc = mAptcs.get(j);
+					ParamTraitContainer mBptc = mBptcs.get(j);
 
-				compareTraitDifferences(mAptc.getTraitsCollapsed(), mBptc.getTraitsCollapsed(), mA.getName(), null, j, true);
+					Preconditions.checkArgument(mAptc.getClass().equals(mBptc.getClass()));
+
+					compareTraitDifferences(mAptc.getTraitsCollapsed(), mBptc.getTraitsCollapsed(), mA.getName(), null, j, true);
+				}
 			}
-
 		}
 
-		_log.info("CHECK CALLEDBY PARAM DIFFERENCES");
+		if (_outputIndividual) {
+			_log.info("CHECK CALLEDBY PARAM DIFFERENCES");
 
-		for (String eName : Sets.intersection(eAnames, eBnames)) {
+			for (String eName : Sets.intersection(eAnames, eBnames)) {
 
-			MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
-			MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
+				MethodElement mA = sA.getMethod(sA.getIdForElement(eName));
+				MethodElement mB = sB.getMethod(sB.getIdForElement(eName));
 
-			Preconditions.checkNotNull(mA);
-			Preconditions.checkNotNull(mB);
+				Preconditions.checkNotNull(mA);
+				Preconditions.checkNotNull(mB);
 
-			for (int mACBid : mA.getCalledBy().elementSet()) {
-				String callerName = sA.getElementNameForID(mACBid);
+				for (int mACBid : mA.getCalledBy().elementSet()) {
+					String callerName = sA.getElementNameForID(mACBid);
 
-				compareCalledByParamTraits(sA, sB, mA, mB, callerName);
+					compareCalledByParamTraits(sA, sB, mA, mB, callerName);
 
+				}
 			}
 		}
 	}
@@ -563,13 +616,15 @@ public class ExecutionComparator {
 				if (bMissing.size() > 0) {
 					for (DATA_KINDS kind : bMissing) {
 						if (checkTraitRelevance(elemName, at, kind))
-							_log.info("\tMissing trait: " + kind + " ( " + at.getData().count(kind) + " )" + " in: " + elemName);
+							if (_outputMissing)
+								_log.info("\tMissing trait: " + kind + " ( " + at.getData().count(kind) + " )" + " in: " + elemName);
 					}
 				}
 				if (bAdds.size() > 0) {
 					for (DATA_KINDS kind : bAdds) {
 						if (checkTraitRelevance(elemName, bt, kind))
-							_log.info("\tAdded trait: " + kind + " ( " + bt.getData().count(kind) + " )" + " to: " + elemName);
+							if (_outputAdded)
+								_log.info("\tAdded trait: " + kind + " ( " + bt.getData().count(kind) + " )" + " to: " + elemName);
 					}
 				}
 
@@ -579,13 +634,15 @@ public class ExecutionComparator {
 				if (bMissingSD.size() > 0) {
 					for (String key : bMissingSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tMissing trait: " + key + " in: " + elemName);
+						if (_outputMissing)
+							_log.info("\tMissing trait: " + key + " in: " + elemName);
 					}
 				}
 				if (bAddsSD.size() > 0) {
 					for (String key : bAddsSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tAdded trait: " + key + " to: " + elemName);
+						if (_outputAdded)
+							_log.info("\tAdded trait: " + key + " to: " + elemName);
 					}
 				}
 
@@ -598,23 +655,32 @@ public class ExecutionComparator {
 			if (aTraits != null && bTraits != null && aTraits.length < 1 && bTraits.length < 1) {
 				// if they're both 0 then there's nothing missing and nothing gained
 			} else {
+				boolean output = false;
 				ITrait[] singleTrait = null;
 				if (bTraits != null && bTraits.length > 0) {
 					singleTrait = bTraits;
-					_log.info("\tNew traits for: " + elemName);
+					if (_outputAdded) {
+						_log.info("\tNew traits for: " + elemName);
+						output = true;
+					}
 				}
 				if (aTraits != null && aTraits.length > 0) {
 					singleTrait = aTraits;
-					_log.info("\tMissing traits for: " + elemName);
+					if (_outputMissing) {
+						_log.info("\tMissing traits for: " + elemName);
+						output = true;
+					}
 				}
 
 				Preconditions.checkNotNull(singleTrait);
 
 				for (ITrait trait : singleTrait) {
 					for (DATA_KINDS kind : trait.getData().elementSet())
-						_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
+						if (output)
+							_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
 					for (String key : trait.getSupplementalData().elementSet())
-						_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
+						if (output)
+							_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
 				}
 			}
 		}
@@ -640,6 +706,9 @@ public class ExecutionComparator {
 
 		if (aTraits != null && bTraits != null) {
 
+			if (aTraits.length != bTraits.length) {
+				System.out.println("");
+			}
 			Preconditions.checkArgument(aTraits.length == bTraits.length);
 			for (int i = 0; i < aTraits.length; i++) {
 				ITrait at = aTraits[i];
@@ -653,13 +722,15 @@ public class ExecutionComparator {
 				if (bMissing.size() > 0) {
 					for (DATA_KINDS kind : bMissing) {
 						if (checkTraitRelevance(elemName, at, kind))
-							_log.info("\tMissing" + preFix + "trait: " + kind + " in: " + elemName + postFix);
+							if (_outputMissing)
+								_log.info("\tMissing" + preFix + "trait: " + kind + " in: " + elemName + postFix);
 					}
 				}
 				if (bAdds.size() > 0) {
 					for (DATA_KINDS kind : bAdds) {
 						if (checkTraitRelevance(elemName, at, kind))
-							_log.info("\tAdded" + preFix + "trait: " + kind + " to: " + elemName + postFix);
+							if (_outputAdded)
+								_log.info("\tAdded" + preFix + "trait: " + kind + " to: " + elemName + postFix);
 					}
 				}
 
@@ -669,13 +740,15 @@ public class ExecutionComparator {
 				if (bMissingSD.size() > 0) {
 					for (String key : bMissingSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tMissing" + preFix + "trait: " + key + " in: " + elemName);
+						if (_outputMissing)
+							_log.info("\tMissing" + preFix + "trait: " + key + " in: " + elemName);
 					}
 				}
 				if (bAddsSD.size() > 0) {
 					for (String key : bAddsSD) {
 						// if (checkTraitRelevance(elemName, at, key))
-						_log.info("\tAdded" + preFix + "trait: " + key + " to: " + elemName);
+						if (_outputAdded)
+							_log.info("\tAdded" + preFix + "trait: " + key + " to: " + elemName);
 					}
 				}
 
@@ -685,23 +758,33 @@ public class ExecutionComparator {
 
 			Preconditions.checkArgument(!(aTraits == null && bTraits == null), "Shouldn't be possible.");
 
+			boolean output = false;
+
 			ITrait[] singleTrait = null;
 			if (bTraits != null) {
 				singleTrait = bTraits;
-				_log.info("\tNew" + preFix + "traits for: " + elemName + postFix);
+				if (_outputAdded) {
+					_log.info("\tNew" + preFix + "traits for: " + elemName + postFix);
+					output = true;
+				}
 			}
 			if (aTraits != null) {
 				singleTrait = aTraits;
-				_log.info("\tMissing" + preFix + "traits for: " + elemName + postFix);
+				if (_outputMissing) {
+					_log.info("\tMissing" + preFix + "traits for: " + elemName + postFix);
+					output = true;
+				}
 			}
 
 			Preconditions.checkNotNull(singleTrait);
 
 			for (ITrait trait : singleTrait) {
 				for (DATA_KINDS kind : trait.getData().elementSet())
-					_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
+					if (output)
+						_log.info("\t\t" + kind + " ( " + trait.getData().count(kind) + " )");
 				for (String key : trait.getSupplementalData().elementSet())
-					_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
+					if (output)
+						_log.info("\t\t" + key + " ( " + trait.getData().count(key) + " )");
 			}
 		}
 	}
@@ -746,7 +829,8 @@ public class ExecutionComparator {
 				int sBcount = mB.getCalledBy().count(sB.getIdForElement(cbName));
 
 				if (sAcount != sBcount) {
-					_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+					if (_outputCountDifferences)
+						_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
 				} else {
 					_log.trace("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
 				}

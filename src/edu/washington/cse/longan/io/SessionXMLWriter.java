@@ -16,7 +16,6 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.log4j.Logger;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.output.SAXOutputter;
@@ -30,6 +29,7 @@ import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.FieldTraitContainer;
 import edu.washington.cse.longan.model.ILonganConstants;
@@ -324,32 +324,34 @@ public class SessionXMLWriter implements ILonganIO {
 
 				Vector<ParamTraitContainer> ptcs = method.getParamTraitContainers();
 
-				Element paramsElement = new Element(ILonganIO.PARAMETERS);
+				if (ILonganConstants.TRACK_TRAITS) {
+					Element paramsElement = new Element(ILonganIO.PARAMETERS);
 
-				for (ParamTraitContainer ptc : ptcs) {
-					Element paramElement = new Element(ILonganIO.PARAMETER);
-					paramElement.setAttribute(ILonganIO.POSITION, ptc.getPosition() + "");
+					for (ParamTraitContainer ptc : ptcs) {
+						Element paramElement = new Element(ILonganIO.PARAMETER);
+						paramElement.setAttribute(ILonganIO.POSITION, ptc.getPosition() + "");
 
-					// don't record tracker details, it's the traits that hold the useful information
-					for (ITrait trait : ptc.getTraitsForCaller(caller)) {
-						paramElement.addContent(((AbstractTrait) trait).toXML());
+						// don't record tracker details, it's the traits that hold the useful information
+						for (ITrait trait : ptc.getTraitsForCaller(caller)) {
+							paramElement.addContent(((AbstractTrait) trait).toXML());
+						}
+
+						paramsElement.addContent(paramElement);
 					}
 
-					paramsElement.addContent(paramElement);
-				}
+					calledByElement.addContent(paramsElement);
 
-				calledByElement.addContent(paramsElement);
+					if (returnTraits != null) {
+						Element returnElement = new Element(ILonganIO.RETURN);
 
-				if (returnTraits != null) {
-					Element returnElement = new Element(ILonganIO.RETURN);
+						// don't record tracker details, it's the traits that hold the useful information
+						for (ITrait trait : returnTraits) {
+							returnElement.addContent(((AbstractTrait) trait).toXML());
+						}
 
-					// don't record tracker details, it's the traits that hold the useful information
-					for (ITrait trait : returnTraits) {
-						returnElement.addContent(((AbstractTrait) trait).toXML());
+						calledByElement.addContent(returnElement);
+
 					}
-
-					calledByElement.addContent(returnElement);
-
 				}
 
 				methodElement.addContent(calledByElement);
@@ -382,7 +384,7 @@ public class SessionXMLWriter implements ILonganIO {
 			Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
 
 			if (gftc != null) {
-//				Element getsElement = new Element(ILonganIO.GETBY);
+				// Element getsElement = new Element(ILonganIO.GETBY);
 
 				Collection<Integer> uniqueGetters = field.getGetBy().elementSet();
 				for (Integer getById : uniqueGetters) {
@@ -395,14 +397,16 @@ public class SessionXMLWriter implements ILonganIO {
 						getElement.setAttribute(ILonganIO.NAME, session.getElementNameForID(getById));
 					}
 
-					for (ITrait trait : field.getFieldGetTraitContainer().getTraitsForCaller(getById)) {
-						getElement.addContent(((AbstractTrait) trait).toXML());
+					if (ILonganConstants.TRACK_TRAITS) {
+						for (ITrait trait : field.getFieldGetTraitContainer().getTraitsForCaller(getById)) {
+							getElement.addContent(((AbstractTrait) trait).toXML());
+						}
 					}
 
-//					getsElement.addContent(getElement);
+					// getsElement.addContent(getElement);
 					fieldElement.addContent(getElement);
 				}
-				
+
 			}
 
 			// set traits
@@ -420,10 +424,11 @@ public class SessionXMLWriter implements ILonganIO {
 						setElement.setAttribute(ILonganIO.NAME, session.getElementNameForID(setById));
 					}
 
-					for (ITrait trait : field.getFieldSetTraitContainer().getTraitsForCaller(setById)) {
-						setElement.addContent(((AbstractTrait) trait).toXML());
+					if (ILonganConstants.TRACK_TRAITS) {
+						for (ITrait trait : field.getFieldSetTraitContainer().getTraitsForCaller(setById)) {
+							setElement.addContent(((AbstractTrait) trait).toXML());
+						}
 					}
-
 					// setsElement.addContent(setElement);
 					fieldElement.addContent(setElement);
 				}

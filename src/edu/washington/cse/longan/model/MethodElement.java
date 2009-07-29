@@ -3,13 +3,12 @@ package edu.washington.cse.longan.model;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.trait.ExceptionTrait;
 
 public class MethodElement {
@@ -37,14 +36,18 @@ public class MethodElement {
 		_id = id;
 		_name = name;
 		_isExternal = isExternal;
-		_log.debug("New MethodElement - " + id + ": " + name + " isExternal: " + _isExternal);
+		if (ILonganConstants.OUTPUT) {
+			_log.debug("New MethodElement - " + id + ": " + name + " isExternal: " + _isExternal);
+		}
 	}
 
 	public void setReturnTraitContainer(ReturnTraitContainer rtc) {
 		if (_returnTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
-		_log.debug("ReturnTraitContainer added: " + rtc.getStaticTypeName());
+		if (ILonganConstants.OUTPUT) {
+			_log.debug("ReturnTraitContainer added: " + rtc.getStaticTypeName());
+		}
 		_returnTraits = rtc;
 	}
 
@@ -62,8 +65,9 @@ public class MethodElement {
 
 		_paramTraits.add(ptc);
 
-		_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - " + ptc.getStaticTypeName());
-
+		if (ILonganConstants.OUTPUT) {
+			_log.debug("ParamTraitContainer added - " + ptc.getPosition() + ": " + ptc.getName() + " - " + ptc.getStaticTypeName());
+		}
 	}
 
 	public String getName() {

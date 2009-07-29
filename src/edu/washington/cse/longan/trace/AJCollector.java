@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.CodeSignature;
@@ -24,6 +23,7 @@ import ca.lsmr.common.util.TimeUtility;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
@@ -41,8 +41,8 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = ILonganConstants.OUTPUT_SCREEN;
-	public static final boolean SUMMARY_OUTPUT = ILonganConstants.OUTPUT_SUMMARY;
+	public static final boolean OUTPUT = false; // ILonganConstants.OUTPUT_SCREEN;
+	public static final boolean SUMMARY_OUTPUT = false; // ILonganConstants.OUTPUT_SUMMARY;
 
 	// public static final String UNKNOWN_CALLER = "Unknown";
 
@@ -106,7 +106,9 @@ public class AJCollector {
 
 	private AJCollector() {
 		try {
-			LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+			// LOGGING
+			// LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+
 			_session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
@@ -119,7 +121,7 @@ public class AJCollector {
 					writeToDisk();
 				}
 			});
-			
+
 		} catch (Exception e) {
 			_log.error(e);
 		}
@@ -221,62 +223,70 @@ public class AJCollector {
 	}
 
 	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
-		MethodElement mt = _session.getMethod(_callStack.peek());
+		if (_callStack.isEmpty()) {
+			// RFE: handle the case where not everything is instrumented.
+		} else {
+			MethodElement mt = _session.getMethod(_callStack.peek());
 
-		Preconditions.checkNotNull(_exceptionStack, "There should be a current exception stack if one is to be caught. "
-				+ "Null exception stack: %s; ex type: %s; ex msg: %s;", mt.getName(), exception.getClass().getName(), ((Throwable) exception)
-				.getMessage());
+			Preconditions.checkNotNull(_exceptionStack, "There should be a current exception stack if one is to be caught. "
+					+ "Null exception stack: %s; ex type: %s; ex msg: %s;", mt.getName(), exception.getClass().getName(), ((Throwable) exception)
+					.getMessage());
 
-		Preconditions.checkArgument(exception instanceof Throwable);
+			Preconditions.checkArgument(exception instanceof Throwable);
 
-		mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+			mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 
-		// this is a new exception
-		_exceptionStack = null;
+			// this is a new exception
+			_exceptionStack = null;
 
-		if (OUTPUT) {
-			_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName()
-					+ " ex msg: " + ((Throwable) exception).getMessage());
-		}
+			if (OUTPUT) {
+				_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName()
+						+ " ex msg: " + ((Throwable) exception).getMessage());
+			}
 
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
 
-			_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
+				_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
+			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
-		MethodElement mt = _session.getMethod(_callStack.peek());
-
-		if (_exceptionStack == null) {
-			// this is a new exception
-			_exceptionStack = (Stack<Integer>) _callStack.clone();
-			mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-			if (OUTPUT) {
-				_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: " + exception.getClass().getName()
-						+ " ex msg: " + ((Throwable) exception).getMessage());
-			}
+		if (_callStack.isEmpty()) {
+			// RFE: handle the case where not everything is instrumented.
 		} else {
-			mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-			if (OUTPUT) {
-				_log.debug("Rethrowing existing exception. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
-						+ ((Throwable) exception).getMessage());
+			MethodElement mt = _session.getMethod(_callStack.peek());
+
+			if (_exceptionStack == null) {
+				// this is a new exception
+				_exceptionStack = (Stack<Integer>) _callStack.clone();
+				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+				if (OUTPUT) {
+					_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: "
+							+ exception.getClass().getName() + " ex msg: " + ((Throwable) exception).getMessage());
+				}
+			} else {
+				mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+				if (OUTPUT) {
+					_log.debug("Rethrowing existing exception. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
+							+ ((Throwable) exception).getMessage());
+				}
 			}
-		}
 
-		if (OUTPUT) {
-			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
-				out += "\t";
+			if (OUTPUT) {
+				String out = "";
+				for (int i = _callStack.size(); i > 0; i--)
+					out += "\t";
 
-			if (!isExternal)
-				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-			else
-				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+				if (!isExternal)
+					_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+				else
+					_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+			}
 		}
 	}
 
@@ -633,7 +643,6 @@ public class AJCollector {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
 				String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
-				// String folder = "/Volumes/RamDisk/";
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
 				SessionXMLWriter sxmlw = new SessionXMLWriter();
 				sxmlw.write(fName, _session);

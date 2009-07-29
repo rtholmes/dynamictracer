@@ -1,11 +1,11 @@
 package edu.washington.cse.longan.trait;
 
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+
 import org.jdom.Element;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.io.ILonganIO;
 
 public class ArrayEmptyTrait extends AbstractTrait {

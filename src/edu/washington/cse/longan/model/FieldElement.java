@@ -1,9 +1,9 @@
 package edu.washington.cse.longan.model;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+
+import edu.washington.cse.longan.Logger;
 
 public class FieldElement {
 
@@ -40,7 +40,9 @@ public class FieldElement {
 		if (_fieldGetTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
-		_log.debug("FieldGetTraitContainer added to: " + getName() + " (" + ftc.getStaticTypeName() + ")");
+		if (ILonganConstants.OUTPUT) {
+			_log.debug("FieldGetTraitContainer added to: " + getName() + " (" + ftc.getStaticTypeName() + ")");
+		}
 		_fieldGetTraits = ftc;
 	}
 
@@ -52,7 +54,9 @@ public class FieldElement {
 		if (_fieldSetTraits != null) {
 			throw new AssertionError("This should only be set once");
 		}
-		_log.debug("FieldSetTraitContainer added to: " + getName() + " (" + ftc.getStaticTypeName() + ")");
+		if (ILonganConstants.OUTPUT) {
+			_log.debug("FieldSetTraitContainer added to: " + getName() + " (" + ftc.getStaticTypeName() + ")");
+		}
 		_fieldSetTraits = ftc;
 	}
 

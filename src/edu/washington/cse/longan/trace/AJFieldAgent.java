@@ -3,7 +3,7 @@ package edu.washington.cse.longan.trace;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
+
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.FieldSignature;
@@ -11,6 +11,7 @@ import org.aspectj.lang.reflect.FieldSignature;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Multiset;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.FieldTraitContainer;
 import edu.washington.cse.longan.model.ILonganConstants;

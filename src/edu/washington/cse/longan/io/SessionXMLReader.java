@@ -10,9 +10,11 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.log4j.Logger;
+import org.jdom.Document;
 import org.xml.sax.SAXException;
 
 import ca.lsmr.common.util.TimeUtility;
+import ca.lsmr.common.util.xml.XMLTools;
 
 import com.google.common.base.Preconditions;
 
@@ -22,6 +24,7 @@ public class SessionXMLReader implements ILonganIO {
 	Logger _log = Logger.getLogger(this.getClass());
 
 	public Session readXML(String fName) {
+
 		long start = System.currentTimeMillis();
 
 		_log.info("Reading session from: " + fName);
@@ -29,14 +32,24 @@ public class SessionXMLReader implements ILonganIO {
 		Session session = null;
 
 		try {
-			FileInputStream is = new FileInputStream(new File(fName));
 
-			SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
-			SessionXMLReaderHandler dh = new SessionXMLReaderHandler();
+			Document d = XMLTools.readXMLDocument(fName);
 
-			saxp.parse(is, dh);
+			// dispatch. this would be better with sax because we wouldn't read the whole thing first
+			if (d.getRootElement().getName().equals(IGilliganStoreIO.XML_ROOT)) {
+				_log.info("Reading static trace (from Gilligan)");
+				GilliganXMLReader gxmlr = new GilliganXMLReader();
+				session = gxmlr.read(d, fName);
+			} else {
+				_log.info("Reading dynamic trace (from Longan)");
+				FileInputStream is = new FileInputStream(new File(fName));
+				SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
+				SessionXMLReaderHandler dh = new SessionXMLReaderHandler();
 
-			session = dh.getSession();
+				saxp.parse(is, dh);
+
+				session = dh.getSession();
+			}
 
 		} catch (FileNotFoundException fnfe) {
 			_log.error(fnfe);

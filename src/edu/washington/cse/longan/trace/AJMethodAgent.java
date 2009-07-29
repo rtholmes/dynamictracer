@@ -8,12 +8,12 @@ package edu.washington.cse.longan.trace;
 import java.util.Hashtable;
 import java.util.Stack;
 
-import org.apache.log4j.Logger;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
@@ -202,8 +202,10 @@ public class AJMethodAgent extends MethodElement {
 		} else {
 			// unknown caller, could be from non-instrumented code (e.g., junit core
 
-			_log.trace("Unknown caller for: " + _name);
-
+			if (ILonganConstants.OUTPUT) {
+				_log.trace("Unknown caller for: " + _name);
+			}
+			
 			_calledBy.add(ILonganConstants.UNKNOWN_METHOD_ID);
 
 		}

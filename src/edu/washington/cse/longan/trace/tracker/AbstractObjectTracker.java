@@ -3,8 +3,8 @@ package edu.washington.cse.longan.trace.tracker;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.log4j.Logger;
-
+import edu.washington.cse.longan.Logger;
+import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.trait.ITrait;
 
 public abstract class AbstractObjectTracker implements IObjectTracker {
@@ -130,8 +130,10 @@ public abstract class AbstractObjectTracker implements IObjectTracker {
 
 	public void track(Object obj) {
 
-		for (ITrait trait : getTraits()) {
-			trait.track(obj);
+		if (ILonganConstants.TRACK_TRAITS) {
+			for (ITrait trait : getTraits()) {
+				trait.track(obj);
+			}
 		}
 
 	}

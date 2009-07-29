@@ -1,7 +1,7 @@
 package edu.washington.cse.longan.trace.tracker;
 
-import org.apache.log4j.Logger;
 
+import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.trait.IsNullTrait;
 import edu.washington.cse.longan.trait.TypeTrait;
 

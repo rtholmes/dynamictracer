@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import edu.washington.cse.longan.Logger;
 
 /**
  * Contains the dynamic details of any single session.
@@ -84,8 +84,17 @@ public class Session {
 	public void addMethod(int id, MethodElement method) {
 		_methods.put(id, method);
 
-		if (!_methodNameToBaseIdMap.containsKey(method.getName()))
+		if (!_methodNameToBaseIdMap.containsKey(method.getName())) {
 			_methodNameToBaseIdMap.put(method.getName(), id);
+
+			// RFE: these maps should all be combined so we don't make so many mistakes
+			// (not the maps but their updating)
+			// if (!_nameToBaseIdMap.containsKey(method.getName())) {
+			// _nameToBaseIdMap.put(method.getName(), id);
+			// } else {
+			// Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+			// }
+		}
 	}
 
 	public Collection<FieldElement> getFields() {
@@ -97,7 +106,7 @@ public class Session {
 	}
 
 	public int getIdForElement(String name) {
-		Preconditions.checkArgument(_nameToBaseIdMap.containsKey(name), "check with hasID first");
+		Preconditions.checkArgument(_nameToBaseIdMap.containsKey(name), "check with hasID first (" + name + ")");
 		return _nameToBaseIdMap.get(name);
 	}
 
@@ -129,8 +138,21 @@ public class Session {
 		return returnSet;
 	}
 
+	/**
+	 * @deprecated
+	 * @param name
+	 * @return
+	 */
 	public MethodElement getElementForName(String name) {
 		return getMethod(getIdForElement(name));
+	}
+
+	public MethodElement getMethodForName(String name) {
+		return getMethod(getIdForElement(name));
+	}
+
+	public FieldElement getFieldForName(String name) {
+		return getField(getIdForElement(name));
 	}
 
 	public void addField(int id, FieldElement field) {
@@ -144,7 +166,6 @@ public class Session {
 		return _fields.containsKey(id);
 	}
 
-	
 	public Set<String> getMethodNames() {
 		return _methodNameToBaseIdMap.keySet();
 	}
