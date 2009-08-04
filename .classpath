@@ -1,22 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="**/JavaModelHelper.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/Applications/eclipse3.5m6/plugins/org.aspectj.runtime_1.6.4.20090329215800/aspectjrt.jar" sourcepath="/Applications/eclipse3.5m6/plugins/org.eclipse.ajdt.source_1.7.0.20090402121713/src/org.aspectj.runtime_1.6.4.20090329215800/aspectjrtsrc.zip">
-		<accessrules>
-			<accessrule kind="accessible" pattern="org/aspectj/internal/lang/annotation/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/internal/lang/reflect/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/lang/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/lang/annotation/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/lang/internal/lang/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/lang/reflect/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/runtime/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/runtime/internal/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/runtime/internal/cflowstack/*"/>
-			<accessrule kind="accessible" pattern="org/aspectj/runtime/reflect/*"/>
-			<accessrule ignoreifbetter="true" kind="nonaccessible" pattern="**/*"/>
-		</accessrules>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="output" path="bin"/>

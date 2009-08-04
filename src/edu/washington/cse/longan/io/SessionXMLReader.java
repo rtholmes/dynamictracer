@@ -35,6 +35,11 @@ public class SessionXMLReader implements ILonganIO {
 
 			Document d = XMLTools.readXMLDocument(fName);
 
+			if (d == null) {
+				_log.error("Session not loaded from: " + fName);
+				return null;
+			}
+
 			// dispatch. this would be better with sax because we wouldn't read the whole thing first
 			if (d.getRootElement().getName().equals(IGilliganStoreIO.XML_ROOT)) {
 				_log.info("Reading static trace (from Gilligan)");

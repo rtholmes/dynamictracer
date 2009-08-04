@@ -1,0 +1,17 @@
+JodaTime 1371 vs. jbix-core runtimeTests
+
+
+ INFO 2009-07-22 13:09:24,488 (ExecutionComparator.java:481) - CHECK COMBINED PARAM DIFFERENCES
+ INFO 2009-07-22 13:09:24,547 (ExecutionComparator.java:715) - 	Added param ( 3 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.DateMidnight(int, int, int, DateTimeZone)
+ INFO 2009-07-22 13:09:24,552 (ExecutionComparator.java:715) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.LocalTime(long, DateTimeZone)
+ INFO 2009-07-22 13:09:24,554 (ExecutionComparator.java:697) - 	Added param ( 0 ) trait: IS_POSITIVE to: org.joda.time.LocalDate(long, DateTimeZone)
+ INFO 2009-07-22 13:09:24,554 (ExecutionComparator.java:715) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.LocalDate(long, DateTimeZone)
+ INFO 2009-07-22 13:09:24,582 (ExecutionComparator.java:510) - CHECK CALLEDBY PARAM DIFFERENCES
+ INFO 2009-07-22 13:09:24,663 (ExecutionComparator.java:421) - CHECK COMBINED RETURN DIFFERENCES
+ INFO 2009-07-22 13:09:24,674 (ExecutionComparator.java:437) - CHECK CALLEDBY RETURN DIFFERENCES
+ INFO 2009-07-22 13:09:24,687 (ExecutionComparator.java:313) - CHECK EXCEPTION DIFFERENCES
+ INFO 2009-07-22 13:09:24,695 (ExecutionComparator.java:185) - CHECK FIELD GET DIFFERENCES
+ INFO 2009-07-22 13:09:24,701 (ExecutionComparator.java:243) - CHECK FIELD SET DIFFERENCES
+ INFO 2009-07-22 13:09:24,701 (ExecutionComparator.java:285) - CHECK COMBINED FIELD GET DIFFERENCES
+ INFO 2009-07-22 13:09:24,701 (ExecutionComparator.java:298) - CHECK COMBINED FIELD SET DIFFERENCES
+ INFO 2009-07-22 13:09:24,702 (ExecutionComparator.java:127) - Done in: 5.51 sec

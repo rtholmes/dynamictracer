@@ -130,21 +130,39 @@ public class Session {
 		return _nameToBaseIdMap.keySet();
 	}
 
-	public Set<MethodElement> getElementSet(Set<Integer> elementSet) {
-		HashSet<MethodElement> returnSet = new HashSet<MethodElement>();
+	public Set<AbstractElement> getElementSet(Set<Integer> elementSet) {
+		HashSet<AbstractElement> returnSet = new HashSet<AbstractElement>();
 		for (int id : elementSet) {
-			returnSet.add(getMethod(id));
+			AbstractElement ae = null;
+
+			boolean isField = _fields.containsKey(id);
+			boolean isMethod = _methods.containsKey(id);
+
+			Preconditions.checkArgument(!(isField && isMethod), ILonganConstants.NOT_POSSIBLE);
+			Preconditions.checkArgument(isField || isMethod, "Unknown element id: " + id);
+
+			if (isMethod)
+				ae = getMethod(id);
+			else if (isField)
+				ae = getField(id);
+
+			returnSet.add(ae);
 		}
 		return returnSet;
 	}
 
 	/**
-	 * @deprecated
 	 * @param name
 	 * @return
 	 */
-	public MethodElement getElementForName(String name) {
-		return getMethod(getIdForElement(name));
+	public AbstractElement getElementForName(String name) {
+		if (_fieldNameToBaseIdMap.containsKey(name))
+			return getField(getIdForElement(name));
+		else if (_methodNameToBaseIdMap.containsKey(name))
+			return getMethod(getIdForElement(name));
+		else
+			Preconditions.checkNotNull(null, "Unknown element: " + name);
+		return null;
 	}
 
 	public MethodElement getMethodForName(String name) {
@@ -165,7 +183,7 @@ public class Session {
 	public boolean fieldExists(int id) {
 		return _fields.containsKey(id);
 	}
-
+	
 	public Set<String> getMethodNames() {
 		return _methodNameToBaseIdMap.keySet();
 	}

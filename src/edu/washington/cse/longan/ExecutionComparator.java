@@ -15,6 +15,7 @@ import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 import edu.washington.cse.longan.io.SessionXMLReader;
 import edu.washington.cse.longan.io.SessionXMLWriter;
+import edu.washington.cse.longan.model.AbstractElement;
 import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.FieldTraitContainer;
 import edu.washington.cse.longan.model.ILonganConstants;
@@ -36,7 +37,7 @@ public class ExecutionComparator {
 	private boolean _outputAdded = true;
 	private boolean _outputCombined = true;
 	private boolean _outputIndividual = false;
-	private boolean _outputPaths = false;
+	private boolean _outputPaths = true;
 
 	/**
 	 * @param args
@@ -110,11 +111,16 @@ public class ExecutionComparator {
 			// executionFiles.add(path + "kaching-api.xml");
 			// executionFiles.add(path + "google-rfc-2445.xml");
 
-//			executionFiles.add(path + "static_JodaTime_1322.xml");
-			executionFiles.add(path + "static_JodaTime_1322.xml");
-			 executionFiles.add(path + "static_JodaTime_1371.xml");
+			// executionFiles.add(path + "static_JodaTime_1322.xml");
+			// executionFiles.add(path + "static_JodaTime_1322.xml");
+			// executionFiles.add(path + "static_JodaTime_1371.xml");
+			// executionFiles.add(path + "static_JodaTime_1371a.xml");
+			// executionFiles.add(path + "static_JodaTime_1371b.xml");
 			// executionFiles.add(path + "latestA.xml");
 			// executionFiles.add(path + "latestB.xml");
+
+			executionFiles.add(path + "longAnTestC-1a.xml");
+			executionFiles.add(path + "longAnTestC-2a.xml");
 		}
 		ExecutionComparator ec = new ExecutionComparator();
 		ec.start();
@@ -801,8 +807,8 @@ public class ExecutionComparator {
 	private void checkPathCounts(Session sA, Session sB) {
 		_log.info("CHECK PATH COUNTS");
 
-		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
-		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
+		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getElementNames());
+		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getElementNames());
 
 		ImmutableSet<String> interNames = Sets.intersection(eAnames, eBnames).immutableCopy();
 		ImmutableSet<String> missingNames = Sets.difference(eAnames, eBnames).immutableCopy();
@@ -810,49 +816,54 @@ public class ExecutionComparator {
 
 		for (String eName : interNames) {
 
-			MethodElement mA = sA.getElementForName(eName);
-			MethodElement mB = sB.getElementForName(eName);
+			AbstractElement mAae = sA.getElementForName(eName);
+			AbstractElement mBae = sB.getElementForName(eName);
 
-			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
-			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+			if (mAae instanceof MethodElement && mBae instanceof MethodElement) {
 
-			Set<String> mACBnames = extractNames(mACBs);
-			Set<String> mBCBnames = extractNames(mBCBs);
+				MethodElement mA = (MethodElement) mAae;
+				MethodElement mB = (MethodElement) mBae;
 
-			ImmutableSet<String> interCBNames = Sets.intersection(mACBnames, mBCBnames).immutableCopy();
-			ImmutableSet<String> missingCBNames = Sets.difference(mACBnames, mBCBnames).immutableCopy();
-			ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
+				Set<AbstractElement> mACBs = sA.getElementSet(((MethodElement) mA).getCalledBy().elementSet());
+				Set<AbstractElement> mBCBs = sB.getElementSet(((MethodElement) mB).getCalledBy().elementSet());
 
-			for (String cbName : interCBNames) {
+				Set<String> mACBnames = extractNames(mACBs);
+				Set<String> mBCBnames = extractNames(mBCBs);
 
-				int sAcount = mA.getCalledBy().count(sA.getIdForElement(cbName));
-				int sBcount = mB.getCalledBy().count(sB.getIdForElement(cbName));
+				ImmutableSet<String> interCBNames = Sets.intersection(mACBnames, mBCBnames).immutableCopy();
+				ImmutableSet<String> missingCBNames = Sets.difference(mACBnames, mBCBnames).immutableCopy();
+				ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
 
-				if (sAcount != sBcount) {
-					if (_outputCountDifferences)
-						_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
-				} else {
-					_log.trace("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+				for (String cbName : interCBNames) {
+
+					int sAcount = mA.getCalledBy().count(sA.getIdForElement(cbName));
+					int sBcount = mB.getCalledBy().count(sB.getIdForElement(cbName));
+
+					if (sAcount != sBcount) {
+						if (_outputCountDifferences)
+							_log.info("Differing count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+					} else {
+						_log.trace("Same count ( " + sAcount + " to: " + sBcount + " ) for call to: " + eName + " from: " + cbName);
+					}
+
+				}
+
+				for (String cbName : missingCBNames) {
+					// RFE: report path counts that have disappeared?
+				}
+
+				for (String cbName : newCBNames) {
+					// RFE: report path counts for new paths?
 				}
 
 			}
-
-			for (String cbName : missingCBNames) {
-				// RFE: report path counts that have disappeared?
-			}
-
-			for (String cbName : newCBNames) {
-				// RFE: report path counts for new paths?
-			}
-
 		}
-
 	}
 
-	private Set<String> extractNames(Set<MethodElement> mElements) {
+	private Set<String> extractNames(Set<AbstractElement> elements) {
 		HashSet<String> set = new HashSet<String>();
-		for (MethodElement me : mElements)
-			set.add(me.getName());
+		for (AbstractElement ae : elements)
+			set.add(ae.getName());
 
 		return set;
 	}
@@ -861,6 +872,7 @@ public class ExecutionComparator {
 
 		_log.info("CHECK FOR MISSING PATHS");
 
+		// XXX: include fields
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
@@ -870,11 +882,11 @@ public class ExecutionComparator {
 
 		for (String eName : interNames) {
 
-			MethodElement mA = sA.getElementForName(eName);
-			MethodElement mB = sB.getElementForName(eName);
+			MethodElement mA = sA.getMethodForName(eName);
+			MethodElement mB = sB.getMethodForName(eName);
 
-			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
-			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+			Set<AbstractElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<AbstractElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
 
 			Set<String> mACBnames = extractNames(mACBs);
 			Set<String> mBCBnames = extractNames(mBCBs);
@@ -912,6 +924,29 @@ public class ExecutionComparator {
 			}
 
 		}
+		
+		for (String eName : missingNames) {
+
+			MethodElement mA = sA.getMethodForName(eName);
+			// mB doesn't exist because these are new names
+			MethodElement mB = null;
+
+			 Set<AbstractElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+//			Set<AbstractElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+
+			 Set<String> mACBnames = extractNames(mACBs);
+//			Set<String> mBCBnames = extractNames(mBCBs);
+
+			for (String cbName : mACBnames) {
+				if (sB.hasIDForElement(cbName)) {
+					_log.info("Path missing (with existing source) from: " + cbName + " to: " + eName);
+				} else {
+					_log.info("Path missing (with missing source and target) from: " + cbName + " to: " + eName);
+				}
+			}
+
+		}
+		
 
 	}
 
@@ -921,7 +956,7 @@ public class ExecutionComparator {
 	private void checkForNewPaths(Session sA, Session sB) {
 
 		_log.info("CHECK FOR NEW PATHS");
-
+		// XXX: include fields
 		ImmutableSet<String> eAnames = ImmutableSet.copyOf(sA.getMethodNames());
 		ImmutableSet<String> eBnames = ImmutableSet.copyOf(sB.getMethodNames());
 
@@ -933,11 +968,11 @@ public class ExecutionComparator {
 		// check in edges that are present in both sets...
 		for (String eName : interNames) {
 
-			MethodElement mA = sA.getElementForName(eName);
-			MethodElement mB = sB.getElementForName(eName);
+			MethodElement mA = sA.getMethodForName(eName);
+			MethodElement mB = sB.getMethodForName(eName);
 
-			Set<MethodElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
-			Set<MethodElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+			Set<AbstractElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<AbstractElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
 
 			Set<String> mACBnames = extractNames(mACBs);
 			Set<String> mBCBnames = extractNames(mBCBs);
@@ -947,11 +982,11 @@ public class ExecutionComparator {
 			ImmutableSet<String> newCBNames = Sets.difference(mBCBnames, mACBnames).immutableCopy();
 
 			for (String cbName : interCBNames) {
-				// common paths
+				// common paths, no need to report
 			}
 
 			for (String cbName : missingCBNames) {
-
+				_log.info("does this ever happen?");
 			}
 
 			for (String cbName : newCBNames) {
@@ -974,8 +1009,30 @@ public class ExecutionComparator {
 					_log.warn("New path added from: " + cbName + " to: " + eName);
 				}
 			}
+		}
+
+		for (String eName : newNames) {
+
+			// mA doesn't exist because these are new names
+			MethodElement mA = null; // sA.getMethodForName(eName);
+			MethodElement mB = sB.getMethodForName(eName);
+
+			// Set<AbstractElement> mACBs = sA.getElementSet(mA.getCalledBy().elementSet());
+			Set<AbstractElement> mBCBs = sB.getElementSet(mB.getCalledBy().elementSet());
+
+			// Set<String> mACBnames = extractNames(mACBs);
+			Set<String> mBCBnames = extractNames(mBCBs);
+
+			for (String cbName : mBCBnames) {
+				if (sA.hasIDForElement(cbName)) {
+					_log.info("New path (with existing source) added from: " + cbName + " to: " + eName);
+				} else {
+					_log.info("New path (with new source and target) added from: " + cbName + " to: " + eName);
+				}
+			}
 
 		}
+
 	}
 
 	private void checkForMissingElements(Session sessionA, Session sessionB) {

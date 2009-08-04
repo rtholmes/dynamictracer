@@ -1,0 +1,107 @@
+
+JodaTime 1371 vs. Google RFC 2445 test harness
+
+CHECK COMBINED PARAM DIFFERENCES
+Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: ZonedChronology org.joda.time.chrono.ZonedChronology.getInstance(Chronology, DateTimeZone)
+Added param ( 0 ) trait: IS_POSITIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+Added param ( 0 ) trait: IS_POSITIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology.ZonedDurationField(DurationField, DateTimeZone)
+Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology(Chronology, DateTimeZone)
+Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology.ZonedDateTimeField(DateTimeField, DateTimeZone, DurationField, DurationField, DurationField)
+Added param ( 0 ) trait: IS_ZERO to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+Added param ( 0 ) trait: IS_ZERO to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+
+CHECK COMBINED RETURN DIFFERENCES
+Added return trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.getParam()
+Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.getZone(String)
+Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.loadZoneData(String)
+
+Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.loadZoneData(String)
+Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(DataInput, String)
+Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(DataInput, String)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.getZone()
+Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.DateTimeZone.forID(String)
+Added return trait: IS_ZERO to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(InputStream, String)
+Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(InputStream, String)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+Added return trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getOffsetFromLocal(long)
+
+CHECK EXCEPTION DIFFERENCES
+Exception added to: long org.joda.time.chrono.ZonedChronology.localToUTC(long) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+Exception added to: long org.joda.time.chrono.AssembledChronology.getDateTimeMillis(int, int, int, int, int, int, int) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+Exception added to: long org.joda.time.chrono.ZonedChronology.getDateTimeMillis(int, int, int, int, int, int, int) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+
+CHECK COMBINED FIELD GET DIFFERENCES
+Added trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.iParam
+Added trait: IS_NEGATIVE ( 5007 ) to: int org.joda.time.tz.FixedDateTimeZone.iStandardOffset
+
+CHECK COMBINED FIELD SET DIFFERENCES
+Added trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.iParam
+Added trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.ZonedDurationField.iZone
+Added trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.ZonedDateTimeField.iZone
+
+
+
+
+
+RAW
+
+ INFO 2009-07-21 13:08:53,485 (ExecutionComparator.java:471) - CHECK COMBINED PARAM DIFFERENCES
+ INFO 2009-07-21 13:08:53,492 (ExecutionComparator.java:688) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: ZonedChronology org.joda.time.chrono.ZonedChronology.getInstance(Chronology, DateTimeZone)
+ INFO 2009-07-21 13:08:53,542 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_POSITIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,542 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,556 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_POSITIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,556 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,600 (ExecutionComparator.java:688) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology.ZonedDurationField(DurationField, DateTimeZone)
+ INFO 2009-07-21 13:08:53,728 (ExecutionComparator.java:688) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology(Chronology, DateTimeZone)
+ INFO 2009-07-21 13:08:53,744 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,746 (ExecutionComparator.java:688) - 	Added param ( 1 ) trait: org.joda.time.tz.FixedDateTimeZone to: org.joda.time.chrono.ZonedChronology.ZonedDateTimeField(DateTimeField, DateTimeZone, DurationField, DurationField, DurationField)
+ INFO 2009-07-21 13:08:53,786 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_ZERO to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,787 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,800 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_ZERO to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+ INFO 2009-07-21 13:08:53,800 (ExecutionComparator.java:672) - 	Added param ( 0 ) trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+
+ INFO 2009-07-21 13:09:00,774 (ExecutionComparator.java:411) - CHECK COMBINED RETURN DIFFERENCES
+ INFO 2009-07-21 13:09:00,785 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.getParam()
+ INFO 2009-07-21 13:09:00,789 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.getZone(String)
+ INFO 2009-07-21 13:09:00,789 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.loadZoneData(String)
+ INFO 2009-07-21 13:09:00,789 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.ZoneInfoProvider.loadZoneData(String)
+ INFO 2009-07-21 13:09:00,790 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(DataInput, String)
+ INFO 2009-07-21 13:09:00,790 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(DataInput, String)
+ INFO 2009-07-21 13:09:00,800 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.DSTZone.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,805 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.DateTimeZoneBuilder.PrecalculatedZone.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,816 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.getZone()
+ INFO 2009-07-21 13:09:00,833 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.DateTimeZone.forID(String)
+ INFO 2009-07-21 13:09:00,836 (ExecutionComparator.java:672) - 	Added return trait: IS_ZERO to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,836 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,847 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(InputStream, String)
+ INFO 2009-07-21 13:09:00,847 (ExecutionComparator.java:688) - 	Added return trait: org.joda.time.tz.DateTimeZoneBuilder$PrecalculatedZone to: DateTimeZone org.joda.time.tz.DateTimeZoneBuilder.readFrom(InputStream, String)
+ INFO 2009-07-21 13:09:00,855 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.Info.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,869 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.CachedDateTimeZone.getStandardOffset(long)
+ INFO 2009-07-21 13:09:00,869 (ExecutionComparator.java:672) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.tz.FixedDateTimeZone.getOffsetFromLocal(long)
+
+ INFO 2009-07-21 13:09:06,803 (ExecutionComparator.java:306) - CHECK EXCEPTION DIFFERENCES
+ INFO 2009-07-21 13:09:06,812 (ExecutionComparator.java:342) - Exception added to: long org.joda.time.chrono.ZonedChronology.localToUTC(long) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+ INFO 2009-07-21 13:09:06,870 (ExecutionComparator.java:342) - Exception added to: long org.joda.time.chrono.AssembledChronology.getDateTimeMillis(int, int, int, int, int, int, int) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+ INFO 2009-07-21 13:09:06,883 (ExecutionComparator.java:342) - Exception added to: long org.joda.time.chrono.ZonedChronology.getDateTimeMillis(int, int, int, int, int, int, int) ex: 1044::1049::506::843::936::937::1191::java.lang.IllegalArgumentException::elided::false::true::false
+
+ INFO 2009-07-21 13:09:09,784 (ExecutionComparator.java:278) - CHECK COMBINED FIELD GET DIFFERENCES
+ INFO 2009-07-21 13:09:09,804 (ExecutionComparator.java:595) - 	Added trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.iParam
+ INFO 2009-07-21 13:09:09,816 (ExecutionComparator.java:579) - 	Added trait: IS_NEGATIVE ( 5007 ) to: int org.joda.time.tz.FixedDateTimeZone.iStandardOffset
+
+ INFO 2009-07-21 13:09:09,836 (ExecutionComparator.java:291) - CHECK COMBINED FIELD SET DIFFERENCES
+ INFO 2009-07-21 13:09:09,875 (ExecutionComparator.java:595) - 	Added trait: org.joda.time.tz.FixedDateTimeZone to: Object org.joda.time.chrono.AssembledChronology.iParam
+ INFO 2009-07-21 13:09:10,199 (ExecutionComparator.java:595) - 	Added trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.ZonedDurationField.iZone
+ INFO 2009-07-21 13:09:10,200 (ExecutionComparator.java:595) - 	Added trait: org.joda.time.tz.FixedDateTimeZone to: DateTimeZone org.joda.time.chrono.ZonedChronology.ZonedDateTimeField.iZone
+
+

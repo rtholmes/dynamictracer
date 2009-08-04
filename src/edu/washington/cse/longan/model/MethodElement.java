@@ -11,18 +11,18 @@ import com.google.common.collect.Multiset;
 import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.trait.ExceptionTrait;
 
-public class MethodElement {
+public class MethodElement extends AbstractElement {
 	private Logger _log = Logger.getLogger(this.getClass());
 
 	protected Multiset<Integer> _calledBy = HashMultiset.create();
 
 	protected boolean _hasVoidReturn = false;
 
-	protected int _id;
+
 
 	protected boolean _isConstructor = false;
 
-	protected String _name;
+	
 
 	private ReturnTraitContainer _returnTraits = null;
 
@@ -70,13 +70,7 @@ public class MethodElement {
 		}
 	}
 
-	public String getName() {
-		return _name;
-	}
 
-	public int getId() {
-		return _id;
-	}
 
 	public boolean isExternal() {
 		return _isExternal;

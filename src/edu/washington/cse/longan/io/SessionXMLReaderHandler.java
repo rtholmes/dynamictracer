@@ -187,8 +187,8 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 		_currentDyamicField.getSetBy().setCount(id, count);
 		_currentSetMethod = _session.getMethod(id);
-		
-		_currentDynamicSetTraits= new Vector<ITrait>();
+
+		_currentDynamicSetTraits = new Vector<ITrait>();
 	}
 
 	private void parseDynamicFieldGet(Attributes attributes) {
@@ -200,8 +200,8 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 		_currentDyamicField.getGetBy().setCount(id, count);
 		_currentGetMethod = _session.getMethod(id);
-		
-		_currentDynamicGetTraits= new Vector<ITrait>();
+
+		_currentDynamicGetTraits = new Vector<ITrait>();
 	}
 
 	private void parseDynamicFieldAttrs(Attributes attributes) {
@@ -219,6 +219,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		String name = attributes.getValue(ILonganIO.NAME);
 		String type = attributes.getValue(ILonganIO.TYPE);
 
+		name = massageName(name);
 		int id = Integer.parseInt(idString);
 
 		FieldElement fe = new FieldElement(id, name);
@@ -229,6 +230,23 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		FieldTraitContainer ftcs = new FieldTraitContainer(type);
 		fe.setFieldGetTraitContainer(ftcg);
 		fe.setFieldSetTraitContainer(ftcs);
+	}
+
+	// removes the type from fields and the return type from methods
+	// e.g.: int a.b.FOO -> a.b.FOO
+	// e.g.: int a.b.foo() -> a.b.foo()
+	private String massageName(String name) {
+		if (name.equals(ILonganConstants.UNKNOWN_METHOD_NAME))
+			return name;
+
+		// XXX: if the object is a constructor, don't do this, it'll trim to the first parameter this way
+
+		int firstSpace = name.indexOf(' ');
+		String newName = "";
+		if (firstSpace > 0)
+			newName = name.substring(firstSpace + 1);
+		_log.trace("dyn name trans: " + name + " -> " + newName);
+		return newName;
 	}
 
 	private void parseException(Attributes attributes) {
@@ -380,6 +398,12 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		String name = attributes.getValue(ILonganIO.NAME);
 		String externalString = attributes.getValue(ILonganIO.EXTERNAL);
 
+		boolean isConstructor = isConstructor(name);
+
+		// we don't want to massage the name if the method is a constructor
+		if (!isConstructor)
+			name = massageName(name);
+
 		_log.debug("Method parsed: " + idString + " " + name);
 		int id = Integer.parseInt(idString);
 		boolean external = Boolean.parseBoolean(externalString);
@@ -389,6 +413,24 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		_session.addMethod(id, me);
 
 		_currentStaticMethod = me;
+	}
+
+	// This uses a really crappy heuristic
+	private boolean isConstructor(String name) {
+		if (name.equals(ILonganConstants.UNKNOWN_METHOD_NAME))
+			return false;
+
+		int braceIndex = name.indexOf('(');
+		int lastDot = name.lastIndexOf('.', braceIndex);
+
+		String segmentName = name.substring(lastDot + 1, braceIndex);
+		boolean isUpper = Character.isUpperCase(segmentName.charAt(0));
+
+		_log.trace("isConstructor. ("+isUpper+") seg name: " + segmentName + " from: " + name);
+		// if the last segment starts with an upper case letter, then it's a constructor
+		// e.g. void org.joda.time.LongAnWriter.testWriteCollection() -> testWriteCollection -> t -> false
+		// e.g. void org.joda.time.LongAnWriter() -> LongAnWriter-> L -> true
+		return isUpper;
 	}
 
 	private void parseRootAttributes(Attributes attributes) {
@@ -455,7 +497,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			}
 		} else if (qName.equals(ILonganIO.GET)) {
 			getElem = false;
-			
+
 			if (dynamicElem && fieldElem) {
 				if (_currentDynamicGetTraits.size() != 0) {
 					ITrait[] traits = new ITrait[_currentDynamicGetTraits.size()];
@@ -463,10 +505,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 					_currentDyamicField.getFieldGetTraitContainer().addTraits(_currentGetMethod.getId(), traits);
 				}
-				_currentDynamicGetTraits = null; 
+				_currentDynamicGetTraits = null;
 				_currentGetMethod = null;
 			}
-			
+
 		} else if (qName.equals(ILonganIO.SET)) {
 			setElem = false;
 			if (dynamicElem && fieldElem) {
@@ -476,10 +518,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 					_currentDyamicField.getFieldSetTraitContainer().addTraits(_currentSetMethod.getId(), traits);
 				}
-				_currentDynamicSetTraits = null; 
+				_currentDynamicSetTraits = null;
 				_currentSetMethod = null;
 			}
-			
+
 		} else if (qName.equals(ILonganIO.FIELD)) {
 			fieldElem = false;
 			if (dynamicElem) {

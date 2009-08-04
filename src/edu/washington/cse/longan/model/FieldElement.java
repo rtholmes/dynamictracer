@@ -5,12 +5,12 @@ import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.Logger;
 
-public class FieldElement {
+public class FieldElement extends AbstractElement {
 
 	private Logger _log = Logger.getLogger(this.getClass());
 
-	private String _name;
-	private int _id;
+//	private String _name;
+//	private int _id;
 
 	protected Multiset<Integer> _getBy = HashMultiset.create();
 	protected Multiset<Integer> _setBy = HashMultiset.create();
@@ -23,13 +23,13 @@ public class FieldElement {
 		_name = name;
 	}
 
-	public String getName() {
-		return _name;
-	}
-
-	public int getId() {
-		return _id;
-	}
+//	public String getName() {
+//		return _name;
+//	}
+//
+//	public int getId() {
+//		return _id;
+//	}
 
 	public FieldTraitContainer getFieldGetTraitContainer() {
 		return _fieldGetTraits;

@@ -1,0 +1,127 @@
+4 versions: 1283, 1311, 1322, 1371
+
+1283 -> 1311	No Differences
+
+INFO 2009-07-22 21:06:12,579 (ExecutionComparator.java:165) - Comparing: 2009-06-18T23-33-42.337-0700 to: 2009-06-18T23-47-38.937-0700
+INFO 2009-07-22 21:06:12,579 (ExecutionComparator.java:964) - CHECK FOR MISSING ELEMENTS
+INFO 2009-07-22 21:06:12,608 (ExecutionComparator.java:976) - CHECK FOR NEW ELEMENTS
+INFO 2009-07-22 21:06:12,620 (ExecutionComparator.java:499) - CHECK COMBINED PARAM DIFFERENCES
+INFO 2009-07-22 21:06:12,976 (ExecutionComparator.java:435) - CHECK COMBINED RETURN DIFFERENCES
+INFO 2009-07-22 21:06:13,277 (ExecutionComparator.java:451) - CHECK CALLEDBY RETURN DIFFERENCES
+INFO 2009-07-22 21:06:13,539 (ExecutionComparator.java:327) - CHECK EXCEPTION DIFFERENCES
+INFO 2009-07-22 21:06:13,570 (ExecutionComparator.java:296) - CHECK COMBINED FIELD GET DIFFERENCES
+INFO 2009-07-22 21:06:13,570 (ExecutionComparator.java:311) - CHECK COMBINED FIELD SET DIFFERENCES
+
+1311 -> 1322	Some elements added / removed (DateTimeZoneCutover refactor)
+
+INFO 2009-07-22 21:06:13,570 (ExecutionComparator.java:165) - Comparing: 2009-06-18T23-47-38.937-0700 to: 2009-06-18T23-55-46.711-0700
+INFO 2009-07-22 21:06:13,571 (ExecutionComparator.java:964) - CHECK FOR MISSING ELEMENTS
+WARN 2009-07-22 21:06:13,580 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_plusHour_NewYork_Autumm()
+WARN 2009-07-22 21:06:13,594 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_minusHour_Moscow_Autumm()
+WARN 2009-07-22 21:06:13,594 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_minusHour_NewYork_Autumm()
+WARN 2009-07-22 21:06:13,594 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_plusHour_Moscow_Autumm()
+INFO 2009-07-22 21:06:13,594 (ExecutionComparator.java:976) - CHECK FOR NEW ELEMENTS
+WARN 2009-07-22 21:06:13,604 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_getOffsetFromLocal_Guatemata_Autumn()
+WARN 2009-07-22 21:06:13,604 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_minusHour_Moscow_Autumn()
+WARN 2009-07-22 21:06:13,604 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_plusHour_Guatemata_Autumn()
+WARN 2009-07-22 21:06:13,604 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.doTest_getOffsetFromLocal(int, int, int, int, int, String, DateTimeZone)
+WARN 2009-07-22 21:06:13,604 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_plusHour_NewYork_Autumn()
+WARN 2009-07-22 21:06:13,605 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_minusHour_NewYork_Autumn()
+WARN 2009-07-22 21:06:13,605 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_plusHour_Moscow_Autumn()
+WARN 2009-07-22 21:06:13,605 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_GuatemataIsCorrect_Autumn()
+WARN 2009-07-22 21:06:13,605 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_minusHour_Guatemata_Autumn()
+INFO 2009-07-22 21:06:13,612 (ExecutionComparator.java:499) - CHECK COMBINED PARAM DIFFERENCES
+INFO 2009-07-22 21:06:13,889 (ExecutionComparator.java:435) - CHECK COMBINED RETURN DIFFERENCES
+INFO 2009-07-22 21:06:14,071 (ExecutionComparator.java:451) - CHECK CALLEDBY RETURN DIFFERENCES
+INFO 2009-07-22 21:06:14,320 (ExecutionComparator.java:327) - CHECK EXCEPTION DIFFERENCES
+INFO 2009-07-22 21:06:14,343 (ExecutionComparator.java:296) - CHECK COMBINED FIELD GET DIFFERENCES
+INFO 2009-07-22 21:06:14,343 (ExecutionComparator.java:311) - CHECK COMBINED FIELD SET DIFFERENCES
+
+1322 -> 1371	- Some elements removed (TestTimeOfDay_Properties. actually, this was my manual edit (for performance))
+				- New elements (TestDateTimeZoneCutover, TestDuration_Basics)
+				- New param & return differences
+				
+INFO 2009-07-22 21:06:14,343 (ExecutionComparator.java:165) - Comparing: 2009-06-18T23-55-46.711-0700 to: 2009-06-18T12-23-19.412-0700
+INFO 2009-07-22 21:06:14,344 (ExecutionComparator.java:964) - CHECK FOR MISSING ELEMENTS
+WARN 2009-07-22 21:06:14,355 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestTimeOfDay_Properties.testPropertyAddNoWrapMilli()
+WARN 2009-07-22 21:06:14,356 (ExecutionComparator.java:969) - Session B lacks element: DateTimeFormatterBuilder org.joda.time.format.DateTimeFormatterBuilder.appendMillisOfSecond(int)
+WARN 2009-07-22 21:06:14,356 (ExecutionComparator.java:969) - Session B lacks element: void org.joda.time.TestTimeOfDay_Properties.testPropertyAddMilli()
+WARN 2009-07-22 21:06:14,356 (ExecutionComparator.java:969) - Session B lacks element: DateTimeFormatter org.joda.time.format.ISODateTimeFormat.millisElement()
+WARN 2009-07-22 21:06:14,356 (ExecutionComparator.java:969) - Session B lacks element: boolean java.util.Collection.contains(Object)
+WARN 2009-07-22 21:06:14,357 (ExecutionComparator.java:969) - Session B lacks element: DateTimeFormatter org.joda.time.format.ISODateTimeFormat.hourMinuteSecondMillis()
+INFO 2009-07-22 21:06:14,357 (ExecutionComparator.java:976) - CHECK FOR NEW ELEMENTS
+WARN 2009-07-22 21:06:14,367 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Constructors.testFactory_standardHours_long()
+WARN 2009-07-22 21:06:14,367 (ExecutionComparator.java:982) - Session B adds new element: boolean org.joda.time.chrono.BasicChronology.equals(Object)
+WARN 2009-07-22 21:06:14,367 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_minute_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,367 (ExecutionComparator.java:982) - Session B adds new element: Duration org.joda.time.Duration.standardSeconds(long)
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: int org.joda.time.chrono.GJChronology.hashCode()
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_minuteOfHour_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_hour_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Constructors.testFactory_standardMinutes_long()
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_minuteOfHour_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: boolean org.joda.time.chrono.GJChronology.equals(Object)
+WARN 2009-07-22 21:06:14,368 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_hourOfDay_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,369 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_minute_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,369 (ExecutionComparator.java:982) - Session B adds new element: Seconds org.joda.time.Duration.toStandardSeconds()
+WARN 2009-07-22 21:06:14,369 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_day_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,369 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_secondOfMinute_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,369 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_minuteOfHour_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: Duration org.joda.time.Duration.standardMinutes(long)
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_minute_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: java.util.HashSet(Collection)
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_hourOfDay_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: boolean java.util.Set.remove(Object)
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: int org.joda.time.chrono.BasicChronology.hashCode()
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: boolean org.joda.time.chrono.ISOChronology.equals(Object)
+WARN 2009-07-22 21:06:14,370 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_day_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_hour_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_day_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: boolean org.joda.time.DateTimeZone.isLocalDateTimeGap(LocalDateTime)
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_day_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Basics.testToStandardSeconds_overflow()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_hourOfDay_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,371 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Constructors.testFactory_standardSeconds_long()
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Constructors.testFactory_standardDays_long()
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Basics.testToStandardSeconds()
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_hourOfDay_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: Duration org.joda.time.Duration.standardDays(long)
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: long org.joda.time.Duration.getStandardSeconds()
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: boolean java.util.Collection.retainAll(Collection)
+WARN 2009-07-22 21:06:14,372 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.format.DateTimeFormatterBuilder.Fraction.printTo(StringBuffer, ReadablePartial, Locale)
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: Duration org.joda.time.Duration.standardHours(long)
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_day_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_secondOfMinute_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: int org.joda.time.chrono.ISOChronology.hashCode()
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_minuteOfHour_NewYork_Autumn_preCutover()
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_day_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,373 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_day_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,374 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_hour_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,374 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_hour_NewYork_Spring_preCutover()
+WARN 2009-07-22 21:06:14,374 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundCeiling_secondOfMinute_NewYork_Autumn_postCutover()
+WARN 2009-07-22 21:06:14,376 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZone.testIsLocalDateTimeGap_NewYork()
+WARN 2009-07-22 21:06:14,377 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZone.testIsLocalDateTimeGap_Berlin()
+WARN 2009-07-22 21:06:14,377 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_day_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,377 (ExecutionComparator.java:982) - Session B adds new element: boolean org.joda.time.chrono.BuddhistChronology.equals(Object)
+WARN 2009-07-22 21:06:14,378 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDuration_Basics.testGetStandardSeconds()
+WARN 2009-07-22 21:06:14,378 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_minute_NewYork_Spring_postCutover()
+WARN 2009-07-22 21:06:14,378 (ExecutionComparator.java:982) - Session B adds new element: void org.joda.time.TestDateTimeZoneCutover.test_DateTime_roundFloor_secondOfMinute_NewYork_Autumn_postCutover()
+INFO 2009-07-22 21:06:14,380 (ExecutionComparator.java:499) - CHECK COMBINED PARAM DIFFERENCES
+INFO 2009-07-22 21:06:14,406 (ExecutionComparator.java:732) - 	Added param ( 0 ) trait: java.util.HashSet to: void org.joda.time.format.ISODateTimeFormat.checkNotStrictISO(Collection, boolean)
+INFO 2009-07-22 21:06:14,418 (ExecutionComparator.java:714) - 	Added param ( 0 ) trait: IS_NEGATIVE to: long org.joda.time.tz.CachedDateTimeZone.nextTransition(long)
+INFO 2009-07-22 21:06:14,443 (ExecutionComparator.java:732) - 	Added param ( 1 ) trait: java.util.HashSet to: void org.joda.time.format.ISODateTimeFormat.time(DateTimeFormatterBuilder, Collection, boolean, boolean, boolean, boolean)
+INFO 2009-07-22 21:06:14,490 (ExecutionComparator.java:732) - 	Added param ( 1 ) trait: java.util.HashSet to: boolean org.joda.time.format.ISODateTimeFormat.dateByMonth(DateTimeFormatterBuilder, Collection, boolean, boolean)
+INFO 2009-07-22 21:06:14,493 (ExecutionComparator.java:732) - 	Added param ( 1 ) trait: java.util.HashSet to: boolean org.joda.time.format.ISODateTimeFormat.dateByWeek(DateTimeFormatterBuilder, Collection, boolean, boolean)
+INFO 2009-07-22 21:06:14,503 (ExecutionComparator.java:714) - 	Added param ( 3 ) trait: IS_POSITIVE to: void org.joda.time.format.DateTimeFormatterBuilder.Fraction.printTo(StringBuffer, long, Chronology, int, DateTimeZone, Locale)
+INFO 2009-07-22 21:06:14,503 (ExecutionComparator.java:714) - 	Added param ( 3 ) trait: IS_NEGATIVE to: void org.joda.time.format.DateTimeFormatterBuilder.Fraction.printTo(StringBuffer, long, Chronology, int, DateTimeZone, Locale)
+INFO 2009-07-22 21:06:14,503 (ExecutionComparator.java:732) - 	Added param ( 4 ) trait: org.joda.time.tz.CachedDateTimeZone to: void org.joda.time.format.DateTimeFormatterBuilder.Fraction.printTo(StringBuffer, long, Chronology, int, DateTimeZone, Locale)
+INFO 2009-07-22 21:06:14,504 (ExecutionComparator.java:732) - 	Added param ( 4 ) trait: org.joda.time.MockZone to: void org.joda.time.format.DateTimeFormatterBuilder.Fraction.printTo(StringBuffer, long, Chronology, int, DateTimeZone, Locale)
+INFO 2009-07-22 21:06:14,535 (ExecutionComparator.java:714) - 	Added param ( 4 ) trait: IS_ZERO to: org.joda.time.LocalDateTime(int, int, int, int, int)
+INFO 2009-07-22 21:06:14,576 (ExecutionComparator.java:732) - 	Added param ( 0 ) trait: org.joda.time.DateTimeFieldType$StandardDateTimeFieldType to: boolean java.util.Set.contains(Object)
+INFO 2009-07-22 21:06:14,679 (ExecutionComparator.java:435) - CHECK COMBINED RETURN DIFFERENCES
+INFO 2009-07-22 21:06:14,686 (ExecutionComparator.java:714) - 	Added return trait: IS_NULL to: DateTime org.joda.time.LocalDateTime.toDateTime(DateTimeZone)
+INFO 2009-07-22 21:06:14,709 (ExecutionComparator.java:714) - 	Added return trait: IS_NEGATIVE to: long org.joda.time.tz.CachedDateTimeZone.nextTransition(long)
+INFO 2009-07-22 21:06:14,716 (ExecutionComparator.java:714) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.base.BaseSingleFieldPeriod.getValue(int)
+INFO 2009-07-22 21:06:14,846 (ExecutionComparator.java:714) - 	Added return trait: IS_NEGATIVE to: int org.joda.time.chrono.ZonedChronology.ZonedDateTimeField.getOffsetToAdd(long)
+INFO 2009-07-22 21:06:15,126 (ExecutionComparator.java:327) - CHECK EXCEPTION DIFFERENCES
+INFO 2009-07-22 21:06:15,149 (ExecutionComparator.java:296) - CHECK COMBINED FIELD GET DIFFERENCES
+INFO 2009-07-22 21:06:15,149 (ExecutionComparator.java:311) - CHECK COMBINED FIELD SET DIFFERENCES

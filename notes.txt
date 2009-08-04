@@ -1,0 +1,20 @@
+joda time clients
+
+FAIL: 	http://code.google.com/p/joda-time-jpox/  	Odd testing framework; simple tests
+PASS:	http://code.google.com/p/google-rfc-2445/	This one works pretty well, a few things show up.
+FAIL:	http://code.google.com/p/java-twitter/		Odd deps
+PASS:	jibx
+PASS:	kaching
+
+http://code.google.com/p/crew/
+http://code.google.com/p/glug/
+http://code.google.com/p/appfuse-timetracker/
+http://code.google.com/p/remy/
+
+
+apache commons clients
+
+http://ant.apache.org/ivy/
+http://www.phex.org/mambo/
+http://sourceforge.net/scm/?type=svn&group_id=29721		(checkstyle)
+

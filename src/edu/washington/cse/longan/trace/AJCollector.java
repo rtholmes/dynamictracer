@@ -414,6 +414,9 @@ public class AJCollector {
 		if (avoidDuplicateBug) {
 			name = jp.getSignature().toString();
 
+			// RFE: Could detect isConstructor using: jp.getSignature().getDeclaringTypeName()
+			// and comparing that to the position of the first (
+			
 			if (!_session.hasIDForElement(name)) {
 				_session.addIDForElement(name, _masterCounter++);
 				// _nameToBaseIdMap.put(name, methodidcounter++);
