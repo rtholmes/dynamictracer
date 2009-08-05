@@ -89,11 +89,11 @@ public class Session {
 
 			// RFE: these maps should all be combined so we don't make so many mistakes
 			// (not the maps but their updating)
-			// if (!_nameToBaseIdMap.containsKey(method.getName())) {
-			// _nameToBaseIdMap.put(method.getName(), id);
-			// } else {
-			// Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
-			// }
+			if (!_nameToBaseIdMap.containsKey(method.getName())) {
+				_nameToBaseIdMap.put(method.getName(), id);
+			} else {
+				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+			}
 		}
 	}
 
@@ -118,7 +118,7 @@ public class Session {
 		return _nameToBaseIdMap.containsKey(name);
 	}
 
-	public void addIDForElement(String name, int id) {
+	private void addIDForElement(String name, int id) {
 		_nameToBaseIdMap.put(name, id);
 	}
 
@@ -178,17 +178,27 @@ public class Session {
 
 		if (!_fieldNameToBaseIdMap.containsKey(field.getName()))
 			_fieldNameToBaseIdMap.put(field.getName(), id);
+		
+		if (!_nameToBaseIdMap.containsKey(field.getName())) {
+			_nameToBaseIdMap.put(field.getName(), id);
+		} else {
+			Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+		}
 	}
 
 	public boolean fieldExists(int id) {
 		return _fields.containsKey(id);
 	}
-	
+
 	public Set<String> getMethodNames() {
 		return _methodNameToBaseIdMap.keySet();
 	}
 
 	public Set<String> getFieldNames() {
 		return _fieldNameToBaseIdMap.keySet();
+	}
+
+	public void setSessionName(String fName) {
+		_sessionName = fName;
 	}
 }

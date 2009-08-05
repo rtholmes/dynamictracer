@@ -114,10 +114,10 @@ public class GilliganXMLReader implements IGilliganStoreIO {
 			String sourceName = call.getAttributeValue(XML_SOURCE);
 
 			if (!sourceName.contains("<clinit>")) {
-				
+
 				sourceName = computeShortMethodName(sourceName);
 				String targetName = computeShortMethodName(call.getAttributeValue(XML_TARGET));
-				
+
 				MethodElement source = session.getMethodForName(sourceName);
 				MethodElement target = session.getMethodForName(targetName);
 
@@ -137,7 +137,7 @@ public class GilliganXMLReader implements IGilliganStoreIO {
 			if (!sourceName.contains("<clinit>")) {
 
 				sourceName = computeShortMethodName(sourceName);
-				
+
 				MethodElement source = session.getMethodForName(sourceName);
 				FieldElement field = session.getFieldForName(call.getAttributeValue(XML_TARGET));
 				if (source == null || field == null) {
@@ -213,7 +213,7 @@ public class GilliganXMLReader implements IGilliganStoreIO {
 							shortParam += "[][]";
 						if (is1Darray)
 							shortParam += "[]";
-						
+
 						shortParameterList += shortParam + ", ";
 					}
 				}
@@ -322,13 +322,15 @@ public class GilliganXMLReader implements IGilliganStoreIO {
 
 					// let's not track any class initialization
 					if (!methodName.contains("<clinit>")) {
-						_log.info("sta name trans: " + methodName + " -> " + computeShortMethodName(methodName));
+						_log.trace("sta name trans: " + methodName + " -> " + computeShortMethodName(methodName));
 						methodName = computeShortMethodName(methodName);
+						int id = -1;
 						if (!session.hasIDForElement(methodName)) {
-							session.addIDForElement(methodName, _nextId++);
+							// session.addIDForElement(methodName, _nextId++);
+							id = _nextId++;
+						} else {
+							id = session.getIdForElement(methodName);
 						}
-
-						int id = session.getIdForElement(methodName);
 						if (!session.methodExists(id)) {
 							session.addMethod(id, new MethodElement(id, methodName, false));
 						}
@@ -336,11 +338,14 @@ public class GilliganXMLReader implements IGilliganStoreIO {
 				} else if (elemName.equals(XML_FIELD)) {
 					String fieldName = elem.getAttributeValue(XML_NAME);
 
+					int id = -1;
 					if (!session.hasIDForElement(fieldName)) {
-						session.addIDForElement(fieldName, _nextId++);
+						// session.addIDForElement(fieldName, _nextId++);
+						id = _nextId++;
+					} else {
+						id = session.getIdForElement(fieldName);
 					}
-
-					int id = session.getIdForElement(fieldName);
+					
 					if (!session.fieldExists(id)) {
 						session.addField(id, new FieldElement(id, fieldName));
 					}

@@ -54,6 +54,7 @@ public class SessionXMLReader implements ILonganIO {
 				saxp.parse(is, dh);
 
 				session = dh.getSession();
+				session.setSessionName(fName);
 			}
 
 		} catch (FileNotFoundException fnfe) {

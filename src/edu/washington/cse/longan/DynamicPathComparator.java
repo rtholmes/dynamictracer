@@ -18,6 +18,7 @@ import com.google.common.collect.Sets;
 import edu.washington.cse.longan.io.SessionXMLReader;
 import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.model.AbstractElement;
+import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
@@ -157,11 +158,95 @@ public class DynamicPathComparator {
 	private void run(DataProvider provider) {
 		_log.info("DPC.run()");
 
-//		ExecutionDelta staticDelta = compare(provider.getStaticA(), provider.getStaticB());
+		_log.info("staticA vs. staticB -> STAT1");
+		ExecutionDelta staticDelta = compare(provider.getStaticA(), provider.getStaticB());
+		
+		_log.info("dynamicA vs. dynamicB -> DYN1");
 		ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
 
-//		ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
-//		ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
+		_log.info("STAT1 vs. DYN1");
+		ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
+		
+		_log.info("staticA vs. dynamicA -> RUN_A");
+		 ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
+		 
+		 _log.info("staticB vs. dynamicB -> RUN_B");
+		 ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
+		 
+		 _log.info("RUN_A vs. RUN_B");
+		 ExecutionDelta overallDelta2 = compare(sessionADelta, sessionBDelta);
+	}
+
+	private ExecutionDelta compare(ExecutionDelta delta1, ExecutionDelta delta2) {
+
+		_log.info("Comparing deltas");
+
+		Set<String> addedElements = Sets.difference(Sets.union(delta1.get_addedElements(), delta2.get_addedElements()), Sets.intersection(delta1
+				.get_addedElements(), delta2.get_addedElements()));
+		Set<String> removedElements = Sets.difference(Sets.union(delta1.get_removedElements(), delta2.get_removedElements()), Sets.intersection(
+				delta1.get_removedElements(), delta2.get_removedElements()));
+
+		Set<Path> addedPaths = Sets.difference(Sets.union(delta1.get_addedPaths(), delta2.get_addedPaths()), Sets.intersection(delta1
+				.get_addedPaths(), delta2.get_addedPaths()));
+		Set<Path> removedPaths = Sets.difference(Sets.union(delta1.get_removedPaths(), delta2.get_removedPaths()), Sets.intersection(delta1
+				.get_removedPaths(), delta2.get_removedPaths()));
+
+		for (String addedElement : addedElements) {
+			boolean in1 = delta1.get_sessionA().hasIDForElement(addedElement);
+			boolean in2 = delta2.get_sessionA().hasIDForElement(addedElement);
+			if (!in1 && !in2)
+				_log.info("Added element (both): " + addedElement);
+			else if (!in1)
+				_log.info("Added element (first): " + addedElement);
+			else if (!in2)
+				_log.info("Added element (second): " + addedElement);
+			else
+				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+		}
+
+		for (String removedElement : removedElements) {
+			boolean in1 = delta1.get_sessionB().hasIDForElement(removedElement);
+			boolean in2 = delta2.get_sessionB().hasIDForElement(removedElement);
+
+			if (!in1 && !in2)
+				_log.info("Removed element (both): " + removedElement);
+			else if (!in1)
+				_log.info("Removed element (first): " + removedElement);
+			else if (!in2)
+				_log.info("Removed element (second): " + removedElement);
+			else
+				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+			// _log.info("Removed element: " + removedElement);
+		}
+
+		for (Path addedPath : addedPaths) {
+			// _log.info("Added path: " + addedPath);
+
+			boolean in1 = true;
+			boolean in2 = true;
+
+			if (!addedPath.existsInSession(delta1.get_sessionA()) && addedPath.existsInSession(delta1.get_sessionB()))
+				in1 = false;
+
+			if (!addedPath.existsInSession(delta2.get_sessionA()) && addedPath.existsInSession(delta2.get_sessionB()))
+				in2 = false;
+
+			if (!in1 && !in2)
+				_log.info("Added path (both): " + addedPath);
+			else if (!in1)
+				_log.info("Added path (first): " + addedPath);
+			else if (!in2)
+				_log.info("Added path (second): " + addedPath);
+			else
+				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+
+		}
+
+		for (Path removedPath : removedPaths) {
+			_log.info("Removed path: " + removedPath);
+		}
+
+		return null;
 	}
 
 	private void start() {
@@ -210,7 +295,7 @@ public class DynamicPathComparator {
 
 		_log.info("Comparing: " + sA.getSessionName() + " to: " + sB.getSessionName());
 
-		ExecutionDelta ed = new ExecutionDelta();
+		ExecutionDelta ed = new ExecutionDelta(sA, sB);
 
 		if (_outputCountDifferences)
 			checkTotalMethodInvocationCounts(sA, sB);
@@ -1035,6 +1120,7 @@ public class DynamicPathComparator {
 			}
 		}
 
+
 		for (String eName : newNames) {
 
 			// mA doesn't exist because these are new names
@@ -1148,6 +1234,21 @@ class ExecutionDelta {
 	private HashSet<String> _removedElements = new HashSet<String>();
 	private HashSet<Path> _addedPaths = new HashSet<Path>();
 	private HashSet<Path> _removedPaths = new HashSet<Path>();
+	private Session _sessionA;
+	private Session _sessionB;
+
+	ExecutionDelta(Session sessionA, Session sessionB) {
+		_sessionA = sessionA;
+		_sessionB = sessionB;
+	}
+
+	public Session get_sessionA() {
+		return _sessionA;
+	}
+
+	public Session get_sessionB() {
+		return _sessionB;
+	}
 
 	public void addedPath(String source, String target) {
 		_addedPaths.add(new Path(source, target));
@@ -1210,5 +1311,33 @@ class Path {
 	@Override
 	public String toString() {
 		return _sig;
+	}
+
+	public String get_source() {
+		return _source;
+	}
+
+	public String get_target() {
+		return _target;
+	}
+
+	public boolean existsInSession(Session session) {
+		boolean exists = false;
+
+		if (session.hasIDForElement(_source) && session.hasIDForElement(_target)) {
+			AbstractElement target = session.getElementForName(_target);
+
+			if (target instanceof MethodElement) {
+				MethodElement targetM = ((MethodElement) target);
+
+				exists = targetM.getCalledBy().contains(session.getIdForElement(_source));
+
+			} else if (target instanceof FieldElement) {
+				Preconditions.checkNotNull(null, "not implemented yet");
+			}
+		}
+
+//		System.out.println("Session contains path: " + toString() + " ? " + exists);
+		return exists;
 	}
 }

@@ -223,7 +223,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		int id = Integer.parseInt(idString);
 
 		FieldElement fe = new FieldElement(id, name);
-		_session.addIDForElement(name, id);
+//		_session.addIDForElement(name, id);
 		_session.addField(id, fe);
 
 		FieldTraitContainer ftcg = new FieldTraitContainer(type);
@@ -409,7 +409,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		boolean external = Boolean.parseBoolean(externalString);
 
 		MethodElement me = new MethodElement(id, name, external);
-		_session.addIDForElement(name, id);
+//		_session.addIDForElement(name, id);
 		_session.addMethod(id, me);
 
 		_currentStaticMethod = me;

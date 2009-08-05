@@ -393,10 +393,12 @@ public class AJCollector {
 		name = jp.getSignature().toString();
 
 		if (!_session.hasIDForElement(name)) {
-			_session.addIDForElement(name, _masterCounter++);
+			// _session.addIDForElement(name, _masterCounter++);
+			id = _masterCounter++;
+		} else {
+			id = _session.getIdForElement(name);
 		}
 
-		id = _session.getIdForElement(name);
 		if (!_session.fieldExists(id)) {
 			_session.addField(id, new AJFieldAgent(id, jp));
 		}
@@ -416,13 +418,15 @@ public class AJCollector {
 
 			// RFE: Could detect isConstructor using: jp.getSignature().getDeclaringTypeName()
 			// and comparing that to the position of the first (
-			
-			if (!_session.hasIDForElement(name)) {
-				_session.addIDForElement(name, _masterCounter++);
-				// _nameToBaseIdMap.put(name, methodidcounter++);
-			}
 
-			id = _session.getIdForElement(name);
+			if (!_session.hasIDForElement(name)) {
+				// _session.addIDForElement(name, _masterCounter++);
+				// _nameToBaseIdMap.put(name, methodidcounter++);
+				id = _masterCounter++;
+			} else {
+				id = _session.getIdForElement(name);
+			}
+			
 			if (!_session.methodExists(id)) {
 				if (!isExternalKnown) {
 					throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
