@@ -25,7 +25,7 @@ import edu.washington.cse.longan.trait.ITrait;
 //RFE: refactor out all aspectJ references
 public class AJMethodAgent extends MethodElement {
 
-	private Logger _log = Logger.getLogger(this.getClass());
+	private static Logger _log = Logger.getLogger(AJMethodAgent.class);
 
 	protected IObjectTracker[] _parameterTrackerDefinitions;
 
@@ -46,7 +46,7 @@ public class AJMethodAgent extends MethodElement {
 	private Hashtable<Integer, IObjectTracker> _returnObjectTrackers = new Hashtable<Integer, IObjectTracker>();
 
 	public AJMethodAgent(int id, JoinPoint jp, boolean isExternal) {
-		super(id, jp.getSignature().toString(), isExternal);
+		super(id, getMethodName(jp), isExternal);
 
 		prepareTrackers(jp);
 	}
@@ -205,7 +205,7 @@ public class AJMethodAgent extends MethodElement {
 			if (ILonganConstants.OUTPUT) {
 				_log.trace("Unknown caller for: " + _name);
 			}
-			
+
 			_calledBy.add(ILonganConstants.UNKNOWN_METHOD_ID);
 
 		}
@@ -238,7 +238,56 @@ public class AJMethodAgent extends MethodElement {
 		return _hasVoidReturn;
 	}
 
-	// public static AJMethodAgent cloneFromMethodElement(MethodElement me) {
-	// return new AJMethodAgent();
-	// }
+	/**
+	 * This code helps to translate from a method call like Collections.add(Object)
+	 * to something more accurate like ArrayList.add(Object). 
+	 * 
+	 * It is currently disabled. 
+	 * @param jp
+	 * @return
+	 */
+	public static String getMethodName(JoinPoint jp) {
+		String name = jp.getSignature().toString();
+		
+		if (true)
+			return name;
+		
+		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
+
+			String oldName = name;
+			Object myThis = jp.getThis();
+			Object myTarget = jp.getTarget();
+
+			if (myThis != myTarget) {
+
+				String rootName = jp.getSignature().getDeclaringTypeName();
+				String targetTypeName = jp.getTarget().getClass().getName();
+				if (!rootName.equals(targetTypeName)) {
+					int offsetIndex = 0;
+					boolean isConstructor = false;
+
+					if (jp.getSignature() instanceof ConstructorSignature)
+						isConstructor = true;
+
+					// if (name.indexOf(" ") < name.indexOf("(")) {
+					// offsetIndex = name.indexOf(" ");
+					// isConstructor = false;
+					// }
+
+					String retType = name.substring(0, offsetIndex);
+
+					int padding = 2;
+					if (isConstructor)
+						padding = 1;
+
+					String methodName = name.substring(rootName.length() + retType.length() + padding);
+					name = retType + " " + targetTypeName + "." + methodName;
+
+					_log.trace("Translate method name from: " + oldName + " -> " + name);
+				}
+			}
+		}
+		return name;
+	}
+
 }

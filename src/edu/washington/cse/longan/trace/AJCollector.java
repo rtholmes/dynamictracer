@@ -16,6 +16,7 @@ import java.util.Vector;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.CodeSignature;
+import org.aspectj.lang.reflect.MethodSignature;
 
 import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
@@ -25,6 +26,7 @@ import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.io.SessionXMLWriter;
+import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
@@ -414,7 +416,10 @@ public class AJCollector {
 
 		boolean avoidDuplicateBug = true;
 		if (avoidDuplicateBug) {
-			name = jp.getSignature().toString();
+
+			// this seems complicated but allows us to resolve what is actually going on.
+			// e.g., Collections.add(Object) -> ArrayList.add(Object)
+			name = AJMethodAgent.getMethodName(jp);
 
 			// RFE: Could detect isConstructor using: jp.getSignature().getDeclaringTypeName()
 			// and comparing that to the position of the first (
@@ -426,7 +431,7 @@ public class AJCollector {
 			} else {
 				id = _session.getIdForElement(name);
 			}
-			
+
 			if (!_session.methodExists(id)) {
 				if (!isExternalKnown) {
 					throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
@@ -511,6 +516,22 @@ public class AJCollector {
 				out += "\t";
 
 			String sig = _session.getMethod(id).getName();
+
+			if (sig.equals("boolean java.util.Collection.add(Object)")) {
+				Object thisObj = jp.getThis();
+				Object targetObj = jp.getTarget();
+				String targetName = targetObj.getClass().getName();
+				String targetPkg = targetObj.getClass().getPackage().getName();
+				String kind = jp.getKind();
+				Signature sign = jp.getSignature();
+
+				String mName = "";
+				if (sign instanceof MethodSignature) {
+					mName = ((MethodSignature) sign).getMethod().getName();
+
+				}
+				_log.info("lets' take a break here");
+			}
 
 			if (!isExternal)
 				_log.debug(out + "--> " + sig + " # args: " + jp.getArgs().length);
@@ -674,51 +695,54 @@ public class AJCollector {
 					int elementId = _session.getIdForElement(name);
 
 					MethodElement methodAgent = _session.getMethod(elementId);
+					FieldElement fieldAgent = _session.getField(elementId);
 
 					_log.info(name);
 
-					if (!methodAgent.getName().equals(name)) {
-						// this should never happen
-						_log.error("Method names don't match.");
-					}
-
-					Collection<Integer> uniqueCallers = getUniqueCallers(elementId);
-
-					for (Integer caller : uniqueCallers) {
-
-						MethodElement calledBy = _session.getMethod(caller);
-						String calledByName = "";
-
-						if (calledBy != null)
-							calledByName = calledBy.getName();
-						else
-							calledByName = ILonganConstants.UNKNOWN_METHOD_NAME; // UNKNOWN_CALLER;
-
-						int calledByCount = _session.getMethod(elementId).getCalledBy().count(caller);
-						_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
-
-						IObjectTracker[] paramTracker = new IObjectTracker[0];
-						IObjectTracker returnTracker = null;
-
-						if (methodAgent instanceof AJMethodAgent) {
-							returnTracker = ((AJMethodAgent) methodAgent).getReturnTrackers().get(caller);
-							paramTracker = ((AJMethodAgent) methodAgent).getParameterTrackers().get(caller);
+					if (methodAgent != null) {
+						if (!methodAgent.getName().equals(name)) {
+							// this should never happen
+							_log.error("Method names don't match.");
 						}
 
-						if (paramTracker != null && paramTracker.length > 0) {
-							for (IObjectTracker tracker : paramTracker) {
-								_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition() + " ] name: "
-										+ tracker.getName() + " static type: " + tracker.getStaticTypeName());
-								_log.info("\t\t\t" + tracker.toString());
+						Collection<Integer> uniqueCallers = getUniqueCallers(elementId);
+
+						for (Integer caller : uniqueCallers) {
+
+							MethodElement calledBy = _session.getMethod(caller);
+							String calledByName = "";
+
+							if (calledBy != null)
+								calledByName = calledBy.getName();
+							else
+								calledByName = ILonganConstants.UNKNOWN_METHOD_NAME; // UNKNOWN_CALLER;
+
+							int calledByCount = _session.getMethod(elementId).getCalledBy().count(caller);
+							_log.info("\t<-- id: " + caller + "; # calls: " + calledByCount + "; name: " + calledByName);
+
+							IObjectTracker[] paramTracker = new IObjectTracker[0];
+							IObjectTracker returnTracker = null;
+
+							if (methodAgent instanceof AJMethodAgent) {
+								returnTracker = ((AJMethodAgent) methodAgent).getReturnTrackers().get(caller);
+								paramTracker = ((AJMethodAgent) methodAgent).getParameterTrackers().get(caller);
+							}
+
+							if (paramTracker != null && paramTracker.length > 0) {
+								for (IObjectTracker tracker : paramTracker) {
+									_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition() + " ] name: "
+											+ tracker.getName() + " static type: " + tracker.getStaticTypeName());
+									_log.info("\t\t\t" + tracker.toString());
+								}
+							}
+
+							if (returnTracker != null) {
+								_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: " + returnTracker.getStaticTypeName());
+								_log.info("\t\t\t" + returnTracker.toString());
 							}
 						}
 
-						if (returnTracker != null) {
-							_log.info("\t\tReturn: " + returnTracker.getTrackerName() + " static type: " + returnTracker.getStaticTypeName());
-							_log.info("\t\t\t" + returnTracker.toString());
-						}
 					}
-
 				}
 				_log.info("Total time (with double counting): " + total);
 

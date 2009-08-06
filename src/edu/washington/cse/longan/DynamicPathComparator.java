@@ -142,10 +142,20 @@ public class DynamicPathComparator {
 
 		String path = ILonganConstants.OUTPUT_PATH;
 
-		String staticAPath = path + "longAnTestC-1_static.xml";
-		String staticBPath = path + "longAnTestC-2_static.xml";
-		String dynamicAPath = path + "longAnTestC-1_dynamic.xml";
-		String dynamicBPath = path + "longAnTestC-2_dynamic.xml";
+		 String staticAPath = path + "longAnTestC-1_static.xml";
+		 String staticBPath = path + "longAnTestC-2_static.xml";
+		 String dynamicAPath = path + "longAnTestC-1_dynamic-4.xml";
+		 String dynamicBPath = path + "longAnTestC-2_dynamic-4.xml";
+
+		// String staticAPath = path + "jodaTime_1322_staticA.xml";
+		// String staticBPath = path + "jodaTime_1371_staticA.xml";
+		// String dynamicAPath = path + "jodaTime_1322_dynamicA.xml";
+		// String dynamicBPath = path + "jodaTime_1371_dynamicA.xml";
+
+//		String staticAPath = path + "jodaTime_1371_staticA.xml";
+//		String staticBPath = path + "jodaTime_1374_staticA.xml";
+//		String dynamicAPath = path + "jodaTime_1371_dynamicA.xml";
+//		String dynamicBPath = path + "jodaTime_1374_dynamicA.xml";
 
 		DataProvider provider = new DataProvider(staticAPath, staticBPath, dynamicAPath, dynamicBPath);
 
@@ -160,19 +170,19 @@ public class DynamicPathComparator {
 
 		_log.info("staticA vs. staticB -> STAT1");
 		ExecutionDelta staticDelta = compare(provider.getStaticA(), provider.getStaticB());
-		
-		_log.info("dynamicA vs. dynamicB -> DYN1");
-		ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
 
-		_log.info("STAT1 vs. DYN1");
-		ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
+		 _log.info("dynamicA vs. dynamicB -> DYN1");
+		 ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
 		
-		_log.info("staticA vs. dynamicA -> RUN_A");
+		 _log.info("STAT1 vs. DYN1");
+		 ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
+		
+		 _log.info("staticA vs. dynamicA -> RUN_A");
 		 ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
-		 
+		
 		 _log.info("staticB vs. dynamicB -> RUN_B");
 		 ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
-		 
+		
 		 _log.info("RUN_A vs. RUN_B");
 		 ExecutionDelta overallDelta2 = compare(sessionADelta, sessionBDelta);
 	}
@@ -194,14 +204,15 @@ public class DynamicPathComparator {
 		for (String addedElement : addedElements) {
 			boolean in1 = delta1.get_sessionA().hasIDForElement(addedElement);
 			boolean in2 = delta2.get_sessionA().hasIDForElement(addedElement);
-			if (!in1 && !in2)
+			if (!in1 && !in2) {
 				_log.info("Added element (both): " + addedElement);
-			else if (!in1)
+			} else if (!in1) {
 				_log.info("Added element (first): " + addedElement);
-			else if (!in2)
+			} else if (!in2) {
 				_log.info("Added element (second): " + addedElement);
-			else
+			} else {
 				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
+			}
 		}
 
 		for (String removedElement : removedElements) {
@@ -1120,7 +1131,6 @@ public class DynamicPathComparator {
 			}
 		}
 
-
 		for (String eName : newNames) {
 
 			// mA doesn't exist because these are new names
@@ -1151,11 +1161,17 @@ public class DynamicPathComparator {
 
 		ImmutableSet<String> missingNames = Sets.difference(sessionA.getElementNames(), sessionB.getElementNames()).immutableCopy();
 		_missingElementNames = missingNames;
+
+		Vector<String> names = new Vector<String>();
 		for (String elemName : _missingElementNames) {
-			_log.warn("Session B lacks element: " + elemName);
+			names.add(elemName);
 			ed.removedElement(elemName);
 		}
 
+		Collections.sort(names);
+		for (String name : names)
+			_log.warn("Session B lacks element: " + name);
+		
 	}
 
 	private void checkForNewElements(Session sessionA, Session sessionB, ExecutionDelta ed) {
@@ -1168,7 +1184,6 @@ public class DynamicPathComparator {
 		_newElementNames = newNames;
 
 		for (String elemName : _newElementNames) {
-			boolean fp = false;
 			newElements.add(elemName);
 		}
 
@@ -1337,7 +1352,7 @@ class Path {
 			}
 		}
 
-//		System.out.println("Session contains path: " + toString() + " ? " + exists);
+		// System.out.println("Session contains path: " + toString() + " ? " + exists);
 		return exists;
 	}
 }

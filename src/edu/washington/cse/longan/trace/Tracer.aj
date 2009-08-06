@@ -1,4 +1,4 @@
-//package edu.washington.cse.longan;
+//package edu.washington.cse.longan.trace;
 //
 ///**
 // * Created on Mar 16, 2009

@@ -22,6 +22,7 @@ public class Logger {
 
 		if (!_instanceMap.containsKey(clazz))
 			_instanceMap.put(clazz, new Logger(clazz));
+//			_instanceMap.put(clazz, new Logger(clazz));
 
 		return _instanceMap.get(clazz);
 	}

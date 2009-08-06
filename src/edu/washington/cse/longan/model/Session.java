@@ -82,6 +82,7 @@ public class Session {
 	}
 
 	public void addMethod(int id, MethodElement method) {
+//		_log.info("Creating method: "+method.getName());
 		_methods.put(id, method);
 
 		if (!_methodNameToBaseIdMap.containsKey(method.getName())) {
