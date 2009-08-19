@@ -136,26 +136,31 @@ public class DynamicPathComparator {
 	 */
 	public static void main(String[] args) {
 		// LOGGING
-		LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+		LSMRLogger.startLog4J(false, ILonganConstants.LOGGING_LEVEL);
 
 		long start = System.currentTimeMillis();
 
 		String path = ILonganConstants.OUTPUT_PATH;
 
-		 String staticAPath = path + "longAnTestC-1_static.xml";
-		 String staticBPath = path + "longAnTestC-2_static.xml";
-		 String dynamicAPath = path + "longAnTestC-1_dynamic-4.xml";
-		 String dynamicBPath = path + "longAnTestC-2_dynamic-4.xml";
+		// String staticAPath = path + "longAnTestC-1_static.xml";
+		// String staticBPath = path + "longAnTestC-2_static.xml";
+		// String dynamicAPath = path + "longAnTestC-1_dynamic-4.xml";
+		// String dynamicBPath = path + "longAnTestC-2_dynamic-4.xml";
 
 		// String staticAPath = path + "jodaTime_1322_staticA.xml";
 		// String staticBPath = path + "jodaTime_1371_staticA.xml";
 		// String dynamicAPath = path + "jodaTime_1322_dynamicA.xml";
 		// String dynamicBPath = path + "jodaTime_1371_dynamicA.xml";
 
-//		String staticAPath = path + "jodaTime_1371_staticA.xml";
-//		String staticBPath = path + "jodaTime_1374_staticA.xml";
-//		String dynamicAPath = path + "jodaTime_1371_dynamicA.xml";
-//		String dynamicBPath = path + "jodaTime_1374_dynamicA.xml";
+		// String staticAPath = path + "jodaTime_1371_staticA.xml";
+		// String staticBPath = path + "jodaTime_1374_staticA.xml";
+		// String dynamicAPath = path + "jodaTime_1371_dynamicA.xml";
+		// String dynamicBPath = path + "jodaTime_1374_dynamicA.xml";
+
+		String staticAPath = path + "longAnTestObserver-1a_static.xml";
+		String staticBPath = path + "longAnTestObserver-2a_static.xml";
+		String dynamicAPath = path + "longAnTestObserver-1b_dynamic.xml";
+		String dynamicBPath = path + "longAnTestObserver-2b_dynamic.xml";
 
 		DataProvider provider = new DataProvider(staticAPath, staticBPath, dynamicAPath, dynamicBPath);
 
@@ -171,20 +176,20 @@ public class DynamicPathComparator {
 		_log.info("staticA vs. staticB -> STAT1");
 		ExecutionDelta staticDelta = compare(provider.getStaticA(), provider.getStaticB());
 
-		 _log.info("dynamicA vs. dynamicB -> DYN1");
-		 ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
-		
-		 _log.info("STAT1 vs. DYN1");
-		 ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
-		
-		 _log.info("staticA vs. dynamicA -> RUN_A");
-		 ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
-		
-		 _log.info("staticB vs. dynamicB -> RUN_B");
-		 ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
-		
-		 _log.info("RUN_A vs. RUN_B");
-		 ExecutionDelta overallDelta2 = compare(sessionADelta, sessionBDelta);
+		_log.info("dynamicA vs. dynamicB -> DYN1");
+		ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
+
+		_log.info("STAT1 vs. DYN1");
+		ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
+
+		_log.info("staticA vs. dynamicA -> RUN_A");
+		ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
+
+		_log.info("staticB vs. dynamicB -> RUN_B");
+		ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
+
+		_log.info("RUN_A vs. RUN_B");
+		ExecutionDelta overallDelta2 = compare(sessionADelta, sessionBDelta);
 	}
 
 	private ExecutionDelta compare(ExecutionDelta delta1, ExecutionDelta delta2) {
@@ -205,11 +210,11 @@ public class DynamicPathComparator {
 			boolean in1 = delta1.get_sessionA().hasIDForElement(addedElement);
 			boolean in2 = delta2.get_sessionA().hasIDForElement(addedElement);
 			if (!in1 && !in2) {
-				_log.info("Added element (both): " + addedElement);
+				_log.info("Added elem (bth): " + addedElement);
 			} else if (!in1) {
-				_log.info("Added element (first): " + addedElement);
+				_log.info("Added elem (1st): " + addedElement);
 			} else if (!in2) {
-				_log.info("Added element (second): " + addedElement);
+				_log.info("Added elem (2nd): " + addedElement);
 			} else {
 				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
 			}
@@ -220,11 +225,11 @@ public class DynamicPathComparator {
 			boolean in2 = delta2.get_sessionB().hasIDForElement(removedElement);
 
 			if (!in1 && !in2)
-				_log.info("Removed element (both): " + removedElement);
+				_log.info("Removed e (bth): " + removedElement);
 			else if (!in1)
-				_log.info("Removed element (first): " + removedElement);
+				_log.info("Removed e (1st): " + removedElement);
 			else if (!in2)
-				_log.info("Removed element (second): " + removedElement);
+				_log.info("Removed e (2nd): " + removedElement);
 			else
 				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
 			// _log.info("Removed element: " + removedElement);
@@ -243,11 +248,11 @@ public class DynamicPathComparator {
 				in2 = false;
 
 			if (!in1 && !in2)
-				_log.info("Added path (both): " + addedPath);
+				_log.info("Added path (bth): " + addedPath);
 			else if (!in1)
-				_log.info("Added path (first): " + addedPath);
+				_log.info("Added path (1st): " + addedPath);
 			else if (!in2)
-				_log.info("Added path (second): " + addedPath);
+				_log.info("Added path (2nd): " + addedPath);
 			else
 				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
 
@@ -1171,7 +1176,7 @@ public class DynamicPathComparator {
 		Collections.sort(names);
 		for (String name : names)
 			_log.warn("Session B lacks element: " + name);
-		
+
 	}
 
 	private void checkForNewElements(Session sessionA, Session sessionB, ExecutionDelta ed) {
