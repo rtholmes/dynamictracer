@@ -8,8 +8,10 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableSet;
 
 import edu.washington.cse.longan.Logger;
+import edu.washington.cse.longan.Path;
 
 /**
  * Contains the dynamic details of any single session.
@@ -201,5 +203,10 @@ public class Session {
 
 	public void setSessionName(String fName) {
 		_sessionName = fName;
+	}
+
+	public ImmutableSet<Path> getPaths() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

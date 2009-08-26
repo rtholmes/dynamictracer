@@ -46,17 +46,30 @@ public class VennComparator {
 
 		String path = ILonganConstants.OUTPUT_PATH;
 
-		
-		 String staticAPath = path + "longAnTestC-1_static.xml";
-		 String staticBPath = path + "longAnTestC-2_static.xml";
-		 String dynamicAPath = path + "longAnTestC-1_dynamic-4.xml";
-		 String dynamicBPath = path + "longAnTestC-2_dynamic-4.xml";
+		// String staticAPath = path + "longAnTestC-1_static.xml";
+		// String staticBPath = path + "longAnTestC-2_static.xml";
+		// String dynamicAPath = path + "longAnTestC-1_dynamic-4.xml";
+		// String dynamicBPath = path + "longAnTestC-2_dynamic-4.xml";
 
-		
-//		String staticAPath = path + "longAnTestObserver-1a_static.xml";
-//		String staticBPath = path + "longAnTestObserver-2a_static.xml";
-//		String dynamicAPath = path + "longAnTestObserver-1b_dynamic.xml";
-//		String dynamicBPath = path + "longAnTestObserver-2b_dynamic.xml";
+		// String staticAPath = path + "longAnTestObserver-1a_static.xml";
+		// String staticBPath = path + "longAnTestObserver-2a_static.xml";
+		// String dynamicAPath = path + "longAnTestObserver-1b_dynamic.xml";
+		// String dynamicBPath = path + "longAnTestObserver-2b_dynamic.xml";
+
+		// String staticAPath = path + "jodaTime_1371_staticA.xml";
+		// String staticBPath = path + "jodaTime_1374_staticA.xml";
+		// String dynamicAPath = path + "jodaTime_1371_dynamicA.xml";
+		// String dynamicBPath = path + "jodaTime_1374_dynamicA.xml";
+
+		String staticAPath = path + "jodaTime_1380_staticB.xml";
+		String staticBPath = path + "jodaTime_1381_staticB.xml";
+		String dynamicAPath = path + "jodaTime_1380_dynamicA.xml";
+		String dynamicBPath = path + "jodaTime_1381_dynamicA.xml";
+
+//		 String staticAPath = path + "jodaTime_1381_staticB.xml";
+//		 String staticBPath = path + "jodaTime_1388_staticB.xml";
+//		 String dynamicAPath = path + "jodaTime_1381_dynamicA.xml";
+//		 String dynamicBPath = path + "jodaTime_1388_dynamicA.xml";
 
 		DataProvider provider = new DataProvider(staticAPath, staticBPath, dynamicAPath, dynamicBPath);
 
@@ -69,91 +82,171 @@ public class VennComparator {
 	private void run(DataProvider provider) {
 		_log.info("DPC.run()");
 
-		ExecutionDelta staticAed = convertSessionToExecutionDelta(provider.getStaticA());
-		ExecutionDelta dynamicAed = convertSessionToExecutionDelta(provider.getDynamicA());
-		ExecutionDelta staticBed = convertSessionToExecutionDelta(provider.getStaticB());
-		ExecutionDelta dynamicBed = convertSessionToExecutionDelta(provider.getDynamicB());
+		ExecutionDelta v1s = convertSessionToExecutionDelta(provider.getStaticA());
+		ExecutionDelta v1d = convertSessionToExecutionDelta(provider.getDynamicA());
+		ExecutionDelta v2s = convertSessionToExecutionDelta(provider.getStaticB());
+		ExecutionDelta v2d = convertSessionToExecutionDelta(provider.getDynamicB());
 
-		_log.info("static1; elements: " + staticAed.getElements().size() + " paths: " + staticAed.getPaths().size());
-		_log.info("static2; elements: " + staticBed.getElements().size() + " paths: " + staticBed.getPaths().size());
-		_log.info("dyanmic1; elements: " + dynamicAed.getElements().size() + " paths: " + dynamicAed.getPaths().size());
-		_log.info("dyanmic2; elements: " + dynamicBed.getElements().size() + " paths: " + dynamicBed.getPaths().size());
+		_log.info("static1; elements: " + v1s.getElements().size() + " paths: " + v1s.getPaths().size());
+		_log.info("static2; elements: " + v2s.getElements().size() + " paths: " + v2s.getPaths().size());
+		_log.info("dyanmic1; elements: " + v1d.getElements().size() + " paths: " + v1d.getPaths().size());
+		_log.info("dyanmic2; elements: " + v2d.getElements().size() + " paths: " + v2d.getPaths().size());
 
 		ExecutionDelta tmp = null;
 
-		ExecutionDelta v1s;
-		ExecutionDelta v2s;
-		ExecutionDelta v1d;
-		ExecutionDelta v2d;
+		ExecutionDelta v1sPrime;
+		ExecutionDelta v2sPrime;
+		ExecutionDelta v1dPrime;
+		ExecutionDelta v2dPrime;
 
+		ExecutionDelta r1;
+		ExecutionDelta r2;
+		ExecutionDelta r3;
+		ExecutionDelta r4;
+		ExecutionDelta r5;
+		ExecutionDelta r6;
+		ExecutionDelta r7;
+		ExecutionDelta r8;
+		ExecutionDelta r9;
+		ExecutionDelta r10;
+		ExecutionDelta r11;
+		ExecutionDelta r12;
+		ExecutionDelta r13;
+		ExecutionDelta r14;
+		ExecutionDelta r15;
+		
+		ExecutionDelta staticOnly;
+		ExecutionDelta dynamicOnly;
+		
 		// V1s
-		tmp = difference(staticAed, staticBed);
-		tmp = difference(tmp, dynamicAed);
-		v1s = difference(tmp, dynamicBed);
-		_log.info("V1S; elements: " + v1s.getElements().size() + " paths: " + v1s.getPaths().size());
+		tmp = difference(v1s, v2s);
+		tmp = difference(tmp, v1d);
+		v1sPrime = difference(tmp, v2d);
+		r1 = v1sPrime;
+		_log.info("V1S'; elements: " + v1sPrime.getElements().size() + " paths: " + v1sPrime.getPaths().size());
 
 		tmp = null;
-		tmp = difference(staticBed, staticAed);
-		tmp = difference(tmp, dynamicAed);
-		v2s = difference(tmp, dynamicBed);
-		_log.info("V2S; elements: " + v2s.getElements().size() + " paths: " + v2s.getPaths().size());
+		tmp = difference(v2s, v1s);
+		tmp = difference(tmp, v1d);
+		v2sPrime = difference(tmp, v2d);
+		r2 = v2sPrime;
+		_log.info("V2S'; elements: " + v2sPrime.getElements().size() + " paths: " + v2sPrime.getPaths().size());
 
 		tmp = null;
-		tmp = difference(dynamicAed, dynamicBed);
-		tmp = difference(tmp, staticAed);
-		v1d = difference(tmp, staticBed);
-		_log.info("V1D; elements: " + v1d.getElements().size() + " paths: " + v1d.getPaths().size());
+		tmp = difference(v1d, v2d);
+		tmp = difference(tmp, v1s);
+		v1dPrime = difference(tmp, v2s);
+		r8 = v1dPrime;
+		_log.info("V1D'; elements: " + v1dPrime.getElements().size() + " paths: " + v1dPrime.getPaths().size());
 
 		tmp = null;
-		tmp = difference(dynamicBed, dynamicAed);
-		tmp = difference(tmp, staticAed);
-		v2d = difference(tmp, staticBed);
-		_log.info("V2D; elements: " + v2d.getElements().size() + " paths: " + v2d.getPaths().size());
+		tmp = difference(v2d, v1d);
+		tmp = difference(tmp, v1s);
+		v2dPrime = difference(tmp, v2s);
+		r4 = v2dPrime;
+		_log.info("V2D'; elements: " + v2dPrime.getElements().size() + " paths: " + v2dPrime.getPaths().size());
 
-		_log.info("V1S");
-		for (String element : v1s.getElements())
+		tmp = null;
+		tmp = difference(v1s, v2d);
+		tmp = difference(tmp, v1d);
+		r3 = difference(tmp, r1);
+		_log.info("r3;   elements: " + r3.getElements().size() + " paths: " + r3.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, v2s);
+		tmp = difference(tmp, v1d);
+		r5 = difference(tmp, r1);
+		_log.info("r5;   elements: " + r5.getElements().size() + " paths: " + r5.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v2s, v1s);
+		tmp = difference(tmp, v1d);
+		r6 = difference(tmp, r2);
+		_log.info("r6;   elements: " + r6.getElements().size() + " paths: " + r6.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, v1d);
+		tmp = difference(tmp, r1);
+		tmp = difference(tmp, r3);
+		r7 = difference(tmp, r5);
+		_log.info("r7;   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, v2s);
+		tmp = difference(tmp, v2d);
+		r9 = difference(tmp, r1);
+		_log.info("r9;   elements: " + r9.getElements().size() + " paths: " + r9.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v2s, v1s);
+		tmp = difference(tmp, v2d);
+		r10 = difference(tmp, r2);
+		_log.info("r10;  elements: " + r10.getElements().size() + " paths: " + r10.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, v2d);
+		tmp = difference(tmp, r1);
+		tmp = difference(tmp, r3);
+		r11 = difference(tmp, r9);
+		_log.info("r11;  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1d, r8);
+		tmp = difference(tmp, v1s);
+		r12 = difference(tmp, v2s);
+		_log.info("r12;  elements: " + r12.getElements().size() + " paths: " + r12.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, v2s);
+		tmp = difference(tmp, r9);
+		tmp = difference(tmp, r5);
+		r13 = difference(tmp, r1);
+		_log.info("r13;  elements: " + r13.getElements().size() + " paths: " + r13.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v2s, v1s);
+		tmp = difference(tmp, r10);
+		tmp = difference(tmp, r2);
+		r14 = difference(tmp, r6);
+		_log.info("r14;  elements: " + r14.getElements().size() + " paths: " + r14.getPaths().size());
+
+		tmp = null;
+		tmp = difference(v1s, r1);
+		tmp = difference(tmp, r3);
+		tmp = difference(tmp, r7);
+		tmp = difference(tmp, r5);
+		tmp = difference(tmp, r9);
+		tmp = difference(tmp, r11);
+		r15 = difference(tmp, r13);
+		_log.info("r15;  elements: " + r15.getElements().size() + " paths: " + r15.getPaths().size());
+
+		
+		staticOnly = difference(v2s, v1s);
+		_log.info("static only; elements:  " + staticOnly.getElements().size() + " paths: " + staticOnly.getPaths().size());
+		
+		dynamicOnly = difference(v2d, v1d);
+		_log.info("dynamic only; elements: " + dynamicOnly.getElements().size() + " paths: " + dynamicOnly.getPaths().size());
+		
+		_log.info("V1S'");
+		printDetails(v1sPrime);
+
+		_log.info("V2S'");
+		printDetails(v2sPrime);
+
+		_log.info("V1D'");
+		printDetails(v1dPrime);
+
+		_log.info("V2D'");
+		printDetails(v2dPrime);
+
+	}
+
+	private void printDetails(ExecutionDelta ed) {
+		for (String element : ed.getElements())
 			_log.info("\telement: " + element);
-		for (Path path : v1s.getPaths())
+		for (Path path : ed.getPaths())
 			_log.info("\tpath: " + path);
 
-		_log.info("V2S");
-		for (String element : v2s.getElements())
-			_log.info("\telement: " + element);
-		for (Path path : v2s.getPaths())
-			_log.info("\tpath: " + path);
-
-		_log.info("V1D");
-		for (String element : v1d.getElements())
-			_log.info("\telement: " + element);
-		for (Path path : v1d.getPaths())
-			_log.info("\tpath: " + path);
-
-		_log.info("V2D");
-		for (String element : v2d.getElements())
-			_log.info("\telement: " + element);
-		for (Path path : v2d.getPaths())
-			_log.info("\tpath: " + path);
-
-		_log.info("ruminate");
-		// // tmp - v1d
-		// tmp = difference(tmp)
-		//		
-		// ExecutionDelta v1s= difference(compare(provider.getStaticA(), provider.getStaticB()), ;
-
-		// _log.info("dynamicA vs. dynamicB -> DYN1");
-		// ExecutionDelta dynamicDelta = compare(provider.getDynamicA(), provider.getDynamicB());
-		//
-		// _log.info("STAT1 vs. DYN1");
-		// // ExecutionDelta overallDelta1 = compare(staticDelta, dynamicDelta);
-		//
-		// _log.info("staticA vs. dynamicA -> RUN_A");
-		// ExecutionDelta sessionADelta = compare(provider.getStaticA(), provider.getDynamicA());
-		//
-		// _log.info("staticB vs. dynamicB -> RUN_B");
-		// ExecutionDelta sessionBDelta = compare(provider.getStaticB(), provider.getDynamicB());
-		//
-		// _log.info("RUN_A vs. RUN_B");
-		// ExecutionDelta overallDelta2 = compare(sessionADelta, sessionBDelta);
 	}
 
 	private ExecutionDelta difference(ExecutionDelta delta1, ExecutionDelta delta2) {

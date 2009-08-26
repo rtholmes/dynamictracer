@@ -41,7 +41,12 @@ public class SessionXMLReader implements ILonganIO {
 			}
 
 			// dispatch. this would be better with sax because we wouldn't read the whole thing first
-			if (d.getRootElement().getName().equals(IGilliganStoreIO.XML_ROOT)) {
+			if (d.getRootElement().getName().equals("root")) {
+				_log.error("Shouldn't be using DSA traces, they don't contain constructors or nested calls");
+				_log.info("Reading static trace (from DSA)");
+				DSAXMLReader dsaxmlr = new DSAXMLReader();
+				session = dsaxmlr.read(d, fName);
+			} else if (d.getRootElement().getName().equals(IGilliganStoreIO.XML_ROOT)) {
 				_log.info("Reading static trace (from Gilligan)");
 				GilliganXMLReader gxmlr = new GilliganXMLReader();
 				session = gxmlr.read(d, fName);
