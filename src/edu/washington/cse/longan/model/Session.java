@@ -51,7 +51,7 @@ public class Session {
 	private String _sessionName;
 
 	public Session(String sessionName) {
-		_log.info("New session instantiated.");
+//		_log.info("New session instantiated.");
 		_sessionName = sessionName;
 		createDefaultElements();
 	}

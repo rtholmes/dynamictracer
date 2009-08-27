@@ -1,6 +1,7 @@
 package edu.washington.cse.longan;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -18,7 +19,6 @@ import com.google.common.collect.Sets;
 import edu.washington.cse.longan.io.SessionXMLReader;
 import edu.washington.cse.longan.io.SessionXMLWriter;
 import edu.washington.cse.longan.model.AbstractElement;
-import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
@@ -66,10 +66,10 @@ public class VennComparator {
 		String dynamicAPath = path + "jodaTime_1380_dynamicA.xml";
 		String dynamicBPath = path + "jodaTime_1381_dynamicA.xml";
 
-//		 String staticAPath = path + "jodaTime_1381_staticB.xml";
-//		 String staticBPath = path + "jodaTime_1388_staticB.xml";
-//		 String dynamicAPath = path + "jodaTime_1381_dynamicA.xml";
-//		 String dynamicBPath = path + "jodaTime_1388_dynamicA.xml";
+		// String staticAPath = path + "jodaTime_1381_staticB.xml";
+		// String staticBPath = path + "jodaTime_1388_staticB.xml";
+		// String dynamicAPath = path + "jodaTime_1381_dynamicA.xml";
+		// String dynamicBPath = path + "jodaTime_1388_dynamicA.xml";
 
 		DataProvider provider = new DataProvider(staticAPath, staticBPath, dynamicAPath, dynamicBPath);
 
@@ -79,8 +79,9 @@ public class VennComparator {
 		ec.done(start);
 	}
 
-	private void run(DataProvider provider) {
-		_log.info("DPC.run()");
+	public void run(DataProvider provider) {
+		start();
+		_log.debug("DPC.run()");
 
 		ExecutionDelta v1s = convertSessionToExecutionDelta(provider.getStaticA());
 		ExecutionDelta v1d = convertSessionToExecutionDelta(provider.getDynamicA());
@@ -114,10 +115,26 @@ public class VennComparator {
 		ExecutionDelta r13;
 		ExecutionDelta r14;
 		ExecutionDelta r15;
-		
-		ExecutionDelta staticOnly;
-		ExecutionDelta dynamicOnly;
-		
+
+		ExecutionDelta staticOnlyNew;
+		ExecutionDelta staticOnlyOld;
+		ExecutionDelta staticOnlyCommon;
+		ExecutionDelta dynamicOnlyNew;
+		ExecutionDelta dynamicOnlyOld;
+		ExecutionDelta dynamicOnlyCommon;
+
+		staticOnlyNew = difference(v2s, v1s);
+		_log.info("v2s^~v1s; elements:  " + staticOnlyNew.getElements().size() + " paths: " + staticOnlyNew.getPaths().size());
+
+		staticOnlyOld = difference(v1s, v2s);
+		_log.info("v1s^~v2s; elements:  " + staticOnlyOld.getElements().size() + " paths: " + staticOnlyOld.getPaths().size());
+
+		dynamicOnlyNew = difference(v2d, v1d);
+		_log.info("v2d^~v1d; elements: " + dynamicOnlyNew.getElements().size() + " paths: " + dynamicOnlyNew.getPaths().size());
+
+		dynamicOnlyOld = difference(v1d, v2d);
+		_log.info("v1d^~v2d; elements: " + dynamicOnlyOld.getElements().size() + " paths: " + dynamicOnlyOld.getPaths().size());
+
 		// V1s
 		tmp = difference(v1s, v2s);
 		tmp = difference(tmp, v1d);
@@ -145,6 +162,14 @@ public class VennComparator {
 		v2dPrime = difference(tmp, v2s);
 		r4 = v2dPrime;
 		_log.info("V2D'; elements: " + v2dPrime.getElements().size() + " paths: " + v2dPrime.getPaths().size());
+
+		staticOnlyCommon = difference(v2s, staticOnlyOld);
+		staticOnlyCommon = difference(staticOnlyCommon, staticOnlyNew);
+		_log.info("v1s^v2s; elements:  " + staticOnlyCommon.getElements().size() + " paths: " + staticOnlyCommon.getPaths().size());
+
+		dynamicOnlyCommon = difference(v2d, dynamicOnlyOld);
+		dynamicOnlyCommon = difference(dynamicOnlyCommon, dynamicOnlyNew);
+		_log.info("v1d^v2d; elements: " + dynamicOnlyCommon.getElements().size() + " paths: " + dynamicOnlyCommon.getPaths().size());
 
 		tmp = null;
 		tmp = difference(v1s, v2d);
@@ -195,6 +220,7 @@ public class VennComparator {
 		tmp = difference(tmp, v1s);
 		r12 = difference(tmp, v2s);
 		_log.info("r12;  elements: " + r12.getElements().size() + " paths: " + r12.getPaths().size());
+		// printDetails(r12);
 
 		tmp = null;
 		tmp = difference(v1s, v2s);
@@ -220,33 +246,51 @@ public class VennComparator {
 		r15 = difference(tmp, r13);
 		_log.info("r15;  elements: " + r15.getElements().size() + " paths: " + r15.getPaths().size());
 
-		
-		staticOnly = difference(v2s, v1s);
-		_log.info("static only; elements:  " + staticOnly.getElements().size() + " paths: " + staticOnly.getPaths().size());
-		
-		dynamicOnly = difference(v2d, v1d);
-		_log.info("dynamic only; elements: " + dynamicOnly.getElements().size() + " paths: " + dynamicOnly.getPaths().size());
-		
-		_log.info("V1S'");
-		printDetails(v1sPrime);
+		// _log.info("V1S'");
+		// printDetails(v1sPrime);
+		//
+		// _log.info("V2S'");
+		// printDetails(v2sPrime);
+		//
+		// _log.info("V1D'");
+		// printDetails(v1dPrime);
+		//
+		// _log.info("V2D'");
+		// printDetails(v2dPrime);
 
-		_log.info("V2S'");
-		printDetails(v2sPrime);
+		_log.info("v1d^~v2d' details:");
+		printDetails(dynamicOnlyOld);
 
-		_log.info("V1D'");
+		_log.info("V1D' details:");
 		printDetails(v1dPrime);
 
-		_log.info("V2D'");
+		_log.info("v2d^~v1d' details:");
+		printDetails(dynamicOnlyNew);
+
+		_log.info("V2D' details:");
 		printDetails(v2dPrime);
 
+		done(_start);
 	}
 
 	private void printDetails(ExecutionDelta ed) {
-		for (String element : ed.getElements())
-			_log.info("\telement: " + element);
-		for (Path path : ed.getPaths())
-			_log.info("\tpath: " + path);
+//		if (false) {
+			Vector<String> elements = new Vector<String>(ed.getElements());
+			Vector<Path> paths = new Vector<Path>(ed.getPaths());
 
+			Collections.sort(elements);
+			Collections.sort(paths, new Comparator<Path>() {
+				public int compare(Path p1, Path p2) {
+					return p1.toString().compareTo(p2.toString());
+				}
+			});
+
+			for (String element : elements)
+				_log.info("\telement: " + element);
+			for (Path path : paths)
+				_log.info("\tpath: " + path);
+
+//		}
 	}
 
 	private ExecutionDelta difference(ExecutionDelta delta1, ExecutionDelta delta2) {
@@ -376,7 +420,7 @@ public class VennComparator {
 	private ExecutionDelta convertSessionToExecutionDelta(Session sA) {
 		Preconditions.checkNotNull(sA, "Session A is null");
 
-		_log.info("Extracting: " + sA.getSessionName());// + " to: " + sB.getSessionName());
+		_log.debug("Extracting: " + sA.getSessionName());// + " to: " + sB.getSessionName());
 
 		ExecutionDelta ed = new ExecutionDelta(new HashSet<String>(), new HashSet<Path>());
 
@@ -735,7 +779,7 @@ public class VennComparator {
 	 */
 	private void extractPaths(Session sA, ExecutionDelta ed) {
 
-		_log.info("CHECK FOR PATH DIFFERENCES");
+		_log.debug("CHECK FOR PATH DIFFERENCES");
 
 		// ImmutableSet<Path> sAPaths = sA.getPaths();
 
@@ -766,7 +810,7 @@ public class VennComparator {
 	 */
 	private void extractElements(Session sessionA, ExecutionDelta ed) {
 
-		_log.info("CHECK FOR ELEMENT DIFFERENCES");
+		_log.debug("CHECK FOR ELEMENT DIFFERENCES");
 
 		Set<String> missingElements = sessionA.getElementNames();
 

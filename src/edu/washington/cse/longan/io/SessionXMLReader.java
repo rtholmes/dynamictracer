@@ -27,7 +27,7 @@ public class SessionXMLReader implements ILonganIO {
 
 		long start = System.currentTimeMillis();
 
-		_log.info("Reading session from: " + fName);
+		_log.debug("Reading session from: " + fName);
 
 		Session session = null;
 
@@ -43,15 +43,19 @@ public class SessionXMLReader implements ILonganIO {
 			// dispatch. this would be better with sax because we wouldn't read the whole thing first
 			if (d.getRootElement().getName().equals("root")) {
 				_log.error("Shouldn't be using DSA traces, they don't contain constructors or nested calls");
-				_log.info("Reading static trace (from DSA)");
+				_log.debug("Reading static trace (from DSA)");
 				DSAXMLReader dsaxmlr = new DSAXMLReader();
 				session = dsaxmlr.read(d, fName);
+			} else if (d.getRootElement().getName().equals("JayFX")) {
+				_log.debug("Reading static trace (from JayFX)");
+				JayFXMLReader jayfxmlr = new JayFXMLReader();
+				session = jayfxmlr.read(d, fName);
 			} else if (d.getRootElement().getName().equals(IGilliganStoreIO.XML_ROOT)) {
-				_log.info("Reading static trace (from Gilligan)");
+				_log.debug("Reading static trace (from Gilligan)");
 				GilliganXMLReader gxmlr = new GilliganXMLReader();
 				session = gxmlr.read(d, fName);
 			} else {
-				_log.info("Reading dynamic trace (from Longan)");
+				_log.debug("Reading dynamic trace (from Longan)");
 				FileInputStream is = new FileInputStream(new File(fName));
 				SAXParser saxp = SAXParserFactory.newInstance().newSAXParser();
 				SessionXMLReaderHandler dh = new SessionXMLReaderHandler();
@@ -73,7 +77,7 @@ public class SessionXMLReader implements ILonganIO {
 		}
 
 		Preconditions.checkNotNull(session);
-		_log.info("Session read (in: " + TimeUtility.msToHumanReadableDelta(start) + ")");
+		_log.debug("Session read (in: " + TimeUtility.msToHumanReadableDelta(start) + ")");
 		return session;
 	}
 }
