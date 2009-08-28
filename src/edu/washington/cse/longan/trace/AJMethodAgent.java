@@ -11,6 +11,7 @@ import java.util.Stack;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
+import org.aspectj.lang.reflect.InitializerSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import edu.washington.cse.longan.Logger;
@@ -48,7 +49,8 @@ public class AJMethodAgent extends MethodElement {
 	public AJMethodAgent(int id, JoinPoint jp, boolean isExternal) {
 		super(id, getMethodName(jp), isExternal);
 
-		prepareTrackers(jp);
+		if (!ILonganConstants.CALLSTACK_ONLY)
+			prepareTrackers(jp);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -91,6 +93,11 @@ public class AJMethodAgent extends MethodElement {
 				_parameterTrackerDefinitions[i] = ObjectTrackerFactory.create(paramTypes[i], i, paramNames[i]);
 			}
 
+		} else if (sig instanceof InitializerSignature) {
+			InitializerSignature initSig = (InitializerSignature) sig;
+
+			_parameterTrackerDefinitions = new IObjectTracker[0];
+
 		} else {
 			_log.error("Signature associated with: " + jp.getSignature() + " is of type: " + jp.getSignature().getClass());
 		}
@@ -99,7 +106,9 @@ public class AJMethodAgent extends MethodElement {
 
 	public void methodEnter(JoinPoint jp, Stack<Integer> callStack) {
 		updateCallers(callStack);
-		updateArguments(jp, callStack);
+
+		if (!ILonganConstants.CALLSTACK_ONLY)
+			updateArguments(jp, callStack);
 	}
 
 	public void methodExit(JoinPoint jp, Object returnObject, Stack<Integer> callStack) {
@@ -239,19 +248,20 @@ public class AJMethodAgent extends MethodElement {
 	}
 
 	/**
-	 * This code helps to translate from a method call like Collections.add(Object)
-	 * to something more accurate like ArrayList.add(Object). 
+	 * This code helps to translate from a method call like Collections.add(Object) to something more accurate like
+	 * ArrayList.add(Object).
 	 * 
-	 * It is currently disabled. 
+	 * It is currently disabled.
+	 * 
 	 * @param jp
 	 * @return
 	 */
 	public static String getMethodName(JoinPoint jp) {
 		String name = jp.getSignature().toString();
-		
+
 		if (true)
 			return name;
-		
+
 		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
 
 			String oldName = name;

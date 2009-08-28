@@ -3,7 +3,6 @@ package edu.washington.cse.longan.trace;
 import java.util.Hashtable;
 import java.util.Stack;
 
-
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.FieldSignature;
@@ -89,53 +88,55 @@ public class AJFieldAgent extends FieldElement {
 			byMultiset.add(ILonganConstants.UNKNOWN_METHOD_ID);
 		}
 
-		int caller = -1;
-		if (!callStack.isEmpty())
-			caller = callStack.peek();
-		try {
+		if (!ILonganConstants.CALLSTACK_ONLY) {
+			int caller = -1;
+			if (!callStack.isEmpty())
+				caller = callStack.peek();
+			try {
 
-			if (!trackerTable.containsKey(caller)) {
-				IObjectTracker tracker = _fieldTrackerDefinitions.clone();
-				trackerTable.put(caller, tracker);
+				if (!trackerTable.containsKey(caller)) {
+					IObjectTracker tracker = _fieldTrackerDefinitions.clone();
+					trackerTable.put(caller, tracker);
 
-				// _log.debug("putting new rtc in for caller: " + caller + " for method: " + getName());
+					// _log.debug("putting new rtc in for caller: " + caller + " for method: " + getName());
 
-				// this may seem unnecessary in the AJ tracker (and it is really)
-				// but it keeps things consistent with the parent types
-				// which is what we're really after anyways for the analysis
-				FieldTraitContainer ftc = null;
-
-				if (byMultiset == _getBy)
-					ftc = getFieldGetTraitContainer();
-				else if (byMultiset == _setBy)
-					ftc = getFieldSetTraitContainer();
-				else
-					_log.error("unknown multiset kind");
-
-				ITrait[] traits = new ITrait[0];
-				traits = tracker.getTraits().toArray(traits);
-				if (ftc == null) {
-					ftc = new FieldTraitContainer(tracker.getStaticTypeName());
+					// this may seem unnecessary in the AJ tracker (and it is really)
+					// but it keeps things consistent with the parent types
+					// which is what we're really after anyways for the analysis
+					FieldTraitContainer ftc = null;
 
 					if (byMultiset == _getBy)
-						setFieldGetTraitContainer(ftc);
+						ftc = getFieldGetTraitContainer();
 					else if (byMultiset == _setBy)
-						setFieldSetTraitContainer(ftc);
+						ftc = getFieldSetTraitContainer();
 					else
 						_log.error("unknown multiset kind");
 
-				}
-				ftc.addTraits(caller, traits);
+					ITrait[] traits = new ITrait[0];
+					traits = tracker.getTraits().toArray(traits);
+					if (ftc == null) {
+						ftc = new FieldTraitContainer(tracker.getStaticTypeName());
 
+						if (byMultiset == _getBy)
+							setFieldGetTraitContainer(ftc);
+						else if (byMultiset == _setBy)
+							setFieldSetTraitContainer(ftc);
+						else
+							_log.error("unknown multiset kind");
+
+					}
+					ftc.addTraits(caller, traits);
+
+				}
+
+			} catch (CloneNotSupportedException cnse) {
+				_log.error(cnse);
 			}
 
-		} catch (CloneNotSupportedException cnse) {
-			_log.error(cnse);
+			IObjectTracker tracker = trackerTable.get(caller);
+
+			tracker.track(fieldValue);
 		}
-
-		IObjectTracker tracker = trackerTable.get(caller);
-
-		tracker.track(fieldValue);
 
 	}
 

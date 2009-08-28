@@ -17,7 +17,8 @@ public class LongitudinalController {
 	public static void main(String[] args) {
 		LSMRLogger.startLog4J(false, ILonganConstants.LOGGING_LEVEL);
 
-//		String path = "/Users/rtholmes/Documents/workspaces/workspace/longAn/data/JodaTime/Aug25/";
+		// String path = "/Users/rtholmes/Documents/workspaces/workspace/longAn/data/JodaTime/Aug25/";
+		// String path = "/Users/rtholmes/Documents/workspaces/workspace/longAn/data/JodaTime/Aug26/";
 		String path = "/Users/rtholmes/Documents/workspaces/workspace/longAn/data/JodaTime/Aug27/";
 
 		String projectName = "JodaTime_";
@@ -52,6 +53,8 @@ public class LongitudinalController {
 		String d1;
 		String d2;
 
+		Vector<ComparatorResult> results = new Vector<ComparatorResult>();
+
 		for (int i = 1; i < versions.size(); i++) {
 			s1 = staticData.get(i - 1);
 			s2 = staticData.get(i);
@@ -60,7 +63,12 @@ public class LongitudinalController {
 
 			_log.info("*** Comparing version 1: " + versions.get(i - 1) + " to version 2: " + versions.get(i));
 			VennComparator vc = new VennComparator();
-			vc.run(new DataProvider(s1, s2, d1, d2));
+			results.add(vc.run(new DataProvider(s1, s2, d1, d2)));
+		}
+
+		for (ComparatorResult result : results) {
+			System.out.println(result.generateCSVNodeRow());
+			System.out.println(result.generateCSVPathRow());
 		}
 	}
 

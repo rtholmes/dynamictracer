@@ -79,8 +79,9 @@ public class VennComparator {
 		ec.done(start);
 	}
 
-	public void run(DataProvider provider) {
+	public ComparatorResult run(DataProvider provider) {
 		start();
+
 		_log.debug("DPC.run()");
 
 		ExecutionDelta v1s = convertSessionToExecutionDelta(provider.getStaticA());
@@ -89,7 +90,7 @@ public class VennComparator {
 		ExecutionDelta v2d = convertSessionToExecutionDelta(provider.getDynamicB());
 
 		_log.info("static1; elements: " + v1s.getElements().size() + " paths: " + v1s.getPaths().size());
-		_log.info("static2; elements: " + v2s.getElements().size() + " paths: " + v2s.getPaths().size());
+		_log.info("static2; elements: " + v2s.getElements().size() + " paths:  " + v2s.getPaths().size());
 		_log.info("dyanmic1; elements: " + v1d.getElements().size() + " paths: " + v1d.getPaths().size());
 		_log.info("dyanmic2; elements: " + v2d.getElements().size() + " paths: " + v2d.getPaths().size());
 
@@ -248,33 +249,52 @@ public class VennComparator {
 
 		// _log.info("V1S'");
 		// printDetails(v1sPrime);
-		//
+		//		
 		// _log.info("V2S'");
 		// printDetails(v2sPrime);
-		//
+		//		
 		// _log.info("V1D'");
 		// printDetails(v1dPrime);
-		//
+		//		
 		// _log.info("V2D'");
 		// printDetails(v2dPrime);
 
-		_log.info("v1d^~v2d' details:");
+		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7).r8(r8).r9(r9).r10(r10).r11(r11)
+				.r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew).dynamic1less2(dynamicOnlyOld)
+				.dynamic2less1(dynamicOnlyNew).build();
+
+		_log.info("Set details");
+
+		_log.info("v1d^~v2d details (dynamic only; deleted elements / edges):");
 		printDetails(dynamicOnlyOld);
 
-		_log.info("V1D' details:");
+		_log.info("V1D' details (combined; deleted elements that were never run):");
 		printDetails(v1dPrime);
 
-		_log.info("v2d^~v1d' details:");
+		_log.info("v2d^~v1d details (dynamic only; new elements / edges):");
 		printDetails(dynamicOnlyNew);
 
-		_log.info("V2D' details:");
+		_log.info("V2D' details (combined; new elements that aren't statically obvious):");
 		printDetails(v2dPrime);
 
+		_log.info("v2s^~v1s details (static only; new elements / edges):");
+		printDetails(staticOnlyNew);
+
+		_log.info("V2S' details (combined; new elements that aren't dynamically run):");
+		printDetails(v2sPrime);
+
+		_log.info("v1s^~v2s details (static only; deleted elements / edges):");
+		printDetails(staticOnlyOld);
+
+		_log.info("V1S' details (combined; deleted elements that were never run):");
+		printDetails(v1sPrime);
+
 		done(_start);
+		return cr;
 	}
 
 	private void printDetails(ExecutionDelta ed) {
-//		if (false) {
+		if (true) {
 			Vector<String> elements = new Vector<String>(ed.getElements());
 			Vector<Path> paths = new Vector<Path>(ed.getPaths());
 
@@ -287,10 +307,13 @@ public class VennComparator {
 
 			for (String element : elements)
 				_log.info("\telement: " + element);
+
 			for (Path path : paths)
 				_log.info("\tpath: " + path);
 
-//		}
+			if (elements.size() == 0 && paths.size() == 0)
+				_log.info("\t--empty set--");
+		}
 	}
 
 	private ExecutionDelta difference(ExecutionDelta delta1, ExecutionDelta delta2) {

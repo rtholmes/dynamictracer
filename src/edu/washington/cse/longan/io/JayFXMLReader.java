@@ -30,7 +30,8 @@ public class JayFXMLReader {
 				MethodElement source = getMethod(sourceName, session);
 				MethodElement target = getMethod(targetName, session);
 
-				target.getCalledBy().add(source.getId());
+				if (source != null && target != null)
+					target.getCalledBy().add(source.getId());
 			}
 
 			// get the field nodes
@@ -42,7 +43,8 @@ public class JayFXMLReader {
 				MethodElement source = getMethod(sourceName, session);
 				FieldElement target = convertFieldName(targetName, session);
 
-				target.getGetBy().add(source.getId());
+				if (source != null && target != null)
+					target.getGetBy().add(source.getId());
 			}
 
 		}
@@ -53,6 +55,11 @@ public class JayFXMLReader {
 	private FieldElement convertFieldName(String fieldName, Session session) {
 
 		fieldName = translateFieldName(fieldName);
+
+		if (fieldName.startsWith("edu.washington.cse") || fieldName.contains("longan.Tracer") ) {
+			// do not add these edges, they are poison
+			return null;
+		}
 
 		int id = -1;
 		if (!session.hasIDForElement(fieldName)) {
@@ -77,6 +84,11 @@ public class JayFXMLReader {
 
 		// XXX: convert method name
 		methodName = translateMethodName(methodName);
+
+		if (methodName.startsWith("edu.washington.cse")|| methodName.contains("longan.Tracer")) {
+			// do not add these edges, they are poison
+			return null;
+		}
 
 		int id = -1;
 

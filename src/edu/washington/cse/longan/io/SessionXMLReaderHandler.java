@@ -341,14 +341,16 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		// <calledBy id="4" count="1">
 		String idString = attributes.getValue(ILonganIO.ID);
 		String countString = attributes.getValue(ILonganIO.COUNT);
-		int id = Integer.parseInt(idString);
+		int calledByID = Integer.parseInt(idString);
 		int count = Integer.parseInt(countString);
 
-		MethodElement me = _session.getMethod(id);
+		MethodElement me = _session.getMethod(calledByID);
 
-		Preconditions.checkNotNull(me, "Could not find a static method for id: " + id);
+		Preconditions.checkNotNull(me, "Could not find a static method for id: " + calledByID);
 
-		_currentDynamicMethod.getCalledBy().setCount(id, count);
+		// XXX: don't parse called by methods
+		
+		_currentDynamicMethod.getCalledBy().setCount(calledByID, count);
 		_log.trace("ccbm set to: " + me.getName());
 		_currentCalledByMethod = me;
 	}
@@ -420,6 +422,9 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		if (name.equals(ILonganConstants.UNKNOWN_METHOD_NAME))
 			return false;
 
+		if (name.contains("<clinit>"))
+			return false;
+		
 		int braceIndex = name.indexOf('(');
 		int lastDot = name.lastIndexOf('.', braceIndex);
 

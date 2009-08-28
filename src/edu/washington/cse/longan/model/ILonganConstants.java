@@ -18,6 +18,8 @@ public interface ILonganConstants {
 	// LOGGING
 	public static final Level LOGGING_LEVEL = Level.INFO;
 
+	public static final boolean CALLSTACK_ONLY = true;
+	
 	public static final boolean SILENT = false;
 
 	// makes the XML file easier to read by subbing strings for int indexes

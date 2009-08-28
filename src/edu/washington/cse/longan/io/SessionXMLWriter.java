@@ -232,9 +232,12 @@ public class SessionXMLWriter implements ILonganIO {
 			if (ftc == null)
 				ftc = field.getFieldSetTraitContainer();
 
-			Preconditions.checkNotNull(ftc, "We shouldn't know about it if there was never a get or set.");
-
-			String fieldType = ftc.getStaticTypeName();
+			// Preconditions.checkNotNull(ftc, "We shouldn't know about it if there was never a get or set.");
+			String fieldType;
+			if (ftc == null)
+				fieldType = "";
+			else
+				fieldType = ftc.getStaticTypeName();
 
 			fieldElement.setAttribute(ILonganIO.ID, field.getId() + "");
 			fieldElement.setAttribute(ILonganIO.NAME, field.getName() + "");
@@ -381,7 +384,7 @@ public class SessionXMLWriter implements ILonganIO {
 			// get traits
 			FieldTraitContainer gftc = field.getFieldGetTraitContainer();
 			FieldTraitContainer sftc = field.getFieldSetTraitContainer();
-			Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
+//			Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
 
 			if (gftc != null) {
 				// Element getsElement = new Element(ILonganIO.GETBY);

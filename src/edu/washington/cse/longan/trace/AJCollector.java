@@ -109,7 +109,7 @@ public class AJCollector {
 	private AJCollector() {
 		try {
 			// LOGGING
-			// LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+			LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 
 			_session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
@@ -136,11 +136,13 @@ public class AJCollector {
 	 */
 	public void afterClassInit(JoinPoint jp) {
 		try {
+			methodExit(jp, null, false);
 			if (OUTPUT) {
 				String out = "";
 				for (int i = _callStack.size(); i > 0; i--)
 					out += "\t";
-				_log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+				// _log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+				_log.debug("|-| After class init: " + jp.getSignature());
 			}
 		} catch (Exception e) {
 			_log.error(e);
@@ -184,7 +186,8 @@ public class AJCollector {
 			for (int t = _callStack.size(); t > 0; t--)
 				out += "\t";
 
-			out += "|-| After obj init: " + jp.getTarget().getClass().getName();
+			// out += "|-| After obj init: " + jp.getTarget().getClass().getName();
+			out += "|-| After obj init: " + jp.getSignature();
 
 			_log.debug(out);
 		}
@@ -197,11 +200,13 @@ public class AJCollector {
 	 */
 	public void beforeClassInit(JoinPoint jp) {
 		try {
+			methodEnter(jp, false);
 			if (OUTPUT) {
 				String out = "";
 				for (int i = _callStack.size(); i > 0; i--)
 					out += "\t";
-				_log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+				// _log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
+				_log.debug("|-| Before class init: " + jp.getSignature());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -299,7 +304,8 @@ public class AJCollector {
 			for (int t = _callStack.size(); t > 0; t--)
 				out += "\t";
 
-			out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
+			// out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
+			out += "|-| Before obj init: " + jp.getSignature();
 
 			_log.debug(out);
 		}
@@ -565,7 +571,9 @@ public class AJCollector {
 		recordProfileData(jp, delta);
 
 		AJMethodAgent methodTracker = getMethodTracker(jp);
-		methodTracker.methodExit(jp, retObject, _callStack);
+
+		if (!ILonganConstants.CALLSTACK_ONLY)
+			methodTracker.methodExit(jp, retObject, _callStack);
 
 		if (OUTPUT) {
 			String out = "";
@@ -785,5 +793,32 @@ public class AJCollector {
 			e.fillInStackTrace();
 			_log.error(e);
 		}
+	}
+
+	public void beforePreObjectInit(JoinPoint jp) {
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| Before obj preinit: " + jp.getSignature();
+
+			_log.debug(out);
+		}
+	}
+
+	public void afterObjectPreInit(JoinPoint jp) {
+		if (OUTPUT) {
+			String out = "";
+
+			for (int t = _callStack.size(); t > 0; t--)
+				out += "\t";
+
+			out += "|-| After obj preinit: " + jp.getSignature();
+
+			_log.debug(out);
+		}
+
 	}
 }

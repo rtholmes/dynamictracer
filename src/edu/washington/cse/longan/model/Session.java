@@ -177,6 +177,7 @@ public class Session {
 	}
 
 	public void addField(int id, FieldElement field) {
+		
 		_fields.put(id, field);
 
 		if (!_fieldNameToBaseIdMap.containsKey(field.getName()))
