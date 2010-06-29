@@ -18,7 +18,6 @@ import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.CodeSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 
-import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 
 import com.google.common.base.Preconditions;
@@ -43,7 +42,7 @@ public class AJCollector {
 	private static AJCollector _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector.class);
 
-	public static final boolean OUTPUT = false; // ILonganConstants.OUTPUT_SCREEN;
+	public static boolean OUTPUT = false; // ILonganConstants.OUTPUT_SCREEN;
 	public static final boolean SUMMARY_OUTPUT = false; // ILonganConstants.OUTPUT_SUMMARY;
 
 	// public static final String UNKNOWN_CALLER = "Unknown";
@@ -109,7 +108,7 @@ public class AJCollector {
 	private AJCollector() {
 		try {
 			// LOGGING
-			LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+			// LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 
 			_session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
@@ -180,6 +179,7 @@ public class AJCollector {
 	 * @param jp
 	 */
 	public void afterObjectInit(JoinPoint jp) {
+		methodExit(jp, null, false);
 		if (OUTPUT) {
 			String out = "";
 
@@ -229,17 +229,31 @@ public class AJCollector {
 		constructorEnter(jp, true);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
 		if (_callStack.isEmpty()) {
 			// RFE: handle the case where not everything is instrumented.
+			_log.warn("Exception handled but the call stack is empty: " + jp.getSignature());
 		} else {
 			MethodElement mt = _session.getMethod(_callStack.peek());
-
-			Preconditions.checkNotNull(_exceptionStack, "There should be a current exception stack if one is to be caught. "
-					+ "Null exception stack: %s; ex type: %s; ex msg: %s;", mt.getName(), exception.getClass().getName(), ((Throwable) exception)
-					.getMessage());
+			// NOTE: had to remove these to make Log4j.FileAppenderTest.testDirectoryCreation work
 
 			Preconditions.checkArgument(exception instanceof Throwable);
+
+			// XXX: handle case where exception comes from somewhere we don't instrument
+			if (_exceptionStack == null) {
+				_log.warn("Exception handled but the exception stack is empty: " + jp.getSignature());
+
+				// Preconditions.checkNotNull(_exceptionStack,
+				// "There should be a current exception stack if one is to be caught. "
+				// + "Null exception stack: %s; ex type: %s; ex msg: %s;", mt.getName(), exception.getClass().getName(),
+				// ((Throwable) exception)
+				// .getMessage());
+
+				_exceptionStack = (Stack<Integer>) _callStack.clone();
+				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+
+			}
 
 			mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 
@@ -298,6 +312,7 @@ public class AJCollector {
 	}
 
 	public void beforeObjectInit(JoinPoint jp) {
+		methodEnter(jp, false);
 		if (OUTPUT) {
 			String out = "";
 
@@ -820,5 +835,9 @@ public class AJCollector {
 			_log.debug(out);
 		}
 
+	}
+
+	public void setVerbose(boolean b) {
+		OUTPUT = b;
 	}
 }

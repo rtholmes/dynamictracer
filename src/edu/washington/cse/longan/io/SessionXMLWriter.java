@@ -24,7 +24,6 @@ import org.xml.sax.SAXException;
 
 import ca.lsmr.common.util.TimeUtility;
 
-import com.google.common.base.Preconditions;
 import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
@@ -41,7 +40,7 @@ import edu.washington.cse.longan.trait.AbstractTrait;
 import edu.washington.cse.longan.trait.ExceptionTrait;
 import edu.washington.cse.longan.trait.ITrait;
 
-public class SessionXMLWriter implements ILonganIO {
+public class SessionXMLWriter extends ILonganIO {
 
 	Logger _log = Logger.getLogger(this.getClass());
 
@@ -384,7 +383,7 @@ public class SessionXMLWriter implements ILonganIO {
 			// get traits
 			FieldTraitContainer gftc = field.getFieldGetTraitContainer();
 			FieldTraitContainer sftc = field.getFieldSetTraitContainer();
-//			Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
+			// Preconditions.checkArgument(!(sftc == null && gftc == null), ILonganConstants.NOT_POSSIBLE);
 
 			if (gftc != null) {
 				// Element getsElement = new Element(ILonganIO.GETBY);

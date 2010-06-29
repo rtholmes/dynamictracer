@@ -1,6 +1,6 @@
 package edu.washington.cse.longan.io;
 
-public interface ILonganIO {
+public class ILonganIO {
 
 	public static final String ROOT = "executionSession";
 	public static final String DATE = "date";
@@ -62,4 +62,13 @@ public interface ILonganIO {
 	// public static final String UNKNOWN_ID = "-1";
 	// public static final String COUNT = "cnt";//"count";
 
+	public static boolean ignoreName(String name) {
+		if (name.contains("<clinit>"))
+			return true;
+		
+		if (name.contains("java.lang.StringBuilder"))
+			return true;
+
+		return false;
+	}
 }

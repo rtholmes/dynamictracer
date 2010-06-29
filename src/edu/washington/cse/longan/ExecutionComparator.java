@@ -44,7 +44,7 @@ public class ExecutionComparator {
 	 */
 	public static void main(String[] args) {
 		// LOGGING
-		LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+		LSMRLogger.startLog4J(true, ILonganConstantsPriv.LOGGING_LEVEL);
 
 		long start = System.currentTimeMillis();
 

@@ -223,7 +223,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		int id = Integer.parseInt(idString);
 
 		FieldElement fe = new FieldElement(id, name);
-//		_session.addIDForElement(name, id);
+		// _session.addIDForElement(name, id);
 		_session.addField(id, fe);
 
 		FieldTraitContainer ftcg = new FieldTraitContainer(type);
@@ -242,11 +242,20 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		// XXX: if the object is a constructor, don't do this, it'll trim to the first parameter this way
 
 		int firstSpace = name.indexOf(' ');
-		String newName = "";
-		if (firstSpace > 0)
-			newName = name.substring(firstSpace + 1);
-		_log.trace("dyn name trans: " + name + " -> " + newName);
-		return newName;
+
+		// the whole point of this is to strip off the return type, but this shouldn't be fully-qualified anyways
+		if (firstSpace > 0 && name.substring(0, firstSpace).indexOf(".") < 0) {
+			String newName = "";
+			if (firstSpace > 0)
+				newName = name.substring(firstSpace + 1);
+			_log.trace("dyn name trans: " + name + " -> " + newName);
+
+			return newName;
+		}
+
+		_log.trace("dyn name same: " + name);
+		return name;
+		// return newName;
 	}
 
 	private void parseException(Attributes attributes) {
@@ -349,9 +358,13 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		Preconditions.checkNotNull(me, "Could not find a static method for id: " + calledByID);
 
 		// XXX: don't parse called by methods
-		
-		_currentDynamicMethod.getCalledBy().setCount(calledByID, count);
-		_log.trace("ccbm set to: " + me.getName());
+
+		if (me.getName().contains("<clinit>") || idString.contains("<clinit>")) {
+			// Don't record clinit edges
+		} else {
+			_currentDynamicMethod.getCalledBy().setCount(calledByID, count);
+			_log.trace("ccbm set to: " + me.getName());
+		}
 		_currentCalledByMethod = me;
 	}
 
@@ -411,7 +424,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 		boolean external = Boolean.parseBoolean(externalString);
 
 		MethodElement me = new MethodElement(id, name, external);
-//		_session.addIDForElement(name, id);
+		// _session.addIDForElement(name, id);
 		_session.addMethod(id, me);
 
 		_currentStaticMethod = me;
@@ -424,14 +437,14 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 
 		if (name.contains("<clinit>"))
 			return false;
-		
+
 		int braceIndex = name.indexOf('(');
 		int lastDot = name.lastIndexOf('.', braceIndex);
 
 		String segmentName = name.substring(lastDot + 1, braceIndex);
 		boolean isUpper = Character.isUpperCase(segmentName.charAt(0));
 
-		_log.trace("isConstructor. ("+isUpper+") seg name: " + segmentName + " from: " + name);
+		_log.trace("isConstructor. (" + isUpper + ") seg name: " + segmentName + " from: " + name);
 		// if the last segment starts with an upper case letter, then it's a constructor
 		// e.g. void org.joda.time.LongAnWriter.testWriteCollection() -> testWriteCollection -> t -> false
 		// e.g. void org.joda.time.LongAnWriter() -> LongAnWriter-> L -> true

@@ -26,26 +26,31 @@ public class JayFXMLReader {
 				String sourceName = callElement.getAttributeValue("source");
 				String targetName = callElement.getAttributeValue("target");
 
-				// both source and target are method names
-				MethodElement source = getMethod(sourceName, session);
-				MethodElement target = getMethod(targetName, session);
+				if (ILonganIO.ignoreName(sourceName) || ILonganIO.ignoreName(targetName)) {
 
-				if (source != null && target != null)
-					target.getCalledBy().add(source.getId());
+				} else {
+					// both source and target are method names
+					MethodElement source = getMethod(sourceName, session);
+					MethodElement target = getMethod(targetName, session);
+
+					if (source != null && target != null)
+						target.getCalledBy().add(source.getId());
+				}
 			}
 
+			// RFE: don't load fields for now
 			// get the field nodes
-			for (Element callElement : (List<Element>) edgesElement.getChildren("ref")) {
-				String sourceName = callElement.getAttributeValue("source");
-				String targetName = callElement.getAttributeValue("target");
-
-				// source is a method, target is a field
-				MethodElement source = getMethod(sourceName, session);
-				FieldElement target = convertFieldName(targetName, session);
-
-				if (source != null && target != null)
-					target.getGetBy().add(source.getId());
-			}
+			// for (Element callElement : (List<Element>) edgesElement.getChildren("ref")) {
+			// String sourceName = callElement.getAttributeValue("source");
+			// String targetName = callElement.getAttributeValue("target");
+			//
+			// // source is a method, target is a field
+			// MethodElement source = getMethod(sourceName, session);
+			// FieldElement target = convertFieldName(targetName, session);
+			//
+			// if (source != null && target != null)
+			// target.getGetBy().add(source.getId());
+			// }
 
 		}
 
@@ -56,7 +61,7 @@ public class JayFXMLReader {
 
 		fieldName = translateFieldName(fieldName);
 
-		if (fieldName.startsWith("edu.washington.cse") || fieldName.contains("longan.Tracer") ) {
+		if (fieldName.startsWith("edu.washington.cse") || fieldName.contains("longan.Tracer")) {
 			// do not add these edges, they are poison
 			return null;
 		}
@@ -85,7 +90,7 @@ public class JayFXMLReader {
 		// XXX: convert method name
 		methodName = translateMethodName(methodName);
 
-		if (methodName.startsWith("edu.washington.cse")|| methodName.contains("longan.Tracer")) {
+		if (methodName.startsWith("edu.washington.cse") || methodName.contains("longan.Tracer")) {
 			// do not add these edges, they are poison
 			return null;
 		}
@@ -181,6 +186,10 @@ public class JayFXMLReader {
 		methodName = methodName.replace(".<init>", "");
 		// longan does not keep $s in names (although they are in the type sigs)
 		methodName = methodName.replace("$", ".");
+
+		if (methodName.equals("CountDownLatch, Runnable)")) {
+			System.err.println("");
+		}
 
 		return methodName;
 	}

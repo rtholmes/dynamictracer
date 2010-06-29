@@ -4,7 +4,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
 import edu.washington.cse.longan.Logger;
-import edu.washington.cse.longan.model.ILonganConstants;
 
 @SuppressWarnings("unchecked")
 public class ObjectTrackerFactory {
@@ -29,85 +28,85 @@ public class ObjectTrackerFactory {
 
 	public static IObjectTracker create(Class clazz) {
 		// Easiest way to not record traits is to not create them in the first place
-		
-			if (isString(clazz))
-				return new StringTracker(clazz);
 
-			if (clazz.isPrimitive()) {
-				if (clazz.getName().equals("boolean"))
-					return new BooleanTracker(clazz);
+		if (isString(clazz))
+			return new StringTracker(clazz);
 
-				if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
-						|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
-					return new PrimitiveNumberTracker(clazz);
-				}
+		if (clazz.isPrimitive()) {
+			if (clazz.getName().equals("boolean"))
+				return new BooleanTracker(clazz);
 
-				if (clazz.getName().equals("char")) {
-					return new CharTracker(clazz);
-				}
-
-				if (clazz.getName().equals("byte")) {
-					return new ByteTracker(clazz);
-				}
-
-				_log.info("Unhandled primitive type: " + clazz.getName());
-				return new PrimitiveTracker(clazz);
+			if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
+					|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
+				return new PrimitiveNumberTracker(clazz);
 			}
 
-			if (clazz.isArray())
-				return new ArrayTracker(clazz);
+			if (clazz.getName().equals("char")) {
+				return new CharTracker(clazz);
+			}
 
-			if (isCollection(clazz))
-				return new CollectionTracker(clazz);
+			if (clazz.getName().equals("byte")) {
+				return new ByteTracker(clazz);
+			}
 
-			if (isNumber(clazz))
-				return new NumberTracker(clazz);
+			_log.info("Unhandled primitive type: " + clazz.getName());
+			return new PrimitiveTracker(clazz);
+		}
 
-			// This is just for tracking
-			_unhandledTypes.add(clazz.getName());
+		if (clazz.isArray())
+			return new ArrayTracker(clazz);
 
-			return new GenericObjectTracker(clazz);
-		
+		if (isCollection(clazz))
+			return new CollectionTracker(clazz);
+
+		if (isNumber(clazz))
+			return new NumberTracker(clazz);
+
+		// This is just for tracking
+		_unhandledTypes.add(clazz.getName());
+
+		return new GenericObjectTracker(clazz);
+
 	}
 
 	public static IObjectTracker create(Class clazz, int index, String name) {
-			if (isString(clazz))
-				return new StringTracker(clazz, index, name);
+		if (isString(clazz))
+			return new StringTracker(clazz, index, name);
 
-			if (clazz.isPrimitive()) {
-				if (clazz.getName().equals("boolean"))
-					return new BooleanTracker(clazz, index, name);
+		if (clazz.isPrimitive()) {
+			if (clazz.getName().equals("boolean"))
+				return new BooleanTracker(clazz, index, name);
 
-				if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
-						|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
-					return new PrimitiveNumberTracker(clazz, index, name);
-				}
-
-				if (clazz.getName().equals("char")) {
-					return new CharTracker(clazz, index, name);
-				}
-
-				if (clazz.getName().equals("byte")) {
-					return new ByteTracker(clazz, index, name);
-				}
-
-				_log.info("Unhandled primitive type: " + clazz.getName());
-				return new PrimitiveTracker(clazz, index, name);
+			if (clazz.getName().equals("int") || clazz.getName().equals("double") || clazz.getName().equals("long")
+					|| clazz.getName().equals("float") || clazz.getName().equals("short")) {
+				return new PrimitiveNumberTracker(clazz, index, name);
 			}
 
-			if (clazz.isArray())
-				return new ArrayTracker(clazz, index, name);
+			if (clazz.getName().equals("char")) {
+				return new CharTracker(clazz, index, name);
+			}
 
-			if (isCollection(clazz))
-				return new CollectionTracker(clazz, index, name);
+			if (clazz.getName().equals("byte")) {
+				return new ByteTracker(clazz, index, name);
+			}
 
-			if (isNumber(clazz))
-				return new NumberTracker(clazz, index, name);
+			_log.info("Unhandled primitive type: " + clazz.getName());
+			return new PrimitiveTracker(clazz, index, name);
+		}
 
-			// This is just for tracking
-			_unhandledTypes.add(clazz.getName());
+		if (clazz.isArray())
+			return new ArrayTracker(clazz, index, name);
 
-			return new GenericObjectTracker(clazz, index, name);
+		if (isCollection(clazz))
+			return new CollectionTracker(clazz, index, name);
+
+		if (isNumber(clazz))
+			return new NumberTracker(clazz, index, name);
+
+		// This is just for tracking
+		_unhandledTypes.add(clazz.getName());
+
+		return new GenericObjectTracker(clazz, index, name);
 	}
 
 	private static boolean isNumber(Class clazz) {

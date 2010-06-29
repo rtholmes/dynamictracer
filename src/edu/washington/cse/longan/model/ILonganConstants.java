@@ -1,7 +1,5 @@
 package edu.washington.cse.longan.model;
 
-import org.apache.log4j.Level;
-
 //import org.apache.log4j.Level;
 
 public interface ILonganConstants {
@@ -16,10 +14,10 @@ public interface ILonganConstants {
 	public static final String UNKNOWN_METHOD_NAME = SEPARATOR + "unknownM" + SEPARATOR;
 
 	// LOGGING
-	public static final Level LOGGING_LEVEL = Level.INFO;
+	// public static final Level LOGGING_LEVEL = Level.INFO;
 
 	public static final boolean CALLSTACK_ONLY = true;
-	
+
 	public static final boolean SILENT = false;
 
 	// makes the XML file easier to read by subbing strings for int indexes
@@ -30,8 +28,8 @@ public interface ILonganConstants {
 	public static final boolean OUTPUT_SCREEN = false;
 
 	// big kahuna
-	public static final boolean OUTPUT= false;
-	
+	public static final boolean OUTPUT = false;
+
 	public static final boolean OUTPUT_SUMMARY = false;
 
 	// whether to call the abstractTracker.track method

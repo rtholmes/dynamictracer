@@ -40,7 +40,7 @@ public class VennComparator {
 	 */
 	public static void main(String[] args) {
 		// LOGGING
-		LSMRLogger.startLog4J(false, ILonganConstants.LOGGING_LEVEL);
+		LSMRLogger.startLog4J(false, ILonganConstantsPriv.LOGGING_LEVEL);
 
 		long start = System.currentTimeMillis();
 
@@ -124,17 +124,17 @@ public class VennComparator {
 		ExecutionDelta dynamicOnlyOld;
 		ExecutionDelta dynamicOnlyCommon;
 
-		staticOnlyNew = difference(v2s, v1s);
-		_log.info("v2s^~v1s; elements:  " + staticOnlyNew.getElements().size() + " paths: " + staticOnlyNew.getPaths().size());
-
 		staticOnlyOld = difference(v1s, v2s);
 		_log.info("v1s^~v2s; elements:  " + staticOnlyOld.getElements().size() + " paths: " + staticOnlyOld.getPaths().size());
 
-		dynamicOnlyNew = difference(v2d, v1d);
-		_log.info("v2d^~v1d; elements: " + dynamicOnlyNew.getElements().size() + " paths: " + dynamicOnlyNew.getPaths().size());
+		staticOnlyNew = difference(v2s, v1s);
+		_log.info("v2s^~v1s; elements:  " + staticOnlyNew.getElements().size() + " paths: " + staticOnlyNew.getPaths().size());
 
 		dynamicOnlyOld = difference(v1d, v2d);
 		_log.info("v1d^~v2d; elements: " + dynamicOnlyOld.getElements().size() + " paths: " + dynamicOnlyOld.getPaths().size());
+
+		dynamicOnlyNew = difference(v2d, v1d);
+		_log.info("v2d^~v1d; elements: " + dynamicOnlyNew.getElements().size() + " paths: " + dynamicOnlyNew.getPaths().size());
 
 		// V1s
 		tmp = difference(v1s, v2s);
@@ -177,18 +177,25 @@ public class VennComparator {
 		tmp = difference(tmp, v1d);
 		r3 = difference(tmp, r1);
 		_log.info("r3;   elements: " + r3.getElements().size() + " paths: " + r3.getPaths().size());
+//		printDetails(r3);
 
 		tmp = null;
 		tmp = difference(v1s, v2s);
 		tmp = difference(tmp, v1d);
 		r5 = difference(tmp, r1);
 		_log.info("r5;   elements: " + r5.getElements().size() + " paths: " + r5.getPaths().size());
+		if (!r5.isEmpty()) {
+			printDetails(r5);
+		}
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, v1d);
 		r6 = difference(tmp, r2);
 		_log.info("r6;   elements: " + r6.getElements().size() + " paths: " + r6.getPaths().size());
+		if (!r6.isEmpty()) {
+			printDetails(r6);
+		}
 
 		tmp = null;
 		tmp = difference(v1s, v1d);
@@ -196,18 +203,27 @@ public class VennComparator {
 		tmp = difference(tmp, r3);
 		r7 = difference(tmp, r5);
 		_log.info("r7;   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
+		if (!r7.isEmpty()) {
+			printDetails(r7);
+		}
 
 		tmp = null;
 		tmp = difference(v1s, v2s);
 		tmp = difference(tmp, v2d);
 		r9 = difference(tmp, r1);
 		_log.info("r9;   elements: " + r9.getElements().size() + " paths: " + r9.getPaths().size());
+		if (!r9.isEmpty()) {
+			printDetails(r9);
+		}
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, v2d);
 		r10 = difference(tmp, r2);
 		_log.info("r10;  elements: " + r10.getElements().size() + " paths: " + r10.getPaths().size());
+		if (!r10.isEmpty()) {
+			printDetails(r10);
+		}
 
 		tmp = null;
 		tmp = difference(v1s, v2d);
@@ -215,6 +231,9 @@ public class VennComparator {
 		tmp = difference(tmp, r3);
 		r11 = difference(tmp, r9);
 		_log.info("r11;  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
+		if (!r11.isEmpty()) {
+			printDetails(r11);
+		}
 
 		tmp = null;
 		tmp = difference(v1d, r8);
@@ -229,6 +248,9 @@ public class VennComparator {
 		tmp = difference(tmp, r5);
 		r13 = difference(tmp, r1);
 		_log.info("r13;  elements: " + r13.getElements().size() + " paths: " + r13.getPaths().size());
+		if (!r13.isEmpty()) {
+			printDetails(r13);
+		}
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
@@ -236,6 +258,9 @@ public class VennComparator {
 		tmp = difference(tmp, r2);
 		r14 = difference(tmp, r6);
 		_log.info("r14;  elements: " + r14.getElements().size() + " paths: " + r14.getPaths().size());
+		if (!r14.isEmpty()) {
+			printDetails(r14);
+		}
 
 		tmp = null;
 		tmp = difference(v1s, r1);
@@ -247,6 +272,8 @@ public class VennComparator {
 		r15 = difference(tmp, r13);
 		_log.info("r15;  elements: " + r15.getElements().size() + " paths: " + r15.getPaths().size());
 
+		
+		
 		// _log.info("V1S'");
 		// printDetails(v1sPrime);
 		//		
@@ -259,9 +286,9 @@ public class VennComparator {
 		// _log.info("V2D'");
 		// printDetails(v2dPrime);
 
-		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7).r8(r8).r9(r9).r10(r10).r11(r11)
-				.r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew).dynamic1less2(dynamicOnlyOld)
-				.dynamic2less1(dynamicOnlyNew).build();
+		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7).r8(
+				r8).r9(r9).r10(r10).r11(r11).r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew)
+				.dynamic1less2(dynamicOnlyOld).dynamic2less1(dynamicOnlyNew).build();
 
 		_log.info("Set details");
 
@@ -957,6 +984,15 @@ class ExecutionDelta {
 		return _paths;
 	}
 
+	public int getPSize() {
+		return _paths.size();
+	}
+
+	public boolean isEmpty() {
+		if (getPaths().size() < 1 && getElements().size() < 1)
+			return true;
+		return false;
+	}
 }
 
 // class Path {

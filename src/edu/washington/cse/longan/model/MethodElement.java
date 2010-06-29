@@ -18,11 +18,7 @@ public class MethodElement extends AbstractElement {
 
 	protected boolean _hasVoidReturn = false;
 
-
-
 	protected boolean _isConstructor = false;
-
-	
 
 	private ReturnTraitContainer _returnTraits = null;
 
@@ -70,8 +66,6 @@ public class MethodElement extends AbstractElement {
 		}
 	}
 
-
-
 	public boolean isExternal() {
 		return _isExternal;
 	}
@@ -113,8 +107,14 @@ public class MethodElement extends AbstractElement {
 
 	public void handleException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {
 		ExceptionTrait et = new ExceptionTrait();
-		et.init(exceptionStack, exceptionType, exceptionMessage, false, false, true);
-		_exceptions.add(et);
+		// RFE: shouldn't happen
+		// XXX: this make exception tracking not work
+		if (exceptionStack != null) {
+			et.init(exceptionStack, exceptionType, exceptionMessage, false, false, true);
+			_exceptions.add(et);
+		} else {
+			System.err.println("Null exeception stack handling: " + exceptionType + " with message: " + exceptionMessage);
+		}
 	}
 
 	public void throwException(Stack<Integer> exceptionStack, String exceptionType, String exceptionMessage) {

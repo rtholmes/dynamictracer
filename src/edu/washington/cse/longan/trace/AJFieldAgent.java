@@ -84,7 +84,7 @@ public class AJFieldAgent extends FieldElement {
 			byMultiset.add(callStack.peek());
 		} else {
 			// unknown caller, could be from non-instrumented code (e.g., junit core
-			_log.trace("Unknown caller for: " + getName());
+			_log.info("Unknown caller for: " + getName());
 			byMultiset.add(ILonganConstants.UNKNOWN_METHOD_ID);
 		}
 
