@@ -16,6 +16,9 @@ import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.xalan.xsltc.runtime.AttributeList;
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.output.SAXOutputter;
@@ -23,11 +26,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import ca.lsmr.common.util.TimeUtility;
-
-import com.sun.org.apache.xalan.internal.xsltc.runtime.AttributeList;
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
-
 import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.model.FieldElement;
 import edu.washington.cse.longan.model.FieldTraitContainer;
@@ -79,9 +77,13 @@ public class SessionXMLWriter extends ILonganIO {
 			handler.startDocument();
 
 			// set up root element
-			AttributeList attrs = new AttributeList();
-			attrs.add(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
-			handler.startElement(null, null, ILonganIO.ROOT, attrs);
+//			AttributeList attrs = new AttributeList();
+//			attrs.add(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
+			
+			AttributeList attributes = new AttributeList();
+			attributes.add(ILonganIO.DATE, TimeUtility.getCurrentLSMRDateString());
+			
+			handler.startElement(null, null, ILonganIO.ROOT, attributes);
 
 			// add static data. this should be manageable so don't bother SAXing it
 			saxo.outputFragment(staticData);
