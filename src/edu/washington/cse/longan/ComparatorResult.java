@@ -156,7 +156,6 @@ public class ComparatorResult {
 		return ret;
 	}
 
-	
 	public String generateCSVPathRow3() {
 		String ret = "";
 
@@ -165,33 +164,58 @@ public class ComparatorResult {
 		ret += _v1d.getPaths().size() + SEP;
 		ret += _v2d.getPaths().size() + SEP;
 
-		
 		ret += getValue(_staticOnly1less2.getPaths().size()) + SEP;
-		ret += getValue(_r1.getPSize())+SEP;
-		ret += getValue(_r9.getPSize())+SEP;
+		ret += getValue(_r1.getPSize()) + SEP;
+		ret += getValue(_r9.getPSize()) + SEP;
 
-		
 		ret += getValue(_staticOnly2less1.getPaths().size()) + SEP;
-		ret += getValue(_r2.getPSize())+SEP;
-		ret += getValue(_r6.getPSize())+SEP;
-		
+		ret += getValue(_r2.getPSize()) + SEP;
+		ret += getValue(_r6.getPSize()) + SEP;
+
 		ret += getValue(_dynamicOnly1less2.getPaths().size()) + SEP;
-		ret += getValue(_r8.getPSize())+SEP;
-		ret += getValue(_r9.getPSize())+SEP;
-		
+		ret += getValue(_r8.getPSize()) + SEP;
+		ret += getValue(_r9.getPSize()) + SEP;
+
 		ret += getValue(_dynamicOnly2less1.getPaths().size()) + SEP;
-		ret += getValue(_r4.getPSize())+SEP;
-		ret += getValue(_r6.getPSize())+SEP;
-		ret += getValue(_r7.getPSize())+SEP;
-		
+		ret += getValue(_r4.getPSize()) + SEP;
+		ret += getValue(_r6.getPSize()) + SEP;
+		ret += getValue(_r7.getPSize()) + SEP;
+
 		// uninteresting nodes
-		ret += getValue(_r3.getPSize())+SEP;
-		ret += getValue(_r12.getPSize())+SEP;
-		ret += getValue(_r15.getPSize())+SEP;
+		ret += getValue(_r3.getPSize()) + SEP;
+		ret += getValue(_r12.getPSize()) + SEP;
+		ret += getValue(_r15.getPSize()) + SEP;
 
 		return ret;
 	}
-	
+
+	public String generateCSVPathRow4() {
+		String ret = "";
+
+		ret += _v1s.getPaths().size()+ SEP;
+		ret += _v2s.getPaths().size()+ SEP;
+		ret += _v1d.getPaths().size()+ SEP;
+		ret += _v2d.getPaths().size()+ SEP;
+		
+		ret += getValue(_r1.getPSize()) + SEP;
+		ret += getValue(_r2.getPSize()) + SEP;
+		ret += getValue(_r3.getPSize()) + SEP;
+		ret += getValue(_r4.getPSize()) + SEP;
+		ret += getValue(_r5.getPSize()) + SEP;
+		ret += getValue(_r6.getPSize()) + SEP;
+		ret += getValue(_r7.getPSize()) + SEP;
+		ret += getValue(_r8.getPSize()) + SEP;
+		ret += getValue(_r9.getPSize()) + SEP;
+		ret += getValue(_r10.getPSize()) + SEP;
+		ret += getValue(_r11.getPSize()) + SEP;
+		ret += getValue(_r12.getPSize()) + SEP;
+		ret += getValue(_r13.getPSize()) + SEP;
+		ret += getValue(_r14.getPSize()) + SEP;
+		ret += getValue(_r15.getPSize()) + SEP;
+
+		return ret;
+	}
+
 	public String generateCSVPathRow2() {
 		String ret = "";
 
@@ -201,45 +225,43 @@ public class ComparatorResult {
 		ret += _v2d.getPaths().size() + SEP;
 
 		ret += getValue(_v1sPrime.getPaths().size()) + SEP;
-		ret += getValuePlus(_r9.getPSize()+_r5.getPSize()+_r13.getPSize())+ SEP;
-		
+		ret += getValuePlus(_r9.getPSize() + _r5.getPSize() + _r13.getPSize()) + SEP;
+
 		ret += getValue(_v2sPrime.getPaths().size()) + SEP;
-		ret += getValuePlus(_r6.getPSize()+_r10.getPSize()+_r14.getPSize()) + SEP;
-		
+		ret += getValuePlus(_r6.getPSize() + _r10.getPSize() + _r14.getPSize()) + SEP;
+
 		ret += getValue(_v1dPrime.getPaths().size()) + SEP;
-		ret += getValuePlus(_r9.getPSize()+_r10.getPSize()+_r11.getPSize()) + SEP;
-		
+		ret += getValuePlus(_r9.getPSize() + _r10.getPSize() + _r11.getPSize()) + SEP;
+
 		ret += getValue(_v2dPrime.getPaths().size()) + SEP;
-		ret += getValuePlus(_r6.getPSize()+_r7.getPSize()+_r5.getPSize()) + SEP;
+		ret += getValuePlus(_r6.getPSize() + _r7.getPSize() + _r5.getPSize()) + SEP;
 
-		
-//		ret += getValue(_staticOnly1less2.getPaths().size()) + SEP;
-//		ret += getValue(_staticOnly2less1.getPaths().size()) + SEP;
-//		ret += getValue(_dynamicOnly1less2.getPaths().size()) + SEP;
-//		ret += getValue(_dynamicOnly2less1.getPaths().size()) + SEP;
+		// ret += getValue(_staticOnly1less2.getPaths().size()) + SEP;
+		// ret += getValue(_staticOnly2less1.getPaths().size()) + SEP;
+		// ret += getValue(_dynamicOnly1less2.getPaths().size()) + SEP;
+		// ret += getValue(_dynamicOnly2less1.getPaths().size()) + SEP;
 
-		
 		// ret += SEP;
 
 		// ret += _r1.getPaths().size()+SEP;
 		// ret += _r2.getPaths().size()+SEP;
 		ret += getValue(_r3.getPaths().size()) + SEP;
 		// ret += _r4.getPaths().size()+SEP;
-//		ret += getValue(_r5.getPaths().size()) + SEP;
+		// ret += getValue(_r5.getPaths().size()) + SEP;
 		ret += getValue(_r6.getPaths().size()) + SEP;
 		ret += getValue(_r7.getPaths().size()) + SEP;
 		// ret += _r8.getPaths().size()+SEP;
 		ret += getValue(_r9.getPaths().size()) + SEP;
-//		ret += getValue(_r10.getPaths().size()) + SEP;
-//		ret += getValue(_r11.getPaths().size()) + SEP;
+		// ret += getValue(_r10.getPaths().size()) + SEP;
+		// ret += getValue(_r11.getPaths().size()) + SEP;
 		ret += getValue(_r12.getPaths().size()) + SEP;
-//		ret += getValue(_r13.getPaths().size()) + SEP;
-//		ret += getValue(_r14.getPaths().size()) + SEP;
+		// ret += getValue(_r13.getPaths().size()) + SEP;
+		// ret += getValue(_r14.getPaths().size()) + SEP;
 		ret += getValue(_r15.getPaths().size()) + SEP;
 
 		return ret;
 	}
-	
+
 	private String getValue(int size) {
 		if (size > 0)
 			return size + "";
@@ -248,10 +270,10 @@ public class ComparatorResult {
 
 	private String getValuePlus(int size) {
 		if (size > 0)
-			return "+"+size;
+			return "+" + size;
 		return "";
 	}
-	
+
 	public static class Builder {
 
 		private ExecutionDelta v1s;

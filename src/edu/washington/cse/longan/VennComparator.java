@@ -141,28 +141,28 @@ public class VennComparator {
 		tmp = difference(tmp, v1d);
 		v1sPrime = difference(tmp, v2d);
 		r1 = v1sPrime;
-		_log.info("V1S'; elements: " + v1sPrime.getElements().size() + " paths: " + v1sPrime.getPaths().size());
+		_log.info("s- (V1S'); elements: " + v1sPrime.getElements().size() + " paths: " + v1sPrime.getPaths().size());
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, v1d);
 		v2sPrime = difference(tmp, v2d);
 		r2 = v2sPrime;
-		_log.info("V2S'; elements: " + v2sPrime.getElements().size() + " paths: " + v2sPrime.getPaths().size());
+		_log.info("s+ (V2S'); elements: " + v2sPrime.getElements().size() + " paths: " + v2sPrime.getPaths().size());
 
 		tmp = null;
 		tmp = difference(v1d, v2d);
 		tmp = difference(tmp, v1s);
 		v1dPrime = difference(tmp, v2s);
 		r8 = v1dPrime;
-		_log.info("V1D'; elements: " + v1dPrime.getElements().size() + " paths: " + v1dPrime.getPaths().size());
+		_log.info("d- (V1D'); elements: " + v1dPrime.getElements().size() + " paths: " + v1dPrime.getPaths().size());
 
 		tmp = null;
 		tmp = difference(v2d, v1d);
 		tmp = difference(tmp, v1s);
 		v2dPrime = difference(tmp, v2s);
 		r4 = v2dPrime;
-		_log.info("V2D'; elements: " + v2dPrime.getElements().size() + " paths: " + v2dPrime.getPaths().size());
+		_log.info("d+ (V2D'); elements: " + v2dPrime.getElements().size() + " paths: " + v2dPrime.getPaths().size());
 
 		staticOnlyCommon = difference(v2s, staticOnlyOld);
 		staticOnlyCommon = difference(staticOnlyCommon, staticOnlyNew);
@@ -172,74 +172,83 @@ public class VennComparator {
 		dynamicOnlyCommon = difference(dynamicOnlyCommon, dynamicOnlyNew);
 		_log.info("v1d^v2d; elements: " + dynamicOnlyCommon.getElements().size() + " paths: " + dynamicOnlyCommon.getPaths().size());
 
+		_log.info("Named Partitions");
+
+		_log.info("s-   (r1);   elements: " + r1.getElements().size() + " paths: " + r1.getPaths().size());
+
+		_log.info("s+   (r2);   elements: " + r2.getElements().size() + " paths: " + r2.getPaths().size());
+
 		tmp = null;
 		tmp = difference(v1s, v2d);
 		tmp = difference(tmp, v1d);
 		r3 = difference(tmp, r1);
-		_log.info("r3;   elements: " + r3.getElements().size() + " paths: " + r3.getPaths().size());
-//		printDetails(r3);
+		_log.info("s    (r3);   elements: " + r3.getElements().size() + " paths: " + r3.getPaths().size());
+		// printDetails(r3);
+
+		_log.info("d+   (r4);   elements: " + r4.getElements().size() + " paths: " + r4.getPaths().size());
 
 		tmp = null;
 		tmp = difference(v1s, v2s);
 		tmp = difference(tmp, v1d);
 		r5 = difference(tmp, r1);
-		_log.info("r5;   elements: " + r5.getElements().size() + " paths: " + r5.getPaths().size());
-		if (!r5.isEmpty()) {
-			printDetails(r5);
-		}
+		_log.info("s-d+ (r5);   elements: " + r5.getElements().size() + " paths: " + r5.getPaths().size());
+		// if (!r5.isEmpty()) {
+		// printDetails(r5);
+		// }
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, v1d);
 		r6 = difference(tmp, r2);
-		_log.info("r6;   elements: " + r6.getElements().size() + " paths: " + r6.getPaths().size());
-		if (!r6.isEmpty()) {
-			printDetails(r6);
-		}
+		_log.info("s+d+ (r6);   elements: " + r6.getElements().size() + " paths: " + r6.getPaths().size());
+		// if (!r6.isEmpty()) {
+		// printDetails(r6);
+		// }
 
 		tmp = null;
 		tmp = difference(v1s, v1d);
 		tmp = difference(tmp, r1);
 		tmp = difference(tmp, r3);
 		r7 = difference(tmp, r5);
-		_log.info("r7;   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
-		if (!r7.isEmpty()) {
-			printDetails(r7);
-		}
+		_log.info("sd+  (r7);   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
+		// if (!r7.isEmpty()) {
+		// printDetails(r7);
+		// }
 
+		_log.info("d-   (r8);   elements: " + r8.getElements().size() + " paths: " + r8.getPaths().size());
 		tmp = null;
 		tmp = difference(v1s, v2s);
 		tmp = difference(tmp, v2d);
 		r9 = difference(tmp, r1);
-		_log.info("r9;   elements: " + r9.getElements().size() + " paths: " + r9.getPaths().size());
-		if (!r9.isEmpty()) {
-			printDetails(r9);
-		}
+		_log.info("s-d- (r9);   elements: " + r9.getElements().size() + " paths: " + r9.getPaths().size());
+		// if (!r9.isEmpty()) {
+		// printDetails(r9);
+		// }
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, v2d);
 		r10 = difference(tmp, r2);
-		_log.info("r10;  elements: " + r10.getElements().size() + " paths: " + r10.getPaths().size());
-		if (!r10.isEmpty()) {
-			printDetails(r10);
-		}
+		_log.info("s+d- (r10);  elements: " + r10.getElements().size() + " paths: " + r10.getPaths().size());
+		// if (!r10.isEmpty()) {
+		// printDetails(r10);
+		// }
 
 		tmp = null;
 		tmp = difference(v1s, v2d);
 		tmp = difference(tmp, r1);
 		tmp = difference(tmp, r3);
 		r11 = difference(tmp, r9);
-		_log.info("r11;  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
-		if (!r11.isEmpty()) {
-			printDetails(r11);
-		}
+		_log.info("sd-  (r11);  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
+		// if (!r11.isEmpty()) {
+		// printDetails(r11);
+		// }
 
 		tmp = null;
 		tmp = difference(v1d, r8);
 		tmp = difference(tmp, v1s);
 		r12 = difference(tmp, v2s);
-		_log.info("r12;  elements: " + r12.getElements().size() + " paths: " + r12.getPaths().size());
+		_log.info("d    (r12);  elements: " + r12.getElements().size() + " paths: " + r12.getPaths().size());
 		// printDetails(r12);
 
 		tmp = null;
@@ -247,20 +256,20 @@ public class VennComparator {
 		tmp = difference(tmp, r9);
 		tmp = difference(tmp, r5);
 		r13 = difference(tmp, r1);
-		_log.info("r13;  elements: " + r13.getElements().size() + " paths: " + r13.getPaths().size());
-		if (!r13.isEmpty()) {
-			printDetails(r13);
-		}
+		_log.info("s-d  (r13);  elements: " + r13.getElements().size() + " paths: " + r13.getPaths().size());
+		// if (!r13.isEmpty()) {
+		// printDetails(r13);
+		// }
 
 		tmp = null;
 		tmp = difference(v2s, v1s);
 		tmp = difference(tmp, r10);
 		tmp = difference(tmp, r2);
 		r14 = difference(tmp, r6);
-		_log.info("r14;  elements: " + r14.getElements().size() + " paths: " + r14.getPaths().size());
-		if (!r14.isEmpty()) {
-			printDetails(r14);
-		}
+		_log.info("s+d  (r14);  elements: " + r14.getElements().size() + " paths: " + r14.getPaths().size());
+		// if (!r14.isEmpty()) {
+		// printDetails(r14);
+		// }
 
 		tmp = null;
 		tmp = difference(v1s, r1);
@@ -270,10 +279,8 @@ public class VennComparator {
 		tmp = difference(tmp, r9);
 		tmp = difference(tmp, r11);
 		r15 = difference(tmp, r13);
-		_log.info("r15;  elements: " + r15.getElements().size() + " paths: " + r15.getPaths().size());
+		_log.info("sd   (r15);  elements: " + r15.getElements().size() + " paths: " + r15.getPaths().size());
 
-		
-		
 		// _log.info("V1S'");
 		// printDetails(v1sPrime);
 		//		
@@ -286,6 +293,26 @@ public class VennComparator {
 		// _log.info("V2D'");
 		// printDetails(v2dPrime);
 
+		
+
+		_log.info("Unlikely Partitions");
+
+		_log.info("s-d+ (r5);   elements: " + r5.getElements().size() + " paths: " + r5.getPaths().size());
+		_log.info("s+d- (r10);  elements: " + r10.getElements().size() + " paths: " + r10.getPaths().size());
+		_log.info("s-d  (r13);  elements: " + r13.getElements().size() + " paths: " + r13.getPaths().size());
+		_log.info("s+d  (r14);  elements: " + r14.getElements().size() + " paths: " + r14.getPaths().size());
+
+		_log.info("Inconsistent Partitions");
+
+		_log.info("d+   (r4);   elements: " + r4.getElements().size() + " paths: " + r4.getPaths().size());
+//		printDetails(r4);
+		_log.info("d-   (r8);   elements: " + r8.getElements().size() + " paths: " + r8.getPaths().size());
+//		printDetails(r8);
+		_log.info("sd+  (r7);   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
+//		printDetails(r7);
+		_log.info("sd-  (r11);  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
+//		printDetails(r11);
+
 		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7).r8(
 				r8).r9(r9).r10(r10).r11(r11).r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew)
 				.dynamic1less2(dynamicOnlyOld).dynamic2less1(dynamicOnlyNew).build();
@@ -293,31 +320,95 @@ public class VennComparator {
 		_log.info("Set details");
 
 		_log.info("v1d^~v2d details (dynamic only; deleted elements / edges):");
-		printDetails(dynamicOnlyOld);
+		// printDetails(dynamicOnlyOld);
 
 		_log.info("V1D' details (combined; deleted elements that were never run):");
-		printDetails(v1dPrime);
+		// printDetails(v1dPrime);
 
 		_log.info("v2d^~v1d details (dynamic only; new elements / edges):");
-		printDetails(dynamicOnlyNew);
+		// printDetails(dynamicOnlyNew);
 
 		_log.info("V2D' details (combined; new elements that aren't statically obvious):");
-		printDetails(v2dPrime);
+		// printDetails(v2dPrime);
 
 		_log.info("v2s^~v1s details (static only; new elements / edges):");
-		printDetails(staticOnlyNew);
+		// printDetails(staticOnlyNew);
 
 		_log.info("V2S' details (combined; new elements that aren't dynamically run):");
-		printDetails(v2sPrime);
+		// printDetails(v2sPrime);
 
 		_log.info("v1s^~v2s details (static only; deleted elements / edges):");
-		printDetails(staticOnlyOld);
+		// printDetails(staticOnlyOld);
 
 		_log.info("V1S' details (combined; deleted elements that were never run):");
-		printDetails(v1sPrime);
+		// printDetails(v1sPrime);
 
 		done(_start);
+		
+		System.out.println("");
+		System.out.println("");
+		System.out.println("<div class='index'>");
+		System.out.println("<ul>");
+		System.out.println("<li><a href='#s+'>s+ (" + r2.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#s-'>s- (" + r1.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#s+d+'>s+d+ (" + r6.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#s-d-'>s-d- (" + r9.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#sd+'>sd+ (" + r7.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#sd-'>sd- (" + r11.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#d+'>d+ (" + r4.getPaths().size() + ")</a></li>");
+		System.out.println("<li><a href='#d-'>d- (" + r8.getPaths().size() + ")</a></li>");
+		System.out.println("</ul>");
+		System.out.println("</div>");
+
+		System.out.println("<div class='section'>");
+		System.out.println("<div class='title'><a name='s+'/>s+</div>");
+		printHTMLResults(r2);
+		System.out.println("<div class='title'><a name='s-'/>s-</div>");
+		printHTMLResults(r1);
+		System.out.println("<div class='title'><a name='s+d+'/>s+d+</div>");
+		printHTMLResults(r6);
+		System.out.println("<div class='title'><a name='s-d-'/>s-d-</div>");
+		printHTMLResults(r9);
+		System.out.println("<div class='title'><a name='sd+'/>sd+</div>");
+		printHTMLResults(r7);
+		System.out.println("<div class='title'><a name='sd-'/>sd-</div>");
+		printHTMLResults(r11);
+		System.out.println("<div class='title'><a name='d+'/>d+</div>");
+		printHTMLResults(r4);
+		System.out.println("<div class='title'><a name='d-'/>d-</div>");
+		printHTMLResults(r8);
+		System.out.println("</div>");
+		System.out.println("</body>");
+		System.out.println("</html>");
+		System.out.println("");
+		System.out.println("");
+		
 		return cr;
+	}
+
+	private void printHTMLResults(ExecutionDelta delta) {
+
+		System.out.println("<pre>");
+		if (delta.getPaths().size() > 0) {
+
+			Vector<Path> paths = new Vector<Path>();
+			paths.addAll(delta.getPaths());
+			Collections.sort(paths, new Comparator<Path>() {
+
+				@Override
+				public int compare(Path o1, Path o2) {
+					return o1.toString().compareTo(o2.toString());
+				}
+
+			});
+
+			for (Path p : paths) {
+				System.out.println("  " + p.toString());
+			}
+		} else {
+			System.out.println("--EMPTY PARTITION--");
+		}
+		System.out.println("</pre>");
 	}
 
 	private void printDetails(ExecutionDelta ed) {
@@ -332,14 +423,16 @@ public class VennComparator {
 				}
 			});
 
-			for (String element : elements)
-				_log.info("\telement: " + element);
+			if (paths.size() < 1) {
+				for (String element : elements)
+					_log.info("\telement: " + element);
+			}
 
 			for (Path path : paths)
 				_log.info("\tpath: " + path);
 
-			if (elements.size() == 0 && paths.size() == 0)
-				_log.info("\t--empty set--");
+			// if (elements.size() == 0 && paths.size() == 0)
+			// _log.info("\t--empty set--");
 		}
 	}
 

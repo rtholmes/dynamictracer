@@ -51,9 +51,12 @@ public class LonganDynamicXMLReader {
 
 				} else {
 
+					// XXX: this is huge! names are backwards in current trace
 					MethodElement targetMethod = convertMethod(targetName, session);
 					MethodElement sourceMethod = convertMethod(sourceName, session);
-
+					// HACK: above is how it should be
+//					MethodElement targetMethod = convertMethod(sourceName, session);
+//					MethodElement sourceMethod = convertMethod(targetName, session);
 					// if (targetMethod.getName().contains("<clinit>") || ILonganIO.ignoreName(targetName)) {
 					//
 					// } else {
@@ -122,22 +125,160 @@ public class LonganDynamicXMLReader {
 		if (originalName.equals(ILonganConstants.UNKNOWN_METHOD_NAME))
 			return originalName;
 
-		// XXX: if the object is a constructor, don't do this, it'll trim to the first parameter this way
+		
+		
+//		// XXX: if the object is a constructor, don't do this, it'll trim to the first parameter this way
+//
+//		int firstSpace = originalName.indexOf(' ');
+//
+//		// the whole point of this is to strip off the return type, but this shouldn't be fully-qualified anyways
+//		if (firstSpace > 0 && originalName.substring(0, firstSpace).indexOf(".") < 0) {
+//			String newName = "";
+//			if (firstSpace > 0)
+//				newName = originalName.substring(firstSpace + 1);
+//			// _log.trace("dyn name trans: " + originalName + " -> " + newName);
+//
+//			return newName;
+//		}
+//
+//		// _log.trace("dyn name same: " + originalName);
+//		return originalName;
+//		// return newName;
+		
+		return translateMethodName(originalName);
+	}
+	
+	
+	
+	private String translateMethodName(String fullName) {
+		if (true)
+			return fullName;
+		
+		
+		String unqualifiedMethodName = "";
+		// String fullName = method.getName();
 
-		int firstSpace = originalName.indexOf(' ');
+		int firstBrace = -1;
+		int lastBrace = -1;
 
-		// the whole point of this is to strip off the return type, but this shouldn't be fully-qualified anyways
-		if (firstSpace > 0 && originalName.substring(0, firstSpace).indexOf(".") < 0) {
-			String newName = "";
-			if (firstSpace > 0)
-				newName = originalName.substring(firstSpace + 1);
-			// _log.trace("dyn name trans: " + originalName + " -> " + newName);
+		firstBrace = fullName.indexOf("(");
+		lastBrace = fullName.lastIndexOf(")");
 
-			return newName;
+		if (firstBrace < 1) {
+			firstBrace = fullName.indexOf("<");
+			lastBrace = fullName.lastIndexOf(">");
 		}
 
-		// _log.trace("dyn name same: " + originalName);
-		return originalName;
-		// return newName;
+		int lastdot = fullName.lastIndexOf(".", firstBrace);
+		int typedot = fullName.lastIndexOf(".", lastdot - 1);
+
+		String nameQualifier = fullName.substring(0, typedot + 1);
+		String typeMethodName = fullName.substring(typedot + 1, firstBrace + 1);
+
+		String parameterList = fullName.substring(firstBrace + 1, lastBrace);
+
+		
+//		 JIILcom.imprev.entity.SortOptions;Z -> J,I,I,Lcom.imprev.entity.SortOptions;,Z
+//		String shortParameterList = "";
+//		if (parameterList.length() > 0) {
+//			for (int i = 0; i< parameterList.length(); i++){
+//				
+//			}
+//			
+//			
+//		}
+		
+		
+		// .<init>(Lorg.eclipse.swt.widgets.Shell;,I,I,Ljava.lang.String;,Ljava.lang.String;)
+		String shortParameterList = "";
+//		if (parameterList.length() > 0) {
+//			String[] params = parameterList.split(";");
+//
+//			for (String param : params) {
+//				String[] innerParams = param.split(",");
+//
+//				// java.io.ByteArrayInputStream([B[])
+//
+//				for (String p : innerParams) {
+//					if (p.length() >= 1) {
+//						boolean is1Darray = false;
+//						boolean is2Darray = false;
+//
+//						is2Darray = p.startsWith("[[");
+//						if (!is2Darray)
+//							is1Darray = p.startsWith("[");
+//
+//						String shortParam = "";
+//
+//						if (p.lastIndexOf(".") > 0)
+//							shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
+//						else {
+//							// it's a primitive
+//							if (is1Darray || is2Darray) {
+//								shortParam = p.substring(p.lastIndexOf('[') + 1, p.length());
+//							} else {
+//								shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
+//							}
+//						}
+//
+//						if (shortParam.length() == 1)
+//							shortParam = translatePrimitive(shortParam);
+//
+//						if (is2Darray)
+//							shortParam += "[][]";
+//						if (is1Darray)
+//							shortParam += "[]";
+//
+//						shortParameterList += shortParam + ", ";
+//					}
+//				}
+//			}
+//
+//			// get rid of the trailing comma
+//			shortParameterList = shortParameterList.substring(0, shortParameterList.length() - 2);
+//		}
+
+		String methodName = nameQualifier + typeMethodName + shortParameterList + fullName.charAt(lastBrace);
+//		 longan does not have init designations
+		methodName = methodName.replace(".<init>", "");
+		// longan does not keep $s in names (although they are in the type sigs)
+		methodName = methodName.replace("$", ".");
+
+		if (methodName.equals("CountDownLatch, Runnable)")) {
+			System.err.println("");
+		}
+
+		return methodName;
+	}
+
+	private String translatePrimitive(String shortParam) {
+		if (shortParam.equals("B")) {
+			return "byte";
+		} else if (shortParam.equals("C")) {
+			return "char";
+		} else if (shortParam.equals("D")) {
+			return "double";
+		} else if (shortParam.equals("F")) {
+			return "float";
+		} else if (shortParam.equals("I")) {
+			return "int";
+		} else if (shortParam.equals("J")) {
+			return "long";
+		} else if (shortParam.equals("S")) {
+			return "short";
+		} else if (shortParam.equals("Z")) {
+			return "boolean";
+		}
+		return shortParam;
+		// B byte signed byte
+		// C char character
+		// D double double precision IEEE float
+		// F float single precision IEEE float
+		// I int integer
+		// J long long integer
+		// L; ... an object of the given class
+		// S short signed short
+		// Z boolean true or false
+
 	}
 }

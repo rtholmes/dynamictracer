@@ -65,8 +65,32 @@ public class ILonganIO {
 	public static boolean ignoreName(String name) {
 		if (name.contains("<clinit>"))
 			return true;
-		
+
 		if (name.contains("java.lang.StringBuilder"))
+			return true;
+
+		if (name.contains("$$"))
+			return true;
+
+		if (name.equals(""))
+			return true;
+
+		if (name.contains("<init>"))
+			return true;
+
+		if (name.startsWith("com.imprev.service.config.SiteSettingsFactory"))
+			return true;
+
+		if (!name.startsWith("com.imprev"))
+			return true;
+
+		if (name.indexOf("Test.") > 0)
+			return true;
+
+		if (name.indexOf("$") > 0)
+			return true;
+
+		if (name.indexOf("ImprevTestCase") > 0)
 			return true;
 
 		return false;

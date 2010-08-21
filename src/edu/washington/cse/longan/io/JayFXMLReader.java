@@ -27,7 +27,9 @@ public class JayFXMLReader {
 				String targetName = callElement.getAttributeValue("target");
 
 				if (ILonganIO.ignoreName(sourceName) || ILonganIO.ignoreName(targetName)) {
-
+					// ignore
+				} else if (sourceName.equals(targetName)) {
+					// ignore self calls
 				} else {
 					// both source and target are method names
 					MethodElement source = getMethod(sourceName, session);
@@ -40,17 +42,17 @@ public class JayFXMLReader {
 
 			// RFE: don't load fields for now
 			// get the field nodes
-			// for (Element callElement : (List<Element>) edgesElement.getChildren("ref")) {
-			// String sourceName = callElement.getAttributeValue("source");
-			// String targetName = callElement.getAttributeValue("target");
-			//
-			// // source is a method, target is a field
-			// MethodElement source = getMethod(sourceName, session);
-			// FieldElement target = convertFieldName(targetName, session);
-			//
-			// if (source != null && target != null)
-			// target.getGetBy().add(source.getId());
-			// }
+			for (Element callElement : (List<Element>) edgesElement.getChildren("ref")) {
+				String sourceName = callElement.getAttributeValue("source");
+				String targetName = callElement.getAttributeValue("target");
+
+				// source is a method, target is a field
+				MethodElement source = getMethod(sourceName, session);
+				// FieldElement target = convertFieldName(targetName, session);
+				//
+				// if (source != null && target != null)
+				// target.getGetBy().add(source.getId());
+			}
 
 		}
 
@@ -110,6 +112,9 @@ public class JayFXMLReader {
 	}
 
 	private String translateMethodName(String fullName) {
+		// if (true){
+		// return fullName;
+		// }
 		String unqualifiedMethodName = "";
 		// String fullName = method.getName();
 
@@ -132,64 +137,68 @@ public class JayFXMLReader {
 
 		String parameterList = fullName.substring(firstBrace + 1, lastBrace);
 
-		// .<init>(Lorg.eclipse.swt.widgets.Shell;,I,I,Ljava.lang.String;,Ljava.lang.String;)
 		String shortParameterList = "";
-		if (parameterList.length() > 0) {
-			String[] params = parameterList.split(";");
+		// J,I,I,Lcom.imprev.entity.SortOptions;,Z -> JIILcom.imprev.entity.SortOptions;Z
+		shortParameterList = parameterList.replace(",", "");
 
-			for (String param : params) {
-				String[] innerParams = param.split(",");
-
-				// java.io.ByteArrayInputStream([B[])
-
-				for (String p : innerParams) {
-					if (p.length() >= 1) {
-						boolean is1Darray = false;
-						boolean is2Darray = false;
-
-						is2Darray = p.startsWith("[[");
-						if (!is2Darray)
-							is1Darray = p.startsWith("[");
-
-						String shortParam = "";
-
-						if (p.lastIndexOf(".") > 0)
-							shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
-						else {
-							// it's a primitive
-							if (is1Darray || is2Darray) {
-								shortParam = p.substring(p.lastIndexOf('[') + 1, p.length());
-							} else {
-								shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
-							}
-						}
-
-						if (shortParam.length() == 1)
-							shortParam = translatePrimitive(shortParam);
-
-						if (is2Darray)
-							shortParam += "[][]";
-						if (is1Darray)
-							shortParam += "[]";
-
-						shortParameterList += shortParam + ", ";
-					}
-				}
-			}
-
-			// get rid of the trailing comma
-			shortParameterList = shortParameterList.substring(0, shortParameterList.length() - 2);
-		}
+		// // .<init>(Lorg.eclipse.swt.widgets.Shell;,I,I,Ljava.lang.String;,Ljava.lang.String;)
+		// String shortParameterList = "";
+		// if (parameterList.length() > 0) {
+		// String[] params = parameterList.split(";");
+		//
+		// for (String param : params) {
+		// String[] innerParams = param.split(",");
+		//
+		// // java.io.ByteArrayInputStream([B[])
+		//
+		// for (String p : innerParams) {
+		// if (p.length() >= 1) {
+		// boolean is1Darray = false;
+		// boolean is2Darray = false;
+		//
+		// is2Darray = p.startsWith("[[");
+		// if (!is2Darray)
+		// is1Darray = p.startsWith("[");
+		//
+		// String shortParam = "";
+		//
+		// if (p.lastIndexOf(".") > 0)
+		// shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
+		// else {
+		// // it's a primitive
+		// if (is1Darray || is2Darray) {
+		// shortParam = p.substring(p.lastIndexOf('[') + 1, p.length());
+		// } else {
+		// shortParam = p.substring(p.lastIndexOf(".") + 1, p.length());
+		// }
+		// }
+		//
+		// if (shortParam.length() == 1)
+		// shortParam = translatePrimitive(shortParam);
+		//
+		// if (is2Darray)
+		// shortParam += "[][]";
+		// if (is1Darray)
+		// shortParam += "[]";
+		//
+		// shortParameterList += shortParam + ", ";
+		// }
+		// }
+		// }
+		//
+		// // get rid of the trailing comma
+		// shortParameterList = shortParameterList.substring(0, shortParameterList.length() - 2);
+		// }
 
 		String methodName = nameQualifier + typeMethodName + shortParameterList + fullName.charAt(lastBrace);
 		// longan does not have init designations
-		methodName = methodName.replace(".<init>", "");
-		// longan does not keep $s in names (although they are in the type sigs)
-		methodName = methodName.replace("$", ".");
+		// methodName = methodName.replace(".<init>", "");
+		// // longan does not keep $s in names (although they are in the type sigs)
+		// methodName = methodName.replace("$", ".");
 
-		if (methodName.equals("CountDownLatch, Runnable)")) {
-			System.err.println("");
-		}
+		// if (methodName.equals("CountDownLatch, Runnable)")) {
+		// System.err.println("");
+		// }
 
 		return methodName;
 	}
