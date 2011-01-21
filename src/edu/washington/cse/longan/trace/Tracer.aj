@@ -15,23 +15,23 @@
 //
 //	// all scoped method calls (super can't be captured)
 //	// pointcut methodEntry() : execution(* edu.washington.cse..*.* (..));
-//	pointcut methodEntry() : execution(* org.joda.time..*.* (..)) &&
+//	pointcut methodEntry() : execution(* ca.uwaterloo.cs.se.bench.simple..*.* (..)) &&
 //		!throwableCreation();
 //
 //	// all scoped constructors
 //	// pointcut constructor() : call(edu.washington.cse..*.new(..));
-//	pointcut constructor() : call(org.joda.time..*.new(..)) &&
+//	pointcut constructor() : call(ca.uwaterloo.cs.se.bench.simple..*.new(..)) &&
 //		!throwableCreation();
 //
 //	// all scoped object initializers [not sure how to use these yet]
 //	// pointcut objectInitialization() :
 //	// initialization(edu.washington.cse..*.new(..)) && !within(Tracer);
-//	pointcut objectInitialization() : initialization(org.joda.time..*.new(..)) && !within(Tracer);
+//	pointcut objectInitialization() : initialization(ca.uwaterloo.cs.se.bench.simple..*.new(..)) && !within(Tracer);
 //
 //	// all scoped class initializers [not sure how to use these yet]
 //	// pointcut classInitialization() :
 //	// staticinitialization(edu.washington.cse..*.*) && !within(Tracer);
-//	pointcut classInitialization() : staticinitialization(org.joda.time..*.*) && !within(Tracer);
+//	pointcut classInitialization() : staticinitialization(ca.uwaterloo.cs.se.bench.simple..*.*) && !within(Tracer);
 //
 //	// all library method calls (e.g., all non-scoped calls)
 //	// 2nd clause loses us static calls to instrumenter suite for some reason,
@@ -39,7 +39,7 @@
 //	// pointcut libraryEntry() : call(* *.* (..)) && ! call(*
 //	// edu.washington.cse..*.* (..)) && !within(Tracer);
 //	pointcut libraryEntry() : call(* *.* (..)) &&
-//		!call(* org.joda.time..*.* (..)) && // ignore regular methods
+//		!call(* ca.uwaterloo.cs.se.bench.simple..*.* (..)) && // ignore regular methods
 //		!call(* edu.washington.cse..*.* (..)) && 		// ignore tracer code
 //		!throwableCreation() &&
 //		!within(Tracer);
@@ -66,13 +66,14 @@
 //
 //	pointcut throwableCreation() : call(java.lang.Exception+.new(..));
 //
-////	pointcut lastThing() : execution(void org.joda.time.LongAnWriter.testWriteCollection()) && !within(Tracer);
-////	
-////	after() : lastThing() {
-////		_collector.writeToScreen();
-////		_collector.writeToDisk();
-////	}
-//	
+//	// pointcut lastThing() : execution(void ca.uwaterloo.cs.se.bench.simple.LongAnWriter.testWriteCollection()) &&
+//	// !within(Tracer);
+//	//
+//	// after() : lastThing() {
+//	// _collector.writeToScreen();
+//	// _collector.writeToDisk();
+//	// }
+//
 //	// //////////////////////////
 //	// //////// ADVICE //////////
 //	// //////////////////////////
@@ -80,14 +81,14 @@
 //		_collector.exceptionHandled(thisJoinPoint, instance, exception);
 //	}
 //
-////	before() : fieldGet() {
-////		_collector.fieldGet(thisJoinPoint);
-////	}
+//	// before() : fieldGet() {
+//	// _collector.fieldGet(thisJoinPoint);
+//	// }
 //
 //	after() returning(Object fieldValue): fieldGet() {
 //		_collector.fieldGet(thisJoinPoint, fieldValue);
 //	}
-//	
+//
 //	before(Object newValue) : fieldSet() && args(newValue) {
 //		_collector.fieldSet(thisJoinPoint, newValue);
 //	}
@@ -141,7 +142,7 @@
 //	// before() : methodEntry() {
 //	// _collector.methodEnter(thisJoinPoint, false);
 //	// }
-//	//	
+//	//
 //	// after() returning (Object returnObject):methodEntry() {
 //	// _collector.methodExit(thisJoinPoint,returnObject, false);
 //	// }

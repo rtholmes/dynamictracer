@@ -1,5 +1,6 @@
 package edu.washington.cse.longan.io;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,7 +55,7 @@ public class SessionXMLWriter extends ILonganIO {
 
 			out.close();
 
-			System.out.println("Dynamic session written to: " + fName);
+			System.out.println("Dynamic session written to: " + new File(fName).getAbsolutePath());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -80,7 +81,7 @@ public class SessionXMLWriter extends ILonganIO {
 				// Close the channels
 				srcChannel.close();
 				dstChannel.close();
-				System.out.println("Dynamic session written to: " + latestFName);
+				System.out.println("Dynamic session written to: " + new File(latestFName).getAbsolutePath());
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 			}

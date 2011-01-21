@@ -693,7 +693,8 @@ public class AJCollector {
 	public void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
-				String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
+				// String folder = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
+				String folder = ILonganConstants.OUTPUT_PATH;
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
 				SessionXMLWriter sxmlw = new SessionXMLWriter();
 				sxmlw.write(fName, _session);

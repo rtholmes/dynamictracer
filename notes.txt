@@ -18,3 +18,8 @@ http://ant.apache.org/ivy/
 http://www.phex.org/mambo/
 http://sourceforge.net/scm/?type=svn&group_id=29721		(checkstyle)
 
+
+- key optimization point!: 	http://eclipse.org/aspectj/doc/released/README-164.html
+	- understand this bug:	https://bugs.eclipse.org/bugs/show_bug.cgi?id=89009
+- joinpoint timers: 		http://eclipse.org/aspectj/doc/released/README-167.html
+
