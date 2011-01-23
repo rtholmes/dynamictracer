@@ -5,8 +5,7 @@ Bundle-SymbolicName: longAn
 Bundle-Version: 1.0.0
 Bundle-ClassPath: longAn.jar,
  eclipse3.5m6/plugins/org.aspectj.runtime_1.6.4.20090329215800/aspectjrt.jar
-Require-Bundle: ca.lsmr.common;bundle-version="1.0.2",
- org.eclipse.jdt.core;bundle-version="3.5.0",
+Require-Bundle: org.eclipse.jdt.core;bundle-version="3.5.0",
  org.eclipse.jdt.ui;bundle-version="3.5.0",
  org.eclipse.core.runtime;bundle-version="3.5.0"
 Export-Package: edu.washington.cse.longan.io,
