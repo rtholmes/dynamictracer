@@ -276,6 +276,8 @@ public class AJMethodAgent extends MethodElement {
 			StringMaker sm = StringMaker.longStringMaker;
 
 			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
 			sm.addSignature(buf, sig.getParameterTypes());
 
 			// sm.addThrows(buf, getExceptionTypes());
