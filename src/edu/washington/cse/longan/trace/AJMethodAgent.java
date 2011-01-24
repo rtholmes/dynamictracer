@@ -19,6 +19,7 @@ import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.ParamTraitContainer;
 import edu.washington.cse.longan.model.ReturnTraitContainer;
+import edu.washington.cse.longan.trace.fromAJ.StringMaker;
 import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 import edu.washington.cse.longan.trace.tracker.ObjectTrackerFactory;
 import edu.washington.cse.longan.trait.ITrait;
@@ -248,8 +249,7 @@ public class AJMethodAgent extends MethodElement {
 	}
 
 	/**
-	 * This code helps to translate from a method call like Collections.add(Object) to something more accurate like
-	 * ArrayList.add(Object).
+	 * This code helps to translate from a method call like Collections.add(Object) to something more accurate like ArrayList.add(Object).
 	 * 
 	 * It is currently disabled.
 	 * 
@@ -258,43 +258,101 @@ public class AJMethodAgent extends MethodElement {
 	 */
 	public static String getMethodName(JoinPoint jp) {
 		String name = jp.getSignature().toString();
+		String oldName = name;
 
-		if (true)
-			return name;
+		_log.trace("getMethodName: " + name);
 
 		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
+			// try to specialize the name (e.g., Class java.lang.Object.getClass() -> Class ca.uwaterloo.cs.se.bench.simple.NestedClass.getClass())
+			name = specializeName(jp);
+		}
+		Signature signature = jp.getSignature();
+		if (signature instanceof ConstructorSignature) {
+			ConstructorSignature sig = (ConstructorSignature) signature;
+			// String longString = sig.toLongString();
+			// String medString = sig.toString();
 
-			String oldName = name;
-			Object myThis = jp.getThis();
-			Object myTarget = jp.getTarget();
+			StringBuffer buf = new StringBuffer();
+			StringMaker sm = StringMaker.longStringMaker;
 
-			if (myThis != myTarget) {
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			sm.addSignature(buf, sig.getParameterTypes());
 
-				String rootName = jp.getSignature().getDeclaringTypeName();
-				String targetTypeName = jp.getTarget().getClass().getName();
-				if (!rootName.equals(targetTypeName)) {
-					int offsetIndex = 0;
-					boolean isConstructor = false;
+			// sm.addThrows(buf, getExceptionTypes());
 
-					if (jp.getSignature() instanceof ConstructorSignature)
-						isConstructor = true;
+			name = buf.toString();
 
-					// if (name.indexOf(" ") < name.indexOf("(")) {
-					// offsetIndex = name.indexOf(" ");
-					// isConstructor = false;
-					// }
+			_log.debug("getMethodName( .. ) - constructor: " + oldName + " -> " + name);
+		} else if (signature instanceof MethodSignature) {
+			MethodSignature sig = (MethodSignature) signature;
+			// String longString = sig.toLongString();
+			// String medString = sig.toString();
 
-					String retType = name.substring(0, offsetIndex);
+			StringBuffer buf = new StringBuffer();
 
-					int padding = 2;
-					if (isConstructor)
-						padding = 1;
+			StringMaker sm = StringMaker.longStringMaker;
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			sm.addSignature(buf, sig.getParameterTypes());
 
-					String methodName = name.substring(rootName.length() + retType.length() + padding);
-					name = retType + " " + targetTypeName + "." + methodName;
+			name = buf.toString();
 
-					_log.trace("Translate method name from: " + oldName + " -> " + name);
+			_log.debug("getMethodName( .. ) - method: " + oldName + " -> " + name);
+		} else if (signature instanceof InitializerSignature) {
+			InitializerSignature sig = (InitializerSignature) signature;
+			// String longString = sig.toLongString();
+			// String medString = sig.toString();
+
+			StringBuffer buf = new StringBuffer();
+			StringMaker sm = StringMaker.longStringMaker;
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			name = buf.toString();
+
+			_log.debug("getMethodName( .. ) - initializer: " + oldName + " -> " + name);
+		} else {
+			String msg = "AJMethodAgent::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
+			_log.warn(msg);
+			throw new RuntimeException(msg);
+		}
+
+		return name;
+	}
+
+	private static String specializeName(JoinPoint jp) {
+		String name = jp.getSignature().toString();
+
+		String oldName = name;
+		Object myThis = jp.getThis();
+		Object myTarget = jp.getTarget();
+
+		if (myThis != myTarget) {
+
+			String rootName = jp.getSignature().getDeclaringTypeName();
+			String targetTypeName = jp.getTarget().getClass().getName();
+			if (!rootName.equals(targetTypeName)) {
+				int offsetIndex = 0;
+				boolean isConstructor = false;
+
+				if (jp.getSignature() instanceof ConstructorSignature)
+					isConstructor = true;
+
+				if (name.indexOf(" ") < name.indexOf("(")) {
+					offsetIndex = name.indexOf(" ");
+					isConstructor = false;
 				}
+
+				String retType = name.substring(0, offsetIndex);
+
+				int padding = 2;
+				if (isConstructor)
+					padding = 1;
+
+				String methodName = name.substring(rootName.length() + retType.length() + padding);
+				name = retType + " " + targetTypeName + "." + methodName;
+				_log.debug("Specialize name from: " + oldName + " -> " + name);
 			}
 		}
 		return name;
