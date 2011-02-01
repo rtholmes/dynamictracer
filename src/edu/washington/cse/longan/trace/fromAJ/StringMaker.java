@@ -98,9 +98,11 @@ public class StringMaker {
 			return makeTypeName(componentType, componentType.getName(), shortName) + "[]";
 		}
 		if (shortName) {
-			return stripPackageName(typeName).replace('$', '.');
+			// return stripPackageName(typeName).replace('$', '.');
+			return stripPackageName(typeName);
 		} else {
-			return typeName.replace('$', '.');
+			// return typeName.replace('$', '.');
+			return typeName;
 		}
 	}
 
