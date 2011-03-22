@@ -1,5 +1,6 @@
 package edu.washington.cse.longan;
 
+import java.io.PrintStream;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -26,14 +27,6 @@ import edu.washington.cse.longan.model.Session;
 public class VennComparator {
 	Logger _log = Logger.getLogger(this.getClass());
 	private long _start;
-
-	// private boolean _outputInvocationDifferences = false;
-	// private boolean _outputCountDifferences = false;
-	// private boolean _outputMissing = true;
-	// private boolean _outputAdded = true;
-	// private boolean _outputCombined = true;
-	// private boolean _outputIndividual = false;
-	// private boolean _outputPaths = true;
 
 	/**
 	 * @param args
@@ -74,10 +67,38 @@ public class VennComparator {
 		DataProvider provider = new DataProvider(staticAPath, staticBPath, dynamicAPath, dynamicBPath);
 
 		VennComparator ec = new VennComparator();
-		ec.start();
+
 		ec.run(provider);
-		ec.done(start);
+
 	}
+
+	ExecutionDelta v1sPrime;
+	ExecutionDelta v2sPrime;
+	ExecutionDelta v1dPrime;
+	ExecutionDelta v2dPrime;
+
+	ExecutionDelta r1;
+	ExecutionDelta r2;
+	ExecutionDelta r3;
+	ExecutionDelta r4;
+	ExecutionDelta r5;
+	ExecutionDelta r6;
+	ExecutionDelta r7;
+	ExecutionDelta r8;
+	ExecutionDelta r9;
+	ExecutionDelta r10;
+	ExecutionDelta r11;
+	ExecutionDelta r12;
+	ExecutionDelta r13;
+	ExecutionDelta r14;
+	ExecutionDelta r15;
+
+	ExecutionDelta staticOnlyNew;
+	ExecutionDelta staticOnlyOld;
+	ExecutionDelta staticOnlyCommon;
+	ExecutionDelta dynamicOnlyNew;
+	ExecutionDelta dynamicOnlyOld;
+	ExecutionDelta dynamicOnlyCommon;
 
 	public ComparatorResult run(DataProvider provider) {
 		start();
@@ -95,34 +116,6 @@ public class VennComparator {
 		_log.info("dyanmic2; elements: " + v2d.getElements().size() + " paths: " + v2d.getPaths().size());
 
 		ExecutionDelta tmp = null;
-
-		ExecutionDelta v1sPrime;
-		ExecutionDelta v2sPrime;
-		ExecutionDelta v1dPrime;
-		ExecutionDelta v2dPrime;
-
-		ExecutionDelta r1;
-		ExecutionDelta r2;
-		ExecutionDelta r3;
-		ExecutionDelta r4;
-		ExecutionDelta r5;
-		ExecutionDelta r6;
-		ExecutionDelta r7;
-		ExecutionDelta r8;
-		ExecutionDelta r9;
-		ExecutionDelta r10;
-		ExecutionDelta r11;
-		ExecutionDelta r12;
-		ExecutionDelta r13;
-		ExecutionDelta r14;
-		ExecutionDelta r15;
-
-		ExecutionDelta staticOnlyNew;
-		ExecutionDelta staticOnlyOld;
-		ExecutionDelta staticOnlyCommon;
-		ExecutionDelta dynamicOnlyNew;
-		ExecutionDelta dynamicOnlyOld;
-		ExecutionDelta dynamicOnlyCommon;
 
 		staticOnlyOld = difference(v1s, v2s);
 		_log.info("v1s^~v2s; elements:  " + staticOnlyOld.getElements().size() + " paths: " + staticOnlyOld.getPaths().size());
@@ -283,17 +276,15 @@ public class VennComparator {
 
 		// _log.info("V1S'");
 		// printDetails(v1sPrime);
-		//		
+		//
 		// _log.info("V2S'");
 		// printDetails(v2sPrime);
-		//		
+		//
 		// _log.info("V1D'");
 		// printDetails(v1dPrime);
-		//		
+		//
 		// _log.info("V2D'");
 		// printDetails(v2dPrime);
-
-		
 
 		_log.info("Unlikely Partitions");
 
@@ -305,16 +296,16 @@ public class VennComparator {
 		_log.info("Inconsistent Partitions");
 
 		_log.info("d+   (r4);   elements: " + r4.getElements().size() + " paths: " + r4.getPaths().size());
-//		printDetails(r4);
+		// printDetails(r4);
 		_log.info("d-   (r8);   elements: " + r8.getElements().size() + " paths: " + r8.getPaths().size());
-//		printDetails(r8);
+		// printDetails(r8);
 		_log.info("sd+  (r7);   elements: " + r7.getElements().size() + " paths: " + r7.getPaths().size());
-//		printDetails(r7);
+		// printDetails(r7);
 		_log.info("sd-  (r11);  elements: " + r11.getElements().size() + " paths: " + r11.getPaths().size());
-//		printDetails(r11);
+		// printDetails(r11);
 
-		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7).r8(
-				r8).r9(r9).r10(r10).r11(r11).r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew)
+		ComparatorResult cr = new ComparatorResult.Builder().v1s(v1s).v2s(v2s).v1d(v1d).v2d(v2d).r1(r1).r2(r2).r3(r3).r4(r4).r5(r5).r6(r6).r7(r7)
+				.r8(r8).r9(r9).r10(r10).r11(r11).r12(r12).r13(r13).r14(r14).r15(r15).static1less2(staticOnlyOld).static2less1(staticOnlyNew)
 				.dynamic1less2(dynamicOnlyOld).dynamic2less1(dynamicOnlyNew).build();
 
 		_log.info("Set details");
@@ -344,51 +335,13 @@ public class VennComparator {
 		// printDetails(v1sPrime);
 
 		done(_start);
-		
-		System.out.println("");
-		System.out.println("");
-		System.out.println("<div class='index'>");
-		System.out.println("<ul>");
-		System.out.println("<li><a href='#s+'>s+ (" + r2.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#s-'>s- (" + r1.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#s+d+'>s+d+ (" + r6.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#s-d-'>s-d- (" + r9.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#sd+'>sd+ (" + r7.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#sd-'>sd- (" + r11.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#d+'>d+ (" + r4.getPaths().size() + ")</a></li>");
-		System.out.println("<li><a href='#d-'>d- (" + r8.getPaths().size() + ")</a></li>");
-		System.out.println("</ul>");
-		System.out.println("</div>");
 
-		System.out.println("<div class='section'>");
-		System.out.println("<div class='title'><a name='s+'/>s+</div>");
-		printHTMLResults(r2);
-		System.out.println("<div class='title'><a name='s-'/>s-</div>");
-		printHTMLResults(r1);
-		System.out.println("<div class='title'><a name='s+d+'/>s+d+</div>");
-		printHTMLResults(r6);
-		System.out.println("<div class='title'><a name='s-d-'/>s-d-</div>");
-		printHTMLResults(r9);
-		System.out.println("<div class='title'><a name='sd+'/>sd+</div>");
-		printHTMLResults(r7);
-		System.out.println("<div class='title'><a name='sd-'/>sd-</div>");
-		printHTMLResults(r11);
-		System.out.println("<div class='title'><a name='d+'/>d+</div>");
-		printHTMLResults(r4);
-		System.out.println("<div class='title'><a name='d-'/>d-</div>");
-		printHTMLResults(r8);
-		System.out.println("</div>");
-		System.out.println("</body>");
-		System.out.println("</html>");
-		System.out.println("");
-		System.out.println("");
-		
 		return cr;
 	}
 
-	private void printHTMLResults(ExecutionDelta delta) {
+	private void printHTMLResults(ExecutionDelta delta, PrintStream out) {
 
-		System.out.println("<pre>");
+		out.println("<pre>");
 		if (delta.getPaths().size() > 0) {
 
 			Vector<Path> paths = new Vector<Path>();
@@ -403,12 +356,12 @@ public class VennComparator {
 			});
 
 			for (Path p : paths) {
-				System.out.println("  " + p.toString());
+				out.println("  " + p.toString());
 			}
 		} else {
-			System.out.println("--EMPTY PARTITION--");
+			out.println("--EMPTY PARTITION--");
 		}
-		System.out.println("</pre>");
+		out.println("</pre>");
 	}
 
 	private void printDetails(ExecutionDelta ed) {
@@ -444,86 +397,8 @@ public class VennComparator {
 		return ed;
 	}
 
-	// private ExecutionDelta compare(ExecutionDelta delta1, ExecutionDelta delta2) {
-	//
-	// _log.info("Comparing deltas");
-	//
-	// Set<String> addedElements = Sets.difference(Sets.union(delta1.get_addedElements(), delta2.get_addedElements()),
-	// Sets.intersection(delta1
-	// .get_addedElements(), delta2.get_addedElements()));
-	// Set<String> removedElements = Sets.difference(Sets.union(delta1.get_removedElements(),
-	// delta2.get_removedElements()), Sets.intersection(
-	// delta1.get_removedElements(), delta2.get_removedElements()));
-	//
-	// Set<Path> addedPaths = Sets.difference(Sets.union(delta1.get_addedPaths(), delta2.get_addedPaths()),
-	// Sets.intersection(delta1
-	// .get_addedPaths(), delta2.get_addedPaths()));
-	// Set<Path> removedPaths = Sets.difference(Sets.union(delta1.get_removedPaths(), delta2.get_removedPaths()),
-	// Sets.intersection(delta1
-	// .get_removedPaths(), delta2.get_removedPaths()));
-	//
-	// for (String addedElement : addedElements) {
-	// boolean in1 = delta1.get_sessionA().hasIDForElement(addedElement);
-	// boolean in2 = delta2.get_sessionA().hasIDForElement(addedElement);
-	// if (!in1 && !in2) {
-	// _log.info("Added elem (bth): " + addedElement);
-	// } else if (!in1) {
-	// _log.info("Added elem (1st): " + addedElement);
-	// } else if (!in2) {
-	// _log.info("Added elem (2nd): " + addedElement);
-	// } else {
-	// Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
-	// }
-	// }
-	//
-	// for (String removedElement : removedElements) {
-	// boolean in1 = delta1.get_sessionB().hasIDForElement(removedElement);
-	// boolean in2 = delta2.get_sessionB().hasIDForElement(removedElement);
-	//
-	// if (!in1 && !in2)
-	// _log.info("Removed e (bth): " + removedElement);
-	// else if (!in1)
-	// _log.info("Removed e (1st): " + removedElement);
-	// else if (!in2)
-	// _log.info("Removed e (2nd): " + removedElement);
-	// else
-	// Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
-	// // _log.info("Removed element: " + removedElement);
-	// }
-	//
-	// for (Path addedPath : addedPaths) {
-	// // _log.info("Added path: " + addedPath);
-	//
-	// boolean in1 = true;
-	// boolean in2 = true;
-	//
-	// if (!addedPath.existsInSession(delta1.get_sessionA()) && addedPath.existsInSession(delta1.get_sessionB()))
-	// in1 = false;
-	//
-	// if (!addedPath.existsInSession(delta2.get_sessionA()) && addedPath.existsInSession(delta2.get_sessionB()))
-	// in2 = false;
-	//
-	// if (!in1 && !in2)
-	// _log.info("Added path (bth): " + addedPath);
-	// else if (!in1)
-	// _log.info("Added path (1st): " + addedPath);
-	// else if (!in2)
-	// _log.info("Added path (2nd): " + addedPath);
-	// else
-	// Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
-	//
-	// }
-	//
-	// for (Path removedPath : removedPaths) {
-	// _log.info("Removed path: " + removedPath);
-	// }
-	//
-	// return null;
-	// }
-
 	private void start() {
 		_start = System.currentTimeMillis();
-
 	}
 
 	private void done(long start) {
@@ -537,28 +412,6 @@ public class VennComparator {
 		SessionXMLWriter sxmlw = new SessionXMLWriter();
 		sxmlw.write(fName + "_out.xml", sess);
 	}
-
-	// private void compare(Vector<String> executionFiles) {
-	//
-	// Vector<Session> sessions = new Vector<Session>();
-	// for (String fName : executionFiles) {
-	//
-	// SessionXMLReader sxmlr = new SessionXMLReader();
-	// Session sess = sxmlr.readXML(fName);
-	// sessions.add(sess);
-	// }
-	//
-	// Session previousSession = null;
-	// for (Session currentSession : sessions) {
-	//
-	// if (previousSession != null) {
-	// convertSessionToExecutionDelta(previousSession, currentSession);
-	// }
-	//
-	// previousSession = currentSession;
-	// }
-	//
-	// }
 
 	private ExecutionDelta convertSessionToExecutionDelta(Session sA) {
 		Preconditions.checkNotNull(sA, "Session A is null");
@@ -913,8 +766,7 @@ public class VennComparator {
 	ImmutableSet<String> _missingElementNames = null;
 
 	/**
-	 * Retunrs all of the paths that are in sA that aren't in sB. Mainly used initially to compare against an empty
-	 * session.
+	 * Retunrs all of the paths that are in sA that aren't in sB. Mainly used initially to compare against an empty session.
 	 * 
 	 * @param sA
 	 * @param sB
@@ -944,8 +796,8 @@ public class VennComparator {
 	}
 
 	/**
-	 * Essentially find any element in sessionA that isn't in sessionB. This is used mainly at the beginning comparing
-	 * to an empty set, so it should be pretty easy.
+	 * Essentially find any element in sessionA that isn't in sessionB. This is used mainly at the beginning comparing to an empty set, so it should
+	 * be pretty easy.
 	 * 
 	 * @param sessionA
 	 * @param sessionB
@@ -983,6 +835,46 @@ public class VennComparator {
 			_log.warn("Session B adds new element: " + elem);
 			// ed.addedElementhat'(elem);
 		}
+	}
+
+	public void writeHTML(PrintStream out) {
+		out.println("");
+		out.println("");
+		out.println("<div class='index'>");
+		out.println("<ul>");
+		out.println("<li><a href='#s+'>s+ (" + r2.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#s-'>s- (" + r1.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#s+d+'>s+d+ (" + r6.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#s-d-'>s-d- (" + r9.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#sd+'>sd+ (" + r7.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#sd-'>sd- (" + r11.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#d+'>d+ (" + r4.getPaths().size() + ")</a></li>");
+		out.println("<li><a href='#d-'>d- (" + r8.getPaths().size() + ")</a></li>");
+		out.println("</ul>");
+		out.println("</div>");
+
+		out.println("<div class='section'>");
+		out.println("<div class='title'><a name='s+'/>s+</div>");
+		printHTMLResults(r2, out);
+		out.println("<div class='title'><a name='s-'/>s-</div>");
+		printHTMLResults(r1, out);
+		out.println("<div class='title'><a name='s+d+'/>s+d+</div>");
+		printHTMLResults(r6, out);
+		out.println("<div class='title'><a name='s-d-'/>s-d-</div>");
+		printHTMLResults(r9, out);
+		out.println("<div class='title'><a name='sd+'/>sd+</div>");
+		printHTMLResults(r7, out);
+		out.println("<div class='title'><a name='sd-'/>sd-</div>");
+		printHTMLResults(r11, out);
+		out.println("<div class='title'><a name='d+'/>d+</div>");
+		printHTMLResults(r4, out);
+		out.println("<div class='title'><a name='d-'/>d-</div>");
+		printHTMLResults(r8, out);
+		out.println("</div>");
+		out.println("</body>");
+		out.println("</html>");
+		out.println("");
+		out.println("");
 	}
 
 }
@@ -1039,23 +931,6 @@ class ExecutionDelta {
 	private Set<String> _elements = new HashSet<String>();
 	private Set<Path> _paths = new HashSet<Path>();
 
-	//
-	// private Session _sessionA;
-	// private Session _sessionB;
-	//
-	// ExecutionDelta(Session sessionA, Session sessionB) {
-	// _sessionA = sessionA;
-	// _sessionB = sessionB;
-	// }
-	//
-	// public Session get_sessionA() {
-	// return _sessionA;
-	// }
-	//
-	// public Session get_sessionB() {
-	// return _sessionB;
-	// }
-
 	ExecutionDelta(Set<String> elements, Set<Path> paths) {
 		_paths = paths;
 		_elements = elements;
@@ -1087,61 +962,3 @@ class ExecutionDelta {
 		return false;
 	}
 }
-
-// class Path {
-// final String _source;
-// final String _target;
-// final String _sig;
-//
-// Path(String source, String target) {
-// Preconditions.checkNotNull(source);
-// Preconditions.checkNotNull(target);
-// _source = source;
-// _target = target;
-// _sig = source + " -> " + target;
-// }
-//
-// @Override
-// public boolean equals(Object obj) {
-// if (obj instanceof Path)
-// return ((Path) obj).toString().equals(toString());
-// return false;
-// }
-//
-// @Override
-// public int hashCode() {
-// return toString().hashCode();
-// }
-//
-// @Override
-// public String toString() {
-// return _sig;
-// }
-//
-// public String get_source() {
-// return _source;
-// }
-//
-// public String get_target() {
-// return _target;
-// }
-//
-// public boolean existsInSession(Session session) {
-// boolean exists = false;
-//
-// if (session.hasIDForElement(_source) && session.hasIDForElement(_target)) {
-// AbstractElement target = session.getElementForName(_target);
-//
-// if (target instanceof MethodElement) {
-// MethodElement targetM = ((MethodElement) target);
-//
-// exists = targetM.getCalledBy().contains(session.getIdForElement(_source));
-//
-// } else if (target instanceof FieldElement) {
-// Preconditions.checkNotNull(null, "not implemented yet");
-// }
-// }
-//
-// // System.out.println("Session contains path: " + toString() + " ? " + exists);
-// return exists;
-// }

@@ -37,8 +37,14 @@ public interface ILonganConstants {
 
 	public static final boolean OUTPUT_XML = true;
 	public static final boolean OUTPUT_ZIP = false;
-	// public static final String OUTPUT_PATH = "/Users/rtholmes/Documents/workspaces/workspace/longAn/tmp/";
+
 	public static final String OUTPUT_PATH = "report/dynamic/";
+
+	public static final String OUTPUT_HTML = "report/html/";
+
+	public static final String INPUT_STATIC_PATH = "data/static/";
+
+	public static final String INPUT_DYNAMIC_PATH = "data/dynamic/";
 
 	public static final String NOT_POSSIBLE = "Shouldn't be reachable";
 
