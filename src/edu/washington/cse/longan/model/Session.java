@@ -26,16 +26,16 @@ public class Session {
 	private Hashtable<Integer, FieldElement> _fields = new Hashtable<Integer, FieldElement>();
 
 	/**
-	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS
-	 * id. (JPS.id binds every join point itself so there can be multiple points for any program element)
+	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS id. (JPS.id binds every join
+	 * point itself so there can be multiple points for any program element)
 	 */
 	// private Integer[] _ids = new Integer[1024];
 
 	private Hashtable<Integer, MethodElement> _methods = new Hashtable<Integer, MethodElement>();
 
 	/**
-	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name
-	 * the common base id can be found.
+	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name the common base id can be
+	 * found.
 	 */
 	private BiMap<String, Integer> _nameToBaseIdMap = HashBiMap.create();
 
@@ -51,7 +51,7 @@ public class Session {
 	private String _sessionName;
 
 	public Session(String sessionName) {
-//		_log.info("New session instantiated.");
+		// _log.info("New session instantiated.");
 		_sessionName = sessionName;
 		createDefaultElements();
 	}
@@ -84,7 +84,7 @@ public class Session {
 	}
 
 	public void addMethod(int id, MethodElement method) {
-//		_log.info("Creating method: "+method.getName());
+		// _log.info("Creating method: "+method.getName());
 		_methods.put(id, method);
 
 		if (!_methodNameToBaseIdMap.containsKey(method.getName())) {
@@ -177,12 +177,12 @@ public class Session {
 	}
 
 	public void addField(int id, FieldElement field) {
-		
+
 		_fields.put(id, field);
 
 		if (!_fieldNameToBaseIdMap.containsKey(field.getName()))
 			_fieldNameToBaseIdMap.put(field.getName(), id);
-		
+
 		if (!_nameToBaseIdMap.containsKey(field.getName())) {
 			_nameToBaseIdMap.put(field.getName(), id);
 		} else {
@@ -209,5 +209,17 @@ public class Session {
 	public ImmutableSet<Path> getPaths() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	/**
+	 * This is _very_ uncommon; only currently used by SessionXMLWriter while massaging the data to remove spurious access methods
+	 * 
+	 * @param method
+	 */
+	public void removeMethod(MethodElement method) {
+		_methods.remove(method);
+		_methodNameToBaseIdMap.remove(method.getName());
+		_nameToBaseIdMap.remove(method.getName());
+
 	}
 }

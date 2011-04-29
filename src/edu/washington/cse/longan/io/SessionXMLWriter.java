@@ -13,6 +13,7 @@ import java.util.Vector;
 
 import ca.lsmr.common.util.TimeUtility;
 import edu.washington.cse.longan.model.ILonganConstants;
+import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
 
 public class SessionXMLWriter extends ILonganIO {
@@ -24,6 +25,8 @@ public class SessionXMLWriter extends ILonganIO {
 	public void write(String fName, Session session) {
 
 		try {
+			prepareSessionForPersistence(session);
+
 			out = new PrintWriter(fName);
 
 			Hashtable<String, String> rootAttrs = new Hashtable<String, String>();
@@ -81,6 +84,52 @@ public class SessionXMLWriter extends ILonganIO {
 		} else {
 			System.out.println("Trace written to: " + fName);// + " in: " + TimeUtility.msToHumanReadableDelta(start));
 		}
+	}
+
+	private void prepareSessionForPersistence(Session session) {
+		collapseSyntheticAccessMethods(session);
+	}
+
+	private void collapseSyntheticAccessMethods(Session session) {
+		Vector<MethodElement> accessMethodsToRemove = new Vector<MethodElement>();
+
+		for (MethodElement me : session.getMethods()) {
+
+			// $ is restricted, but this might still be able to collide with an anonymous class name?
+			if (me.getName().contains(".access$")) {
+				System.out.println("Remapping / removing suspected access method: " + me.getName());
+				// _log.debug("Access method encountered: " + me);
+
+				// find all methods that call this method me
+				Vector<MethodElement> callers = findMethodsThatCall(me, session);
+
+				// remap callers so this method can be deleted
+				for (MethodElement caller : callers) {
+					// remove all instances
+					caller.getCalledBy().elementSet().remove(me.getId());
+					caller.getCalledBy().addAll(me.getCalledBy().elementSet());
+				}
+
+				accessMethodsToRemove.add(me);
+			}
+		}
+
+		for (MethodElement accessMethod : accessMethodsToRemove) {
+			// once they're collapsed get rid of them
+			session.removeMethod(accessMethod);
+		}
+	}
+
+	private Vector<MethodElement> findMethodsThatCall(MethodElement me, Session session) {
+		Vector<MethodElement> callers = new Vector<MethodElement>();
+		for (MethodElement m : session.getMethods()) {
+			for (int mid : m.getCalledBy().elementSet()) {
+				if (mid == me.getId()) {
+					callers.add(session.getMethod(m.getId()));
+				}
+			}
+		}
+		return callers;
 	}
 
 	private void genStatic(Session session, PrintWriter out) {
