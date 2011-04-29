@@ -178,7 +178,7 @@ public class SessionXMLWriter extends ILonganIO {
 
 			indent().println(tag(ILonganIO.METHOD, mAttrs, false));
 			raiseIndent();
-			for (int calleeID : session.getMethod(callerID).getCalledBy()) {
+			for (int calleeID : session.getMethod(callerID).getCalledBy().elementSet()) {
 				Hashtable<String, String> cAttrs = new Hashtable<String, String>();
 
 				cAttrs.put(ILonganIO.ID, calleeID + "");
