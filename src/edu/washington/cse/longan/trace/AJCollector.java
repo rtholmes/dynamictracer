@@ -32,8 +32,7 @@ import edu.washington.cse.longan.model.Session;
 import edu.washington.cse.longan.trace.tracker.IObjectTracker;
 
 /**
- * This is the main data collector used by the Aspect information collector. The _session field contains all of the
- * collected data.
+ * This is the main data collector used by the Aspect information collector. The _session field contains all of the collected data.
  * 
  * @author rtholmes
  * 
@@ -65,7 +64,14 @@ public class AJCollector {
 	/**
 	 * current callstack
 	 */
-	private Stack<Integer> _callStack = new Stack<Integer>();
+	// private Stack<Integer> getCurrentCallstack() = new Stack<Integer>();
+
+	private ThreadLocal<Stack<Integer>> _callStack = new ThreadLocal<Stack<Integer>>() {
+		protected java.util.Stack<Integer> initialValue() {
+			return new Stack<Integer>();
+		};
+	};
+
 	//
 	// private Hashtable<Integer, AJFieldAgent> _fields = new Hashtable<Integer, AJFieldAgent>();
 	// /**
@@ -97,8 +103,8 @@ public class AJCollector {
 
 	private Stack<Integer> _exceptionStack = null;
 	/**
-	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single
-	 * class. We can use pertypewithin on the aspect description but that will violate what we have happening here.
+	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single class. We can use pertypewithin on
+	 * the aspect description but that will violate what we have happening here.
 	 * 
 	 * @param jps
 	 * @return
@@ -128,6 +134,10 @@ public class AJCollector {
 		}
 	}
 
+	private Stack<Integer> getCurrentCallstack() {
+		return _callStack.get();
+	}
+
 	/**
 	 * Not currently used.
 	 * 
@@ -138,7 +148,7 @@ public class AJCollector {
 			methodExit(jp, null, false);
 			if (OUTPUT) {
 				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
+				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 				// _log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
 				_log.debug("|-| After class init: " + jp.getSignature());
@@ -162,12 +172,12 @@ public class AJCollector {
 		// from constructors.
 
 		// Needed to capture call stack for exceptions arising in constructors
-		_exceptionStack = (Stack<Integer>) _callStack.clone();
+		_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
 
 		constructorExit(jp, true);
 		if (OUTPUT) {
 			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
 				out += "\t";
 			_log.debug(out + "After create exception: " + jp.getSignature().toString());
 		}
@@ -183,7 +193,7 @@ public class AJCollector {
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			// out += "|-| After obj init: " + jp.getTarget().getClass().getName();
@@ -203,7 +213,7 @@ public class AJCollector {
 			methodEnter(jp, false);
 			if (OUTPUT) {
 				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
+				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 				// _log.debug("|-| Before class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
 				_log.debug("|-| Before class init: " + jp.getSignature());
@@ -222,7 +232,7 @@ public class AJCollector {
 
 		if (OUTPUT) {
 			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
 				out += "\t";
 			_log.debug(out + "Before create exception: " + jp.getSignature().toString());
 		}
@@ -231,11 +241,11 @@ public class AJCollector {
 
 	@SuppressWarnings("unchecked")
 	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
-		if (_callStack.isEmpty()) {
+		if (getCurrentCallstack().isEmpty()) {
 			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception handled but the call stack is empty: " + jp.getSignature());
 		} else {
-			MethodElement mt = _session.getMethod(_callStack.peek());
+			MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
 			// NOTE: had to remove these to make Log4j.FileAppenderTest.testDirectoryCreation work
 
 			Preconditions.checkArgument(exception instanceof Throwable);
@@ -250,7 +260,7 @@ public class AJCollector {
 				// ((Throwable) exception)
 				// .getMessage());
 
-				_exceptionStack = (Stack<Integer>) _callStack.clone();
+				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
 				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 
 			}
@@ -267,7 +277,7 @@ public class AJCollector {
 
 			if (OUTPUT) {
 				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
+				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 
 				_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
@@ -277,14 +287,14 @@ public class AJCollector {
 
 	@SuppressWarnings("unchecked")
 	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
-		if (_callStack.isEmpty()) {
+		if (getCurrentCallstack().isEmpty()) {
 			// RFE: handle the case where not everything is instrumented.
 		} else {
-			MethodElement mt = _session.getMethod(_callStack.peek());
+			MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
 
 			if (_exceptionStack == null) {
 				// this is a new exception
-				_exceptionStack = (Stack<Integer>) _callStack.clone();
+				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
 				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 				if (OUTPUT) {
 					_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: "
@@ -300,7 +310,7 @@ public class AJCollector {
 
 			if (OUTPUT) {
 				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
+				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 
 				if (!isExternal)
@@ -316,7 +326,7 @@ public class AJCollector {
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			// out += "|-| Before obj init: " + jp.getTarget().getClass().getName();
@@ -336,13 +346,13 @@ public class AJCollector {
 
 		int id = getMethodId(jp, isExternal, true);
 
-		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
-		// _methods.get(id).methodEnter(jp, _callStack);
+		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
+		// _methods.get(id).methodEnter(jp, getCurrentCallstack());
 
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			Signature sig = jp.getSignature();
@@ -352,7 +362,7 @@ public class AJCollector {
 				_log.debug(out + "|x->| " + sig);
 		}
 
-		_callStack.push(getMethodId(jp, isExternal, true));
+		getCurrentCallstack().push(getMethodId(jp, isExternal, true));
 		_timeStack.push(System.currentTimeMillis());
 
 	}
@@ -362,12 +372,12 @@ public class AJCollector {
 
 		recordProfileData(jp, delta);
 
-		_callStack.pop();
+		getCurrentCallstack().pop();
 
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			Signature sig = jp.getSignature();
@@ -382,12 +392,12 @@ public class AJCollector {
 	public void fieldGet(JoinPoint jp, Object fieldValue) {
 
 		int id = getFieldID(jp);
-		((AJFieldAgent) _session.getField(id)).fieldGet(jp, _callStack, fieldValue);
+		((AJFieldAgent) _session.getField(id)).fieldGet(jp, getCurrentCallstack(), fieldValue);
 
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			_log.debug(out + "Field get: " + jp.getSignature() + " value: " + fieldValue);
@@ -396,12 +406,12 @@ public class AJCollector {
 
 	public void fieldSet(JoinPoint jp, Object newValue) {
 		int id = getFieldID(jp);
-		((AJFieldAgent) _session.getField(id)).fieldSet(jp, _callStack, newValue);
+		((AJFieldAgent) _session.getField(id)).fieldSet(jp, getCurrentCallstack(), newValue);
 
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			_log.debug(out + "Field set: " + jp.getSignature().toString() + " to: " + newValue);
@@ -409,7 +419,7 @@ public class AJCollector {
 	}
 
 	private Integer getFieldID(JoinPoint jp) {
-		// MethodElement mt = _session.getMethod(_callStack.peek());
+		// MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
 		String name = "";
 		int id = -1;
 
@@ -529,11 +539,11 @@ public class AJCollector {
 
 		int id = getMethodId(jp, isExternal, true);
 
-		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, _callStack);
+		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
 
 		if (OUTPUT) {
 			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
 				out += "\t";
 
 			String sig = _session.getMethod(id).getName();
@@ -562,7 +572,7 @@ public class AJCollector {
 			printArgs(jp);
 		}
 
-		_callStack.push(id);
+		getCurrentCallstack().push(id);
 
 		_timeStack.push(System.currentTimeMillis());
 
@@ -573,7 +583,7 @@ public class AJCollector {
 		if (retObject != null) {
 			if (OUTPUT) {
 				String out = "";
-				for (int i = _callStack.size(); i > 0; i--)
+				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 				_log.debug(out + "Return: " + retObject);
 			}
@@ -581,18 +591,18 @@ public class AJCollector {
 
 		long delta = System.currentTimeMillis() - _timeStack.pop();
 
-		_callStack.pop();
+		getCurrentCallstack().pop();
 
 		recordProfileData(jp, delta);
 
 		AJMethodAgent methodTracker = getMethodTracker(jp);
 
 		if (!ILonganConstants.CALLSTACK_ONLY)
-			methodTracker.methodExit(jp, retObject, _callStack);
+			methodTracker.methodExit(jp, retObject, getCurrentCallstack());
 
 		if (OUTPUT) {
 			String out = "";
-			for (int i = _callStack.size(); i > 0; i--)
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
 				out += "\t";
 
 			Signature sig = jp.getSignature();
@@ -627,7 +637,7 @@ public class AJCollector {
 
 				String out = "";
 				if (OUTPUT)
-					for (int t = _callStack.size(); t > 0; t--)
+					for (int t = getCurrentCallstack().size(); t > 0; t--)
 						out += "\t";
 
 				if (arg != null) {
@@ -815,7 +825,7 @@ public class AJCollector {
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			out += "|-| Before obj preinit: " + jp.getSignature();
@@ -828,7 +838,7 @@ public class AJCollector {
 		if (OUTPUT) {
 			String out = "";
 
-			for (int t = _callStack.size(); t > 0; t--)
+			for (int t = getCurrentCallstack().size(); t > 0; t--)
 				out += "\t";
 
 			out += "|-| After obj preinit: " + jp.getSignature();
