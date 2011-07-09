@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
+
 import ca.lsmr.common.util.TimeUtility;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
@@ -18,7 +20,7 @@ import edu.washington.cse.longan.model.Session;
 
 public class SessionXMLWriter extends ILonganIO {
 
-	// Logger _log = Logger.getLogger(this.getClass());
+	Logger _log = Logger.getLogger(this.getClass());
 
 	PrintWriter out;
 
@@ -28,7 +30,8 @@ public class SessionXMLWriter extends ILonganIO {
 			prepareSessionForPersistence(session);
 
 			out = new PrintWriter(fName);
-
+//			out  = new PrintWriter(System.out);
+			
 			Hashtable<String, String> rootAttrs = new Hashtable<String, String>();
 			rootAttrs.put("date", TimeUtility.getCurrentLSMRDateString());
 
@@ -36,9 +39,13 @@ public class SessionXMLWriter extends ILonganIO {
 
 			raiseIndent();
 
+			System.out.println("genning static");
 			genStatic(session, out);
-
+			System.out.println("genning static done ");
+			
+			System.out.println("genning dynamic");
 			genDynamic(session, out);
+			System.out.println("genning dynamic done");
 
 			// clean up
 			lowerIndent();
@@ -93,6 +100,7 @@ public class SessionXMLWriter extends ILonganIO {
 	private void collapseSyntheticAccessMethods(Session session) {
 		Vector<MethodElement> accessMethodsToRemove = new Vector<MethodElement>();
 
+		System.out.println("Checking for suspected synthetic access methods");
 		for (MethodElement me : session.getMethods()) {
 
 			// $ is restricted, but this might still be able to collide with an anonymous class name?
@@ -113,6 +121,7 @@ public class SessionXMLWriter extends ILonganIO {
 				accessMethodsToRemove.add(me);
 			}
 		}
+		System.out.println("Done collapsing suspected synthetic access methods ( "+accessMethodsToRemove.size()+" removed )");
 
 		for (MethodElement accessMethod : accessMethodsToRemove) {
 			// once they're collapsed get rid of them

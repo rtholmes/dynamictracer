@@ -260,7 +260,7 @@ public class AJMethodAgent extends MethodElement {
 		String name = jp.getSignature().toString();
 		String oldName = name;
 
-		_log.trace("getMethodName: " + name);
+//		_log.trace("getMethodName: " + name);head 
 
 		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
 			// try to specialize the name (e.g., Class java.lang.Object.getClass() -> Class ca.uwaterloo.cs.se.bench.simple.NestedClass.getClass())
@@ -284,7 +284,7 @@ public class AJMethodAgent extends MethodElement {
 
 			name = buf.toString();
 
-			_log.debug("getMethodName( .. ) - constructor: " + oldName + " -> " + name);
+//			_log.debug("getMethodName( .. ) - constructor: " + oldName + " -> " + name);
 		} else if (signature instanceof MethodSignature) {
 			MethodSignature sig = (MethodSignature) signature;
 			// String longString = sig.toLongString();
@@ -300,7 +300,7 @@ public class AJMethodAgent extends MethodElement {
 
 			name = buf.toString();
 
-			_log.debug("getMethodName( .. ) - method: " + oldName + " -> " + name);
+//			_log.debug("getMethodName( .. ) - method: " + oldName + " -> " + name);
 		} else if (signature instanceof InitializerSignature) {
 			InitializerSignature sig = (InitializerSignature) signature;
 			// String longString = sig.toLongString();
@@ -313,7 +313,7 @@ public class AJMethodAgent extends MethodElement {
 			buf.append(sig.getName());
 			name = buf.toString();
 
-			_log.debug("getMethodName( .. ) - initializer: " + oldName + " -> " + name);
+//			_log.debug("getMethodName( .. ) - initializer: " + oldName + " -> " + name);
 		} else {
 			String msg = "AJMethodAgent::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
 			_log.warn(msg);
@@ -354,7 +354,7 @@ public class AJMethodAgent extends MethodElement {
 
 				String methodName = name.substring(rootName.length() + retType.length() + padding);
 				name = retType + " " + targetTypeName + "." + methodName;
-				_log.debug("Specialize name from: " + oldName + " -> " + name);
+//				_log.debug("Specialize name from: " + oldName + " -> " + name);
 			}
 		}
 		return name;

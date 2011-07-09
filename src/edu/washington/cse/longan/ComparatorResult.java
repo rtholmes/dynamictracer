@@ -192,11 +192,11 @@ public class ComparatorResult {
 	public String generateCSVPathRow4() {
 		String ret = "";
 
-		ret += _v1s.getPaths().size()+ SEP;
-		ret += _v2s.getPaths().size()+ SEP;
-		ret += _v1d.getPaths().size()+ SEP;
-		ret += _v2d.getPaths().size()+ SEP;
-		
+		ret += _v1s.getPaths().size() + SEP;
+		ret += _v2s.getPaths().size() + SEP;
+		ret += _v1d.getPaths().size() + SEP;
+		ret += _v2d.getPaths().size() + SEP;
+
 		ret += getValue(_r1.getPSize()) + SEP;
 		ret += getValue(_r2.getPSize()) + SEP;
 		ret += getValue(_r3.getPSize()) + SEP;

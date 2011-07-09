@@ -103,8 +103,8 @@ public class AJCollector {
 
 	private Stack<Integer> _exceptionStack = null;
 	/**
-	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single class. We can use pertypewithin on
-	 * the aspect description but that will violate what we have happening here.
+	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single class. We can use pertypewithin on the aspect description but
+	 * that will violate what we have happening here.
 	 * 
 	 * @param jps
 	 * @return
@@ -271,8 +271,8 @@ public class AJCollector {
 			_exceptionStack = null;
 
 			if (OUTPUT) {
-				_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName()
-						+ " ex msg: " + ((Throwable) exception).getMessage());
+				_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
+						+ ((Throwable) exception).getMessage());
 			}
 
 			if (OUTPUT) {
@@ -297,8 +297,8 @@ public class AJCollector {
 				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
 				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 				if (OUTPUT) {
-					_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: "
-							+ exception.getClass().getName() + " ex msg: " + ((Throwable) exception).getMessage());
+					_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
+							+ ((Throwable) exception).getMessage());
 				}
 			} else {
 				mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
@@ -649,8 +649,7 @@ public class AJCollector {
 					} else if (arg.getClass().isArray()) {
 
 						if (OUTPUT)
-							_log.debug(out + "\tArg " + i + ", Array, length: " + Array.getLength(arg) + " class: "
-									+ arg.getClass().getComponentType());
+							_log.debug(out + "\tArg " + i + ", Array, length: " + Array.getLength(arg) + " class: " + arg.getClass().getComponentType());
 
 					} else if (arg instanceof Set) {
 
@@ -764,8 +763,8 @@ public class AJCollector {
 
 							if (paramTracker != null && paramTracker.length > 0) {
 								for (IObjectTracker tracker : paramTracker) {
-									_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition() + " ] name: "
-											+ tracker.getName() + " static type: " + tracker.getStaticTypeName());
+									_log.info("\t\tParam: " + tracker.getTrackerName() + " - [ idx: " + tracker.getPosition() + " ] name: " + tracker.getName() + " static type: "
+											+ tracker.getStaticTypeName());
 									_log.info("\t\t\t" + tracker.toString());
 								}
 							}
