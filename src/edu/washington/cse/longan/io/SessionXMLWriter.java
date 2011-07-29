@@ -13,6 +13,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 
+import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
@@ -20,6 +21,9 @@ import edu.washington.cse.longan.model.Session;
 
 public class SessionXMLWriter extends ILonganIO {
 
+	static {
+		LSMRLogger.startLog4J(false);
+	}
 	Logger _log = Logger.getLogger(this.getClass());
 
 	PrintWriter out;
@@ -30,7 +34,7 @@ public class SessionXMLWriter extends ILonganIO {
 			prepareSessionForPersistence(session);
 
 			out = new PrintWriter(fName);
-			
+
 			Hashtable<String, String> rootAttrs = new Hashtable<String, String>();
 			rootAttrs.put("date", TimeUtility.getCurrentLSMRDateString());
 
@@ -38,13 +42,8 @@ public class SessionXMLWriter extends ILonganIO {
 
 			raiseIndent();
 
-			System.out.println("genning static");
 			genStatic(session, out);
-			System.out.println("genning static done ");
-			
-			System.out.println("genning dynamic");
 			genDynamic(session, out);
-			System.out.println("genning dynamic done");
 
 			// clean up
 			lowerIndent();
@@ -52,7 +51,7 @@ public class SessionXMLWriter extends ILonganIO {
 
 			out.close();
 
-			System.out.println("Dynamic session written to: " + new File(fName).getAbsolutePath());
+			_log.info("Dynamic session written to: " + new File(fName).getAbsolutePath());
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -78,17 +77,13 @@ public class SessionXMLWriter extends ILonganIO {
 				// Close the channels
 				srcChannel.close();
 				dstChannel.close();
-				System.out.println("Dynamic session written to: " + new File(latestFName).getAbsolutePath());
+				_log.info("Dynamic session written to: " + new File(latestFName).getAbsolutePath());
 			} catch (IOException ioe) {
 				System.err.println(ioe);
 			}
 
-			// System.out.println("Trace written in: " + TimeUtility.msToHumanReadable((end - start)) + " (copy took: "
-			// +
-			// TimeUtility.msToHumanReadableDelta(end)
-			// + ") and copied to: " + latestFName);
 		} else {
-			System.out.println("Trace written to: " + fName);// + " in: " + TimeUtility.msToHumanReadableDelta(start));
+			_log.info("Trace written to: " + fName);// + " in: " + TimeUtility.msToHumanReadableDelta(start));
 		}
 	}
 
@@ -99,12 +94,12 @@ public class SessionXMLWriter extends ILonganIO {
 	private void collapseSyntheticAccessMethods(Session session) {
 		Vector<MethodElement> accessMethodsToRemove = new Vector<MethodElement>();
 
-		System.out.println("Checking for suspected synthetic access methods");
+		_log.info("Checking for suspected synthetic access methods");
 		for (MethodElement me : session.getMethods()) {
 
 			// $ is restricted, but this might still be able to collide with an anonymous class name?
 			if (me.getName().contains(".access$")) {
-				System.out.println("Remapping / removing suspected access method: " + me.getName());
+				_log.info("\tRemapping / removing suspected access method: " + me.getName());
 				// _log.debug("Access method encountered: " + me);
 
 				// find all methods that call this method me
@@ -120,7 +115,7 @@ public class SessionXMLWriter extends ILonganIO {
 				accessMethodsToRemove.add(me);
 			}
 		}
-		System.out.println("Done collapsing suspected synthetic access methods ( "+accessMethodsToRemove.size()+" removed )");
+		_log.info("Done collapsing suspected synthetic access methods ( " + accessMethodsToRemove.size() + " removed )");
 
 		for (MethodElement accessMethod : accessMethodsToRemove) {
 			// once they're collapsed get rid of them
