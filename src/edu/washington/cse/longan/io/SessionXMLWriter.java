@@ -30,7 +30,6 @@ public class SessionXMLWriter extends ILonganIO {
 			prepareSessionForPersistence(session);
 
 			out = new PrintWriter(fName);
-//			out  = new PrintWriter(System.out);
 			
 			Hashtable<String, String> rootAttrs = new Hashtable<String, String>();
 			rootAttrs.put("date", TimeUtility.getCurrentLSMRDateString());
@@ -64,7 +63,7 @@ public class SessionXMLWriter extends ILonganIO {
 			// for easier manual analysis
 
 			long end = System.currentTimeMillis();
-			String latestFName = ILonganConstants.OUTPUT_PATH + "latestDynamic.xml";
+			String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
 
 			try {
 				// Create channel on the source

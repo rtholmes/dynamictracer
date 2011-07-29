@@ -687,15 +687,16 @@ public class AJCollector {
 	}
 
 	private void recordProfileData(JoinPoint jp, long delta) {
-		int id = getMethodId(jp, false, false);
-
-		Long val = _session.getProfile().get(id);
-
-		if (val == null) {
-			_session.getProfile().put(id, delta);
-			// idToSignatureMap.put(id, jp.getSignature());
-		} else
-			_session.getProfile().put(id, val + delta);
+// REMOVED
+		//		int id = getMethodId(jp, false, false);
+//
+//		Long val = _session.getProfile().get(id);
+//
+//		if (val == null) {
+//			_session.getProfile().put(id, delta);
+//			// idToSignatureMap.put(id, jp.getSignature());
+//		} else
+//			_session.getProfile().put(id, val + delta);
 
 	}
 
@@ -782,7 +783,7 @@ public class AJCollector {
 				for (MethodElement mt : _session.getMethods()) {
 					String methodName = mt.getName();
 
-					_log.info("Time: " + _session.getProfile().get(mt.getId()) + " element: " + methodName);
+					// _log.info("Time: " + _session.getProfile().get(mt.getId()) + " element: " + methodName);
 					// if (methodName != null)
 					// _log.info(methodName + " called by:");
 					// else

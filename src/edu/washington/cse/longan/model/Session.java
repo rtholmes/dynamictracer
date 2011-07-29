@@ -8,10 +8,9 @@ import java.util.Set;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableSet;
 
 import edu.washington.cse.longan.Logger;
-import edu.washington.cse.longan.Path;
+import edu.washington.cse.longan.trace.AJCollector2;
 
 /**
  * Contains the dynamic details of any single session.
@@ -21,17 +20,11 @@ import edu.washington.cse.longan.Path;
  */
 public class Session {
 
-	private Logger _log = Logger.getLogger(this.getClass());
-
 	private Hashtable<Integer, FieldElement> _fields = new Hashtable<Integer, FieldElement>();
 
-	/**
-	 * Uses the JPS.getId() as an index; the stored element is the 'base' index for the element associated with the JPS id. (JPS.id binds every join
-	 * point itself so there can be multiple points for any program element)
-	 */
-	// private Integer[] _ids = new Integer[1024];
-
 	private Hashtable<Integer, MethodElement> _methods = new Hashtable<Integer, MethodElement>();
+
+	private Logger _log = Logger.getLogger(this.getClass());
 
 	/**
 	 * This index is used to maintain the _ids array: in this way the names of elements are tracked and using the name the common base id can be
@@ -42,11 +35,6 @@ public class Session {
 	private BiMap<String, Integer> _fieldNameToBaseIdMap = HashBiMap.create();
 
 	private BiMap<String, Integer> _methodNameToBaseIdMap = HashBiMap.create();
-
-	/**
-	 * id -> milliseconds
-	 */
-	private Hashtable<Integer, Long> _profile = new Hashtable<Integer, Long>();
 
 	private String _sessionName;
 
@@ -65,10 +53,8 @@ public class Session {
 		addMethod(ILonganConstants.UNKNOWN_METHOD_ID, new MethodElement(ILonganConstants.UNKNOWN_METHOD_ID, ILonganConstants.UNKNOWN_METHOD_NAME,
 				true));
 
-		addIDForElement(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
-
-		_profile.put(ILonganConstants.UNKNOWN_METHOD_ID, 0L);
-
+		// this is done by addmethod
+		// _nameToBaseIdMap.put(ILonganConstants.UNKNOWN_METHOD_NAME, ILonganConstants.UNKNOWN_METHOD_ID);
 	}
 
 	public MethodElement getMethod(int id) {
@@ -95,6 +81,7 @@ public class Session {
 			if (!_nameToBaseIdMap.containsKey(method.getName())) {
 				_nameToBaseIdMap.put(method.getName(), id);
 			} else {
+				_log.error("Problem with nameToBaseIdMap for: " + method);
 				Preconditions.checkNotNull(null, ILonganConstants.NOT_POSSIBLE);
 			}
 		}
@@ -119,14 +106,6 @@ public class Session {
 
 	public boolean hasIDForElement(String name) {
 		return _nameToBaseIdMap.containsKey(name);
-	}
-
-	private void addIDForElement(String name, int id) {
-		_nameToBaseIdMap.put(name, id);
-	}
-
-	public Hashtable<Integer, Long> getProfile() {
-		return _profile;
 	}
 
 	public Set<String> getElementNames() {
@@ -204,11 +183,6 @@ public class Session {
 
 	public void setSessionName(String fName) {
 		_sessionName = fName;
-	}
-
-	public ImmutableSet<Path> getPaths() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/**

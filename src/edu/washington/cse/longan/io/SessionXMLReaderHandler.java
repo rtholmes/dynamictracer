@@ -378,10 +378,10 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 			timeString = "0";
 
 		int id = Integer.parseInt(idString);
-		Long time = Long.parseLong(timeString);
+		// Long time = Long.parseLong(timeString);
 
 		MethodElement me = _session.getMethod(id);
-		_session.getProfile().put(id, time);
+		// _session.getProfile().put(id, time);
 		_currentDynamicMethod = me;
 		if (me == null) {
 			throw new AssertionError("Couldn't find method for id: " + id);
