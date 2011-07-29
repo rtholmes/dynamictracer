@@ -19,8 +19,8 @@ import edu.washington.cse.longan.model.ReturnTraitContainer;
 import edu.washington.cse.longan.model.Session;
 import edu.washington.cse.longan.trait.ExceptionTrait;
 import edu.washington.cse.longan.trait.ITrait;
-import edu.washington.cse.longan.trait.TraitFactory;
 import edu.washington.cse.longan.trait.ITrait.DATA_KINDS;
+import edu.washington.cse.longan.trait.TraitFactory;
 
 public class SessionXMLReaderHandler extends DefaultHandler {
 	Logger _log = Logger.getLogger(this.getClass());
@@ -53,7 +53,7 @@ public class SessionXMLReaderHandler extends DefaultHandler {
 	private MethodElement _currentCalledByMethod;
 	private ParamTraitContainer _currentDynamicParam;
 	private ReturnTraitContainer _currentDynamicReturn;
-	private FieldTraitContainer _currentDynamicField;
+	//	private FieldTraitContainer _currentDynamicField;
 	private ITrait _currentDynamicTrait;
 	private FieldElement _currentDyamicField;
 	private MethodElement _currentSetMethod;

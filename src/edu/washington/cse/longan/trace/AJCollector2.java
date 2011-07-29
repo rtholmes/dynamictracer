@@ -9,7 +9,6 @@ import java.util.Stack;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 
-import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 
 import com.google.common.base.Preconditions;

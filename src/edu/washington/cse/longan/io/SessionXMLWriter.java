@@ -61,7 +61,6 @@ public class SessionXMLWriter extends ILonganIO {
 			// In debug mode it can be handy to send the last output to a static file name
 			// for easier manual analysis
 
-			long end = System.currentTimeMillis();
 			String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
 
 			try {

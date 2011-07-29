@@ -10,7 +10,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import edu.washington.cse.longan.Logger;
-import edu.washington.cse.longan.trace.AJCollector2;
 
 /**
  * Contains the dynamic details of any single session.
