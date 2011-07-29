@@ -7,8 +7,9 @@
   	<property name="src" location="src"/>
   	<property name="build" location="build"/>
   	<property name="dist"  location="dist"/>
-  	<property name="lib"  location="lib"/>
-	<property name="jarDeployDir"        value="../inconsistencyinspectorresources/"/>
+	<property name="inconsistencyInspectorResources" value="../inconsistencyinspectorresources/"/>
+  	<property name="lib"  location="${inconsistencyInspectorResources}/lib"/>
+
 	
   	<target name="init">
     	<!-- Create the time stamp -->
@@ -20,7 +21,8 @@
   <path id="tracer.class.path">
     <pathelement location="${lib}/aspectjrt.jar"/>
     <pathelement location="${lib}/aspectjtools.jar"/>
-    <pathelement location="${lib}/ca.lsmr.common_20110124.jar"/>
+    <fileset dir="${inconsistencyInspectorResources}" includes="ca.lsmr.common_*.jar"/>
+	<fileset dir="${inconsistencyInspectorResources}" includes="ca.uwaterloo.cs.se.inconsistency.core_*.jar"/>
   </path>
 
   <target name="compile" depends="init" description="compile the source " >
@@ -40,9 +42,9 @@
 
 	<target name="iiDeploy" depends="dist" description="copies the latest jar to the inconsistencyinspectorresources project">
 		<delete>
- 			<fileset dir="${jarDeployDir}" includes="DynamicTracer_*.jar"/>
+ 			<fileset dir="${inconsistencyInspectorResources}" includes="DynamicTracer_*.jar"/>
 		</delete>
-		<copy file="${dist}/DynamicTracer_${DSTAMP}.jar" tofile="${jarDeployDir}/DynamicTracer_${DSTAMP}.jar" overwrite="yes" />
+		<copy file="${dist}/DynamicTracer_${DSTAMP}.jar" tofile="${inconsistencyInspectorResources}/DynamicTracer_${DSTAMP}.jar" overwrite="yes" />
 	</target>
 
 

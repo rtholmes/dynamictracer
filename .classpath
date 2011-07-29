@@ -4,8 +4,9 @@
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry excluding="**/JavaModelHelper.java" kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.ajdt.core.ASPECTJRT_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/ca.lsmr.common_20110124.jar"/>
-	<classpathentry kind="lib" path="lib/aspectjrt.jar" sourcepath="lib/aspectjrt1.6.10-src.jar"/>
-	<classpathentry kind="lib" path="lib/aspectjtools.jar" sourcepath="lib/aspectjtools1.6.10-src.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ca.uwaterloo.cs.se.inconsistency.core"/>
+	<classpathentry kind="lib" path="/inconsistencyinspectorresources/lib/aspectjrt.jar"/>
+	<classpathentry kind="lib" path="/inconsistencyinspectorresources/lib/aspectjtools.jar"/>
+	<classpathentry kind="lib" path="/inconsistencyinspectorresources/ca.lsmr.common_20110124.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
