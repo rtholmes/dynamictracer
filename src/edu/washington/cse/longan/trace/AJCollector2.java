@@ -4,12 +4,15 @@
  */
 package edu.washington.cse.longan.trace;
 
+import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.Stack;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 
 import ca.lsmr.common.util.TimeUtility;
+import ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement;
 
 import com.google.common.base.Preconditions;
 
@@ -29,7 +32,7 @@ public class AJCollector2 {
 	private static AJCollector2 _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector2.class);
 
-	public static boolean OUTPUT = true;
+	public static boolean OUTPUT = false;
 
 	public static void clearInstance() {
 		if (_instance != null)
@@ -424,5 +427,35 @@ public class AJCollector2 {
 				_log.error(e);
 			}
 		}
+	}
+
+	private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
+	private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
+
+	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
+
+		if (!_methods.containsKey(jp.getStaticPart())) {
+			// this only happens the first time
+			
+			String methodName = AJMethodAgent.getMethodName(jp);
+			ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement me = new ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement(methodName);
+
+			String className = AJMethodAgent.getClassName(jp);
+			if (!_classes.containsKey(className)) {
+				ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = new ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement(
+						className, isExternal);
+				_classes.put(className, ce);
+			}
+		}
+
+		// check if method is in class
+
+		// add it to class, if needed
+
+		// map JoinPoint to class?
+
+		// String className = AJMethodAgent.getClassName(jp);
+
+		return _methods.get(jp.getStaticPart());
 	}
 }

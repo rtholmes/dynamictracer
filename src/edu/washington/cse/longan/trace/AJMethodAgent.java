@@ -258,19 +258,15 @@ public class AJMethodAgent extends MethodElement {
 	 */
 	public static String getMethodName(JoinPoint jp) {
 		String name = jp.getSignature().toString();
-		String oldName = name;
-
-//		_log.trace("getMethodName: " + name);head 
 
 		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
 			// try to specialize the name (e.g., Class java.lang.Object.getClass() -> Class ca.uwaterloo.cs.se.bench.simple.NestedClass.getClass())
 			name = specializeName(jp);
 		}
+
 		Signature signature = jp.getSignature();
 		if (signature instanceof ConstructorSignature) {
 			ConstructorSignature sig = (ConstructorSignature) signature;
-			// String longString = sig.toLongString();
-			// String medString = sig.toString();
 
 			StringBuffer buf = new StringBuffer();
 			StringMaker sm = StringMaker.longStringMaker;
@@ -280,15 +276,9 @@ public class AJMethodAgent extends MethodElement {
 			buf.append(sig.getName());
 			sm.addSignature(buf, sig.getParameterTypes());
 
-			// sm.addThrows(buf, getExceptionTypes());
-
 			name = buf.toString();
-
-//			_log.debug("getMethodName( .. ) - constructor: " + oldName + " -> " + name);
 		} else if (signature instanceof MethodSignature) {
 			MethodSignature sig = (MethodSignature) signature;
-			// String longString = sig.toLongString();
-			// String medString = sig.toString();
 
 			StringBuffer buf = new StringBuffer();
 
@@ -299,12 +289,8 @@ public class AJMethodAgent extends MethodElement {
 			sm.addSignature(buf, sig.getParameterTypes());
 
 			name = buf.toString();
-
-//			_log.debug("getMethodName( .. ) - method: " + oldName + " -> " + name);
 		} else if (signature instanceof InitializerSignature) {
 			InitializerSignature sig = (InitializerSignature) signature;
-			// String longString = sig.toLongString();
-			// String medString = sig.toString();
 
 			StringBuffer buf = new StringBuffer();
 			StringMaker sm = StringMaker.longStringMaker;
@@ -312,8 +298,6 @@ public class AJMethodAgent extends MethodElement {
 			buf.append(".");
 			buf.append(sig.getName());
 			name = buf.toString();
-
-//			_log.debug("getMethodName( .. ) - initializer: " + oldName + " -> " + name);
 		} else {
 			String msg = "AJMethodAgent::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
 			_log.warn(msg);
@@ -354,7 +338,7 @@ public class AJMethodAgent extends MethodElement {
 
 				String methodName = name.substring(rootName.length() + retType.length() + padding);
 				name = retType + " " + targetTypeName + "." + methodName;
-//				_log.debug("Specialize name from: " + oldName + " -> " + name);
+				// _log.debug("Specialize name from: " + oldName + " -> " + name);
 			}
 		}
 		return name;
