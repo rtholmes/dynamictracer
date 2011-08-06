@@ -93,14 +93,15 @@ public class SessionXMLWriter extends ILonganIO {
 	private void collapseSyntheticAccessMethods(Session session) {
 		Vector<MethodElement> accessMethodsToRemove = new Vector<MethodElement>();
 
+try {
 		_log.info("Checking for suspected synthetic access methods");
 		for (MethodElement me : session.getMethods()) {
 
 			// $ is restricted, but this might still be able to collide with an anonymous class name?
 			if (me.getName().contains(".access$")) {
 				_log.info("\tRemapping / removing suspected access method: " + me.getName());
-				// _log.debug("Access method encountered: " + me);
 
+try {
 				// find all methods that call this method me
 				Vector<MethodElement> callers = findMethodsThatCall(me, session);
 
@@ -110,10 +111,16 @@ public class SessionXMLWriter extends ILonganIO {
 					caller.getCalledBy().elementSet().remove(me.getId());
 					caller.getCalledBy().addAll(me.getCalledBy().elementSet());
 				}
-
+} catch (Exception e){
+	_log.error("Error collapsing access method: "+me);
+}
 				accessMethodsToRemove.add(me);
 			}
 		}
+		
+	} catch (Exception e) {
+		_log.error("Error in collapseSyntheticAccessMethods(..): "+e);
+	}
 		_log.info("Done collapsing suspected synthetic access methods ( " + accessMethodsToRemove.size() + " removed )");
 
 		for (MethodElement accessMethod : accessMethodsToRemove) {

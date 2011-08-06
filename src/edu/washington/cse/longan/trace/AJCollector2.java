@@ -4,7 +4,6 @@
  */
 package edu.washington.cse.longan.trace;
 
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -424,7 +423,7 @@ public class AJCollector2 {
 				SessionXMLWriter sxmlw = new SessionXMLWriter();
 				sxmlw.write(fName, _session);
 			} catch (Exception e) {
-				_log.error(e);
+				_log.error("Error writing to disk: "+e);
 			}
 		}
 	}
@@ -433,20 +432,20 @@ public class AJCollector2 {
 	private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
 
 	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
-
-		if (!_methods.containsKey(jp.getStaticPart())) {
-			// this only happens the first time
-			
-			String methodName = AJMethodAgent.getMethodName(jp);
-			ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement me = new ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement(methodName);
-
-			String className = AJMethodAgent.getClassName(jp);
-			if (!_classes.containsKey(className)) {
-				ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = new ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement(
-						className, isExternal);
-				_classes.put(className, ce);
-			}
-		}
+		// XXX: implement this code
+		// if (!_methods.containsKey(jp.getStaticPart())) {
+		// // this only happens the first time
+		//
+		// String methodName = AJMethodAgent.getMethodName(jp);
+		// ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement me = new ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement(methodName);
+		//
+		// String className = AJMethodAgent.getClassName(jp);
+		// if (!_classes.containsKey(className)) {
+		// ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = new ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement(
+		// className, isExternal);
+		// _classes.put(className, ce);
+		// }
+		// }
 
 		// check if method is in class
 
