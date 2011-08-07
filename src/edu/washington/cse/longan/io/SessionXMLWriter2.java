@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
+import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.io.DependencyFinderSchema;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
@@ -323,5 +324,10 @@ public class SessionXMLWriter2 extends ILonganIO {
 	private PrintWriter lowerIndent() {
 		indentLevel--;
 		return out;
+	}
+
+	public void write(String fName, Model _model) {
+		// XXX: implement this
+		
 	}
 }

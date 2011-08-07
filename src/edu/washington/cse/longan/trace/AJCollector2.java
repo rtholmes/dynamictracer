@@ -12,14 +12,13 @@ import org.aspectj.lang.Signature;
 
 import ca.lsmr.common.util.TimeUtility;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement;
-
-import com.google.common.base.Preconditions;
-
+import ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement;
+import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
 import edu.washington.cse.longan.Logger;
-import edu.washington.cse.longan.io.SessionXMLWriter;
+import edu.washington.cse.longan.io.SessionXMLWriter2;
 import edu.washington.cse.longan.model.ILonganConstants;
-import edu.washington.cse.longan.model.MethodElement;
-import edu.washington.cse.longan.model.Session;
+
+//import edu.washington.cse.longan.model.Session;
 
 /**
  * This is the main data collector used by the Aspect information collector. The _session field contains all of the collected data.
@@ -48,9 +47,9 @@ public class AJCollector2 {
 		return _instance;
 	}
 
-	private ThreadLocal<Stack<Integer>> _callStack = new ThreadLocal<Stack<Integer>>() {
-		protected java.util.Stack<Integer> initialValue() {
-			return new Stack<Integer>();
+	private ThreadLocal<Stack<MethodElement>> _callStack = new ThreadLocal<Stack<MethodElement>>() {
+		protected java.util.Stack<MethodElement> initialValue() {
+			return new Stack<MethodElement>();
 		};
 	};
 
@@ -65,14 +64,14 @@ public class AJCollector2 {
 	 */
 	private int _masterCounter = 0;
 
-	private Session _session;
+	// private Session _session;
 
 	private AJCollector2() {
 		try {
 			// LOGGING
 			// LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
 
-			_session = new Session(TimeUtility.getCurrentLSMRDateString());
+			// _session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
 			// _log.info("Tracing started");
 
@@ -96,7 +95,7 @@ public class AJCollector2 {
 	 */
 	public void afterClassInit(JoinPoint jp) {
 		try {
-			methodExit(jp, null, false);
+			methodExit(jp, false);
 
 			if (OUTPUT) {
 				String out = "";
@@ -139,7 +138,7 @@ public class AJCollector2 {
 
 	public void afterObjectInit(JoinPoint jp) {
 
-		methodExit(jp, null, false);
+		methodExit(jp, false);
 
 		if (OUTPUT) {
 			String out = "";
@@ -218,44 +217,48 @@ public class AJCollector2 {
 
 	public synchronized void constructorEnter(JoinPoint jp, boolean isExternal) {
 
-		int id = getMethodId(jp, isExternal, true);
+		// int id = getMethodId(jp, isExternal, true);
+		//
+		// ((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
+		//
+		//
+		// if (OUTPUT) {
+		// String out = "";
+		//
+		// for (int t = getCurrentCallstack().size(); t > 0; t--)
+		// out += "\t";
+		//
+		// Signature sig = jp.getSignature();
+		// if (!isExternal)
+		// _log.debug(out + "|-->| " + sig);
+		// else
+		// _log.debug(out + "|x->| " + sig);
+		// }
+		//
+		// getCurrentCallstack().push(id);
 
-		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
-
-		if (OUTPUT) {
-			String out = "";
-
-			for (int t = getCurrentCallstack().size(); t > 0; t--)
-				out += "\t";
-
-			Signature sig = jp.getSignature();
-			if (!isExternal)
-				_log.debug(out + "|-->| " + sig);
-			else
-				_log.debug(out + "|x->| " + sig);
-		}
-
-		getCurrentCallstack().push(getMethodId(jp, isExternal, true));
+		methodEnter(jp, isExternal);
 
 	}
 
 	public synchronized void constructorExit(JoinPoint jp, boolean isExternal) {
 
-		getCurrentCallstack().pop();
+		// getCurrentCallstack().pop();
+		//
+		// if (OUTPUT) {
+		// String out = "";
+		//
+		// for (int t = getCurrentCallstack().size(); t > 0; t--)
+		// out += "\t";
+		//
+		// Signature sig = jp.getSignature();
+		// if (!isExternal)
+		// _log.debug(out + "|<--| " + sig);
+		// else
+		// _log.debug(out + "|<-x| " + sig);
+		// }
 
-		if (OUTPUT) {
-			String out = "";
-
-			for (int t = getCurrentCallstack().size(); t > 0; t--)
-				out += "\t";
-
-			Signature sig = jp.getSignature();
-			if (!isExternal)
-				_log.debug(out + "|<--| " + sig);
-			else
-				_log.debug(out + "|<-x| " + sig);
-		}
-
+		methodExit(jp, isExternal);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -264,25 +267,28 @@ public class AJCollector2 {
 			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception handled but the call stack is empty: " + jp.getSignature());
 		} else {
-			MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
-			Preconditions.checkArgument(exception instanceof Throwable);
+			// MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
+			// Preconditions.checkArgument(exception instanceof Throwable);
+
+			// NOTE: this false is poor form; hopefully this call never results in a ME being generated for the first time
+			MethodElement mt = getMethod(jp, false);
 
 			if (_exceptionStack == null) {
 				// RFE: handle case where exception comes from somewhere we don't instrument
 				_log.warn("Exception handled but the exception stack is empty: " + jp.getSignature());
 
 				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
-				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+				// mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 
 			}
 
-			mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+			// mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 
 			// this is a new exception
 			_exceptionStack = null;
 
 			if (OUTPUT) {
-				_log.debug("handling current exception, exception stack cleared. " + mt.getName() + " ex type: " + exception.getClass().getName()
+				_log.debug("handling current exception, exception stack cleared. " + mt.getId() + " ex type: " + exception.getClass().getName()
 						+ " ex msg: " + ((Throwable) exception).getMessage());
 			}
 
@@ -291,7 +297,7 @@ public class AJCollector2 {
 				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
 
-				_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getName());
+				_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getId());
 			}
 		}
 	}
@@ -302,20 +308,22 @@ public class AJCollector2 {
 			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception thrown with an empty callstack");
 		} else {
-			MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
+			// MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
 
+			// NOTE: this false is poor form; hopefully this call never results in a ME being generated for the first time
+			MethodElement mt = getMethod(jp, false);
 			if (_exceptionStack == null) {
 				// this is a new exception
 				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
-				mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+				// mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 				if (OUTPUT) {
-					_log.debug("Rew exception encountered, new exception stack created. " + mt.getName() + " ex type: "
+					_log.debug("Rew exception encountered, new exception stack created. " + mt.getId() + " ex type: "
 							+ exception.getClass().getName() + " ex msg: " + ((Throwable) exception).getMessage());
 				}
 			} else {
-				mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
+				// mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
 				if (OUTPUT) {
-					_log.debug("Rethrowing existing exception. " + mt.getName() + " ex type: " + exception.getClass().getName() + " ex msg: "
+					_log.debug("Rethrowing existing exception. " + mt.getId() + " ex type: " + exception.getClass().getName() + " ex msg: "
 							+ ((Throwable) exception).getMessage());
 				}
 			}
@@ -333,62 +341,64 @@ public class AJCollector2 {
 		}
 	}
 
-	private Stack<Integer> getCurrentCallstack() {
+	private Stack<MethodElement> getCurrentCallstack() {
 		return _callStack.get();
 	}
 
-	private Integer getMethodId(JoinPoint jp, boolean isExternal, boolean isExternalKnown) {
-
-		String name = "";
-		int id = -1;
-
-		// this seems complicated but allows us to resolve what is actually going on.
-		// e.g., Collections.add(Object) -> ArrayList.add(Object)
-		name = AJMethodAgent.getMethodName(jp);
-
-		if (!_session.hasIDForElement(name)) {
-			id = _masterCounter++;
-		} else {
-			id = _session.getIdForElement(name);
-		}
-
-		if (!_session.methodExists(id)) {
-			if (!isExternalKnown) {
-				throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
-			}
-
-			// BUG: isExternal is always true for exceptions
-			_session.addMethod(id, new AJMethodAgent(id, jp, isExternal));
-		}
-
-		return id;
-	}
+	// private Integer getMethodId(JoinPoint jp, boolean isExternal, boolean isExternalKnown) {
+	//
+	// String name = "";
+	// int id = -1;
+	//
+	// // this seems complicated but allows us to resolve what is actually going on.
+	// // e.g., Collections.add(Object) -> ArrayList.add(Object)
+	// name = AJMethodAgent.getMethodName(jp);
+	//
+	// if (!_session.hasIDForElement(name)) {
+	// id = _masterCounter++;
+	// } else {
+	// id = _session.getIdForElement(name);
+	// }
+	//
+	// if (!_session.methodExists(id)) {
+	// if (!isExternalKnown) {
+	// throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
+	// }
+	//
+	// // BUG: isExternal is always true for exceptions
+	// _session.addMethod(id, new AJMethodAgent(id, jp, isExternal));
+	// }
+	//
+	// return id;
+	// }
 
 	public synchronized void methodEnter(JoinPoint jp, boolean isExternal) {
 
-		int id = getMethodId(jp, isExternal, true);
+		// int id = getMethodId(jp, isExternal, true);
+		//
+		// ((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
+		//
+		// if (OUTPUT) {
+		// String out = "";
+		// for (int i = getCurrentCallstack().size(); i > 0; i--)
+		// out += "\t";
+		//
+		// String sig = _session.getMethod(id).getName();
+		//
+		// if (!isExternal)
+		// _log.debug(out + "--> " + sig);
+		// else
+		// _log.debug(out + "-x> " + sig);
+		//
+		// }
+		//
+		// getCurrentCallstack().push(id);
 
-		((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
-
-		if (OUTPUT) {
-			String out = "";
-			for (int i = getCurrentCallstack().size(); i > 0; i--)
-				out += "\t";
-
-			String sig = _session.getMethod(id).getName();
-
-			if (!isExternal)
-				_log.debug(out + "--> " + sig);
-			else
-				_log.debug(out + "-x> " + sig);
-
-		}
-
-		getCurrentCallstack().push(id);
-
+		MethodElement me = getMethod(jp, isExternal);
+		getCurrentCallstack().push(me);
 	}
 
-	public synchronized void methodExit(JoinPoint jp, Object retObject, boolean isExternal) {
+	public synchronized void methodExit(JoinPoint jp, boolean isExternal) {
 
 		if (getCurrentCallstack().empty()) {
 			// RFE: this is a bug, it shouldn't happen but it seems to be.
@@ -415,45 +425,51 @@ public class AJCollector2 {
 		}
 	}
 
+	// XXX: this is not used yet!
+	Model _model = new Model();
+
 	public void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
 				String folder = ILonganConstants.OUTPUT_PATH;
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
-				SessionXMLWriter sxmlw = new SessionXMLWriter();
-				sxmlw.write(fName, _session);
+				// SessionXMLWriter sxmlw = new SessionXMLWriter();
+				// sxmlw.write(fName, _session);
+
+				SessionXMLWriter2 sxmlw = new SessionXMLWriter2();
+				sxmlw.write(fName, _model);
+
 			} catch (Exception e) {
-				_log.error("Error writing to disk: "+e);
+				_log.error("Error writing to disk: " + e);
 			}
 		}
 	}
 
-	private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
+	// private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
 	private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
 
 	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
-		// XXX: implement this code
-		// if (!_methods.containsKey(jp.getStaticPart())) {
-		// // this only happens the first time
-		//
-		// String methodName = AJMethodAgent.getMethodName(jp);
-		// ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement me = new ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement(methodName);
-		//
-		// String className = AJMethodAgent.getClassName(jp);
-		// if (!_classes.containsKey(className)) {
-		// ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = new ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement(
-		// className, isExternal);
-		// _classes.put(className, ce);
-		// }
-		// }
 
-		// check if method is in class
+		if (!_methods.containsKey(jp.getStaticPart())) {
+			// this only happens the first time
 
-		// add it to class, if needed
+			String methodName = AJMethodAgent.getMethodName(jp);
+			MethodElement me = new MethodElement(methodName);
 
-		// map JoinPoint to class?
+			String className = AJMethodAgent.getClassName(jp);
+			if (!_model.hasClass(className)) {
+				ClassElement ce = new ClassElement(className, isExternal);
+				_model.addElement(ce);
+			}
 
-		// String className = AJMethodAgent.getClassName(jp);
+			ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = _model.getClass(className);
+
+			// check if method is in class
+			if (!ce.getMethods().contains(me)) {
+				// add it to class, if needed
+				ce.getMethods().add(me);
+			}
+		}
 
 		return _methods.get(jp.getStaticPart());
 	}

@@ -344,4 +344,8 @@ public class AJMethodAgent extends MethodElement {
 		return name;
 	}
 
+	public static String getClassName(JoinPoint jp) {
+		return jp.getSignature().getDeclaringTypeName();
+	}
+
 }
