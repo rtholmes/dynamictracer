@@ -15,6 +15,9 @@ import java.util.Stack;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
+import org.aspectj.lang.reflect.ConstructorSignature;
+import org.aspectj.lang.reflect.InitializerSignature;
+import org.aspectj.lang.reflect.MethodSignature;
 
 import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
@@ -24,6 +27,7 @@ import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.io.Model2XMLWriter;
 import edu.washington.cse.longan.Logger;
 import edu.washington.cse.longan.model.ILonganConstants;
+import edu.washington.cse.longan.trace.fromAJ.StringMaker;
 
 //import edu.washington.cse.longan.model.Session;
 
@@ -46,12 +50,111 @@ public class AJCollector2 {
 		_instance = null;
 	}
 
+	public static String getClassName(JoinPoint jp) {
+		return jp.getSignature().getDeclaringTypeName();
+	}
+
 	public static AJCollector2 getInstance() {
 		if (_instance == null) {
 			_instance = new AJCollector2();
 
 		}
 		return _instance;
+	}
+
+	/**
+	 * This code helps to translate from a method call like Collections.add(Object) to something more accurate like ArrayList.add(Object).
+	 * 
+	 * It is currently disabled.
+	 * 
+	 * @param jp
+	 * @return
+	 */
+	private static String getMethodName(JoinPoint jp) {
+		String name = jp.getSignature().toString();
+
+		if (jp.getTarget() != null && jp.getTarget().getClass() != null) {
+			// try to specialize the name (e.g., Class java.lang.Object.getClass() -> Class ca.uwaterloo.cs.se.bench.simple.NestedClass.getClass())
+			name = specializeName(jp);
+		}
+
+		Signature signature = jp.getSignature();
+		if (signature instanceof ConstructorSignature) {
+			ConstructorSignature sig = (ConstructorSignature) signature;
+
+			StringBuffer buf = new StringBuffer();
+			StringMaker sm = StringMaker.longStringMaker;
+
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			sm.addSignature(buf, sig.getParameterTypes());
+
+			name = buf.toString();
+		} else if (signature instanceof MethodSignature) {
+			MethodSignature sig = (MethodSignature) signature;
+
+			StringBuffer buf = new StringBuffer();
+
+			StringMaker sm = StringMaker.longStringMaker;
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			sm.addSignature(buf, sig.getParameterTypes());
+
+			name = buf.toString();
+		} else if (signature instanceof InitializerSignature) {
+			InitializerSignature sig = (InitializerSignature) signature;
+
+			StringBuffer buf = new StringBuffer();
+			StringMaker sm = StringMaker.longStringMaker;
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			name = buf.toString();
+		} else {
+			String msg = "AJCollector2::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
+			_log.warn(msg);
+			throw new RuntimeException(msg);
+		}
+
+		return name;
+	}
+
+	private static String specializeName(JoinPoint jp) {
+		String name = jp.getSignature().toString();
+
+		Object myThis = jp.getThis();
+		Object myTarget = jp.getTarget();
+
+		if (myThis != myTarget) {
+
+			String rootName = jp.getSignature().getDeclaringTypeName();
+			String targetTypeName = jp.getTarget().getClass().getName();
+			if (!rootName.equals(targetTypeName)) {
+				int offsetIndex = 0;
+				boolean isConstructor = false;
+
+				if (jp.getSignature() instanceof ConstructorSignature)
+					isConstructor = true;
+
+				if (name.indexOf(" ") < name.indexOf("(")) {
+					offsetIndex = name.indexOf(" ");
+					isConstructor = false;
+				}
+
+				String retType = name.substring(0, offsetIndex);
+
+				int padding = 2;
+				if (isConstructor)
+					padding = 1;
+
+				String methodName = name.substring(rootName.length() + retType.length() + padding);
+				name = retType + " " + targetTypeName + "." + methodName;
+				// _log.debug("Specialize name from: " + oldName + " -> " + name);
+			}
+		}
+		return name;
 	}
 
 	private ThreadLocal<Stack<MethodElement>> _callStack = new ThreadLocal<Stack<MethodElement>>() {
@@ -61,6 +164,13 @@ public class AJCollector2 {
 	};
 
 	private Stack<Integer> _exceptionStack = null;
+
+	// private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
+	// private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
+	private Hashtable<Signature, MethodElement> _methods = new Hashtable<Signature, MethodElement>();
+
+	// XXX: this is not used yet!
+	Model _model = new Model();
 
 	private AJCollector2() {
 		try {
@@ -209,49 +319,63 @@ public class AJCollector2 {
 	}
 
 	public synchronized void constructorEnter(JoinPoint jp, boolean isExternal) {
-
-		// int id = getMethodId(jp, isExternal, true);
-		//
-		// ((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
-		//
-		//
-		// if (OUTPUT) {
-		// String out = "";
-		//
-		// for (int t = getCurrentCallstack().size(); t > 0; t--)
-		// out += "\t";
-		//
-		// Signature sig = jp.getSignature();
-		// if (!isExternal)
-		// _log.debug(out + "|-->| " + sig);
-		// else
-		// _log.debug(out + "|x->| " + sig);
-		// }
-		//
-		// getCurrentCallstack().push(id);
-
 		methodEnter(jp, isExternal);
-
 	}
 
 	public synchronized void constructorExit(JoinPoint jp, boolean isExternal) {
-
-		// getCurrentCallstack().pop();
-		//
-		// if (OUTPUT) {
-		// String out = "";
-		//
-		// for (int t = getCurrentCallstack().size(); t > 0; t--)
-		// out += "\t";
-		//
-		// Signature sig = jp.getSignature();
-		// if (!isExternal)
-		// _log.debug(out + "|<--| " + sig);
-		// else
-		// _log.debug(out + "|<-x| " + sig);
-		// }
-
 		methodExit(jp, isExternal);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void createTypeHierarchy(ClassElement subClass, Class parentClass) {
+		if (parentClass != null) {
+			String parentClassName = parentClass.getName();
+			ClassElement parentClassElement;
+
+			if (!_model.hasClass(parentClassName)) {
+
+				// NOTE: what is c.isLocalClass?
+				ClassElement ce = new ClassElement(parentClassName, true, parentClass.isInterface(), false);
+				_model.addElement(ce);
+
+				// superclass
+				createTypeHierarchy(ce, parentClass.getSuperclass());
+
+				// interfaces
+				for (Class sc : parentClass.getInterfaces()) {
+					createTypeHierarchy(ce, sc);
+				}
+			}
+
+			parentClassElement = _model.getClass(parentClassName);
+
+			// everything seems to subclass Class so just ignore these (uninteresting) relationships
+			if (!subClass.getId().equals("java.lang.Class") && !parentClassName.equals("java.lang.Object")) {
+				subClass.getParents().add(parentClassElement);
+			}
+
+			// NOTE: we can extract annotations here too, if we wanted to
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
+	private ClassElement createTypeHierarchy(JoinPoint jp, boolean isExternal) {
+
+		String className = AJMethodAgent.getClassName(jp);
+
+		if (!_model.hasClass(className)) {
+			ClassElement ce = new ClassElement(className, isExternal);
+			_model.addElement(ce);
+
+			Class ceClass = jp.getSignature().getDeclaringType();
+			for (Class c : ceClass.getInterfaces()) {
+				createTypeHierarchy(ce, c);
+			}
+
+			createTypeHierarchy(ce, ceClass.getSuperclass());
+		}
+
+		return _model.getClass(className);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -338,54 +462,34 @@ public class AJCollector2 {
 		return _callStack.get();
 	}
 
-	// private Integer getMethodId(JoinPoint jp, boolean isExternal, boolean isExternalKnown) {
-	//
-	// String name = "";
-	// int id = -1;
-	//
-	// // this seems complicated but allows us to resolve what is actually going on.
-	// // e.g., Collections.add(Object) -> ArrayList.add(Object)
-	// name = AJMethodAgent.getMethodName(jp);
-	//
-	// if (!_session.hasIDForElement(name)) {
-	// id = _masterCounter++;
-	// } else {
-	// id = _session.getIdForElement(name);
-	// }
-	//
-	// if (!_session.methodExists(id)) {
-	// if (!isExternalKnown) {
-	// throw new AssertionError("Can't create a new methodagent if without being sure that it is external or internal.");
-	// }
-	//
-	// // BUG: isExternal is always true for exceptions
-	// _session.addMethod(id, new AJMethodAgent(id, jp, isExternal));
-	// }
-	//
-	// return id;
-	// }
+	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
+
+		if (!_methods.containsKey(jp.getSignature())) {
+			// this only happens the first time
+
+			String methodName = getMethodName(jp);
+			MethodElement me = new MethodElement(methodName);
+
+			if (!_model.hasMethod(methodName)) {
+				_model.addElement(me);
+			}
+
+			_methods.put(jp.getSignature(), me);
+
+			ClassElement ce = createTypeHierarchy(jp, isExternal);
+
+			// check if method is in class
+			if (!ce.getMethods().contains(me)) {
+				// add it to class, if needed
+				ce.getMethods().add(me);
+			}
+
+		}
+
+		return _methods.get(jp.getSignature());
+	}
 
 	public synchronized void methodEnter(JoinPoint jp, boolean isExternal) {
-
-		// int id = getMethodId(jp, isExternal, true);
-		//
-		// ((AJMethodAgent) _session.getMethod(id)).methodEnter(jp, getCurrentCallstack());
-		//
-		// if (OUTPUT) {
-		// String out = "";
-		// for (int i = getCurrentCallstack().size(); i > 0; i--)
-		// out += "\t";
-		//
-		// String sig = _session.getMethod(id).getName();
-		//
-		// if (!isExternal)
-		// _log.debug(out + "--> " + sig);
-		// else
-		// _log.debug(out + "-x> " + sig);
-		//
-		// }
-		//
-		// getCurrentCallstack().push(id);
 
 		MethodElement me = getMethod(jp, isExternal);
 
@@ -393,6 +497,8 @@ public class AJCollector2 {
 			System.err.println("Null method element: " + jp.getSignature());
 		}
 		if (!getCurrentCallstack().empty()) {
+			// NOTE: this could be replaced with a single local variable _lastPush to make this a simle:
+			// if (_lastPush != null) prev.getCalls().add(_lastPush);
 			MethodElement prev = getCurrentCallstack().peek();
 			prev.getCalls().add(me);
 		} else {
@@ -428,9 +534,6 @@ public class AJCollector2 {
 		}
 	}
 
-	// XXX: this is not used yet!
-	Model _model = new Model();
-
 	public void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
@@ -465,89 +568,6 @@ public class AJCollector2 {
 			} catch (Exception e) {
 				_log.error("Error writing to disk: " + e);
 			}
-		}
-	}
-
-	// private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
-	// private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
-	private Hashtable<Signature, MethodElement> _methods = new Hashtable<Signature, MethodElement>();
-
-	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
-
-		if (!_methods.containsKey(jp.getSignature())) {
-			// this only happens the first time
-
-			String methodName = AJMethodAgent.getMethodName(jp);
-			MethodElement me = new MethodElement(methodName);
-
-			if (!_model.hasMethod(methodName)) {
-				_model.addElement(me);
-			}
-
-			_methods.put(jp.getSignature(), me);
-
-			ClassElement ce = createTypeHierarchy(jp, isExternal);
-
-			// check if method is in class
-			if (!ce.getMethods().contains(me)) {
-				// add it to class, if needed
-				ce.getMethods().add(me);
-			}
-
-		}
-
-		return _methods.get(jp.getSignature());
-	}
-
-	@SuppressWarnings("rawtypes")
-	private ClassElement createTypeHierarchy(JoinPoint jp, boolean isExternal) {
-
-		String className = AJMethodAgent.getClassName(jp);
-
-		if (!_model.hasClass(className)) {
-			ClassElement ce = new ClassElement(className, isExternal);
-			_model.addElement(ce);
-
-			Class ceClass = jp.getSignature().getDeclaringType();
-			for (Class c : ceClass.getInterfaces()) {
-				createTypeHierarchy(ce, c);
-			}
-
-			createTypeHierarchy(ce, ceClass.getSuperclass());
-		}
-
-		return _model.getClass(className);
-	}
-
-	@SuppressWarnings("rawtypes")
-	private void createTypeHierarchy(ClassElement subClass, Class parentClass) {
-		if (parentClass != null) {
-			String parentClassName = parentClass.getName();
-			ClassElement parentClassElement;
-
-			if (!_model.hasClass(parentClassName)) {
-
-				// NOTE: what is c.isLocalClass?
-				ClassElement ce = new ClassElement(parentClassName, true, parentClass.isInterface(), false);
-				_model.addElement(ce);
-
-				// superclass
-				createTypeHierarchy(ce, parentClass.getSuperclass());
-
-				// interfaces
-				for (Class sc : parentClass.getInterfaces()) {
-					createTypeHierarchy(ce, sc);
-				}
-			}
-
-			parentClassElement = _model.getClass(parentClassName);
-
-			// everything seems to subclass Class so just ignore these (uninteresting) relationships
-			if (!subClass.getId().equals("java.lang.Class") && !parentClassName.equals("java.lang.Object")) {
-				subClass.getParents().add(parentClassElement);
-			}
-
-			// NOTE: we can extract annotations here too, if we wanted to
 		}
 	}
 }
