@@ -4,6 +4,7 @@
  */
 package edu.washington.cse.longan.trace;
 
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Stack;
 
@@ -14,8 +15,8 @@ import ca.lsmr.common.util.TimeUtility;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
+import ca.uwaterloo.cs.se.inconsistency.core.model2.io.Model2XMLWriter;
 import edu.washington.cse.longan.Logger;
-import edu.washington.cse.longan.io.SessionXMLWriter2;
 import edu.washington.cse.longan.model.ILonganConstants;
 
 //import edu.washington.cse.longan.model.Session;
@@ -436,8 +437,8 @@ public class AJCollector2 {
 				// SessionXMLWriter sxmlw = new SessionXMLWriter();
 				// sxmlw.write(fName, _session);
 
-				SessionXMLWriter2 sxmlw = new SessionXMLWriter2();
-				sxmlw.write(fName, _model);
+				Model2XMLWriter mxmlw = new Model2XMLWriter(fName);
+				mxmlw.write(_model, "dynamictracer_uw", "dynamic", "tracing system execution", new Date());
 
 			} catch (Exception e) {
 				_log.error("Error writing to disk: " + e);
