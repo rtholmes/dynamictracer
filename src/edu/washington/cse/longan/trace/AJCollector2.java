@@ -388,6 +388,16 @@ public class AJCollector2 {
 		// getCurrentCallstack().push(id);
 
 		MethodElement me = getMethod(jp, isExternal);
+
+		if (me == null) {
+			System.out.println("Null method element: " + jp.getSignature());
+		}
+		if (!getCurrentCallstack().empty()) {
+			MethodElement prev = getCurrentCallstack().peek();
+			prev.getCalls().add(me);
+		} else {
+			_log.warn("Empty call stack; target: " + me);
+		}
 		getCurrentCallstack().push(me);
 	}
 
@@ -459,15 +469,22 @@ public class AJCollector2 {
 	}
 
 	// private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
-	private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
+	// private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
+	private Hashtable<Signature, MethodElement> _methods = new Hashtable<Signature, MethodElement>();
 
 	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
 
-		if (!_methods.containsKey(jp.getStaticPart())) {
+		if (!_methods.containsKey(jp.getSignature())) {
 			// this only happens the first time
 
 			String methodName = AJMethodAgent.getMethodName(jp);
 			MethodElement me = new MethodElement(methodName);
+
+			if (!_model.hasMethod(methodName)) {
+				_model.addElement(me);
+			}
+
+			_methods.put(jp.getSignature(), me);
 
 			String className = AJMethodAgent.getClassName(jp);
 			if (!_model.hasClass(className)) {
@@ -484,6 +501,6 @@ public class AJCollector2 {
 			}
 		}
 
-		return _methods.get(jp.getStaticPart());
+		return _methods.get(jp.getSignature());
 	}
 }
