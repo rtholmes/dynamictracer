@@ -4,6 +4,11 @@
  */
 package edu.washington.cse.longan.trace;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -11,6 +16,7 @@ import java.util.Stack;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 
+import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.MethodElement;
@@ -56,25 +62,12 @@ public class AJCollector2 {
 
 	private Stack<Integer> _exceptionStack = null;
 
-	/**
-	 * This has a _HUGE_ problem; ids are only unique PER CLASS, meaing an id of 0 will conflict with every single class. We can use pertypewithin on
-	 * the aspect description but that will violate what we have happening here.
-	 * 
-	 * @param jps
-	 * @return
-	 */
-	private int _masterCounter = 0;
-
-	// private Session _session;
-
 	private AJCollector2() {
 		try {
 			// LOGGING
-			// LSMRLogger.startLog4J(true, ILonganConstants.LOGGING_LEVEL);
+			LSMRLogger.startLog4J(true);
 
-			// _session = new Session(TimeUtility.getCurrentLSMRDateString());
 			_log.info("New AJCollector instantiated");
-			// _log.info("Tracing started");
 
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 
@@ -102,7 +95,6 @@ public class AJCollector2 {
 				String out = "";
 				for (int i = getCurrentCallstack().size(); i > 0; i--)
 					out += "\t";
-				// _log.debug("|-| After class init: " + jp.getStaticPart().getSourceLocation().getWithinType());
 				_log.debug(out + "|-| After class init: " + jp.getSignature());
 			}
 
@@ -439,6 +431,26 @@ public class AJCollector2 {
 
 				Model2XMLWriter mxmlw = new Model2XMLWriter(fName);
 				mxmlw.write(_model, "dynamictracer_uw", "dynamic", "tracing system execution", new Date());
+
+				String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
+
+				try {
+					// Create channel on the source
+					FileChannel srcChannel = new FileInputStream(fName).getChannel();
+
+					// Create channel on the destination
+					FileChannel dstChannel = new FileOutputStream(latestFName).getChannel();
+
+					// Copy file contents from source to destination
+					dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
+
+					// Close the channels
+					srcChannel.close();
+					dstChannel.close();
+					System.out.println("Model file copied to: " + new File(latestFName).getAbsolutePath());
+				} catch (IOException ioe) {
+					System.err.println(ioe);
+				}
 
 			} catch (Exception e) {
 				_log.error("Error writing to disk: " + e);
