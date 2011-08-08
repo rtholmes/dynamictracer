@@ -390,13 +390,13 @@ public class AJCollector2 {
 		MethodElement me = getMethod(jp, isExternal);
 
 		if (me == null) {
-			System.out.println("Null method element: " + jp.getSignature());
+			System.err.println("Null method element: " + jp.getSignature());
 		}
 		if (!getCurrentCallstack().empty()) {
 			MethodElement prev = getCurrentCallstack().peek();
 			prev.getCalls().add(me);
 		} else {
-			_log.warn("Empty call stack; target: " + me);
+			// _log.warn("Empty call stack; target: " + me);
 		}
 		getCurrentCallstack().push(me);
 	}
@@ -486,21 +486,68 @@ public class AJCollector2 {
 
 			_methods.put(jp.getSignature(), me);
 
-			String className = AJMethodAgent.getClassName(jp);
-			if (!_model.hasClass(className)) {
-				ClassElement ce = new ClassElement(className, isExternal);
-				_model.addElement(ce);
-			}
-
-			ca.uwaterloo.cs.se.inconsistency.core.model2.ClassElement ce = _model.getClass(className);
+			ClassElement ce = createTypeHierarchy(jp, isExternal);
 
 			// check if method is in class
 			if (!ce.getMethods().contains(me)) {
 				// add it to class, if needed
 				ce.getMethods().add(me);
 			}
+
 		}
 
 		return _methods.get(jp.getSignature());
+	}
+
+	@SuppressWarnings("rawtypes")
+	private ClassElement createTypeHierarchy(JoinPoint jp, boolean isExternal) {
+
+		String className = AJMethodAgent.getClassName(jp);
+
+		if (!_model.hasClass(className)) {
+			ClassElement ce = new ClassElement(className, isExternal);
+			_model.addElement(ce);
+
+			Class ceClass = jp.getSignature().getDeclaringType();
+			for (Class c : ceClass.getInterfaces()) {
+				createTypeHierarchy(ce, c);
+			}
+
+			createTypeHierarchy(ce, ceClass.getSuperclass());
+		}
+
+		return _model.getClass(className);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private void createTypeHierarchy(ClassElement subClass, Class parentClass) {
+		if (parentClass != null) {
+			String parentClassName = parentClass.getName();
+			ClassElement parentClassElement;
+
+			if (!_model.hasClass(parentClassName)) {
+
+				// NOTE: what is c.isLocalClass?
+				ClassElement ce = new ClassElement(parentClassName, true, parentClass.isInterface(), false);
+				_model.addElement(ce);
+
+				// superclass
+				createTypeHierarchy(ce, parentClass.getSuperclass());
+
+				// interfaces
+				for (Class sc : parentClass.getInterfaces()) {
+					createTypeHierarchy(ce, sc);
+				}
+			}
+
+			parentClassElement = _model.getClass(parentClassName);
+
+			// everything seems to subclass Class so just ignore these (uninteresting) relationships
+			if (!subClass.getId().equals("java.lang.Class") && !parentClassName.equals("java.lang.Object")) {
+				subClass.getParents().add(parentClassElement);
+			}
+
+			// NOTE: we can extract annotations here too, if we wanted to
+		}
 	}
 }
