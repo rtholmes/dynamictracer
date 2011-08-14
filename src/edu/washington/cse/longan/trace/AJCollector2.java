@@ -4,11 +4,6 @@
  */
 package edu.washington.cse.longan.trace;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Stack;
@@ -38,6 +33,10 @@ import edu.washington.cse.longan.trace.fromAJ.StringMaker;
  * 
  */
 public class AJCollector2 {
+
+	static {
+		LSMRLogger.startLog4J();
+	}
 	private static AJCollector2 _instance = null;
 	private static Logger _log = Logger.getLogger(AJCollector2.class);
 
@@ -174,15 +173,11 @@ public class AJCollector2 {
 
 	private AJCollector2() {
 		try {
-			// LOGGING
-			LSMRLogger.startLog4J(true);
-
-			_log.info("New AJCollector instantiated");
+			_log.trace("New AJCollector instantiated");
 
 			Runtime.getRuntime().addShutdownHook(new Thread() {
 
 				public void run() {
-					_log.info("Shtudown is happening now");
 					writeToDisk();
 				}
 			});
@@ -534,6 +529,10 @@ public class AJCollector2 {
 		}
 	}
 
+	public static final String XML_ORIGIN = "dynamictracer_uw";
+	public static final String XML_KIND = "dynamic";
+	public static final String XML_DESCRIPTION = "tracing system execution";
+
 	public void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
@@ -545,25 +544,25 @@ public class AJCollector2 {
 				Model2XMLWriter mxmlw = new Model2XMLWriter(fName);
 				mxmlw.write(_model, "dynamictracer_uw", "dynamic", "tracing system execution", new Date());
 
-				String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
-
-				try {
-					// Create channel on the source
-					FileChannel srcChannel = new FileInputStream(fName).getChannel();
-
-					// Create channel on the destination
-					FileChannel dstChannel = new FileOutputStream(latestFName).getChannel();
-
-					// Copy file contents from source to destination
-					dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
-
-					// Close the channels
-					srcChannel.close();
-					dstChannel.close();
-					System.out.println("Model file copied to: " + new File(latestFName).getAbsolutePath());
-				} catch (IOException ioe) {
-					System.err.println(ioe);
-				}
+				// String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
+				//
+				// try {
+				// // Create channel on the source
+				// FileChannel srcChannel = new FileInputStream(fName).getChannel();
+				//
+				// // Create channel on the destination
+				// FileChannel dstChannel = new FileOutputStream(latestFName).getChannel();
+				//
+				// // Copy file contents from source to destination
+				// dstChannel.transferFrom(srcChannel, 0, srcChannel.size());
+				//
+				// // Close the channels
+				// srcChannel.close();
+				// dstChannel.close();
+				// System.out.println("Model file copied to: " + new File(latestFName).getAbsolutePath());
+				// } catch (IOException ioe) {
+				// System.err.println(ioe);
+				// }
 
 			} catch (Exception e) {
 				_log.error("Error writing to disk: " + e);

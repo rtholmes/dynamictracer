@@ -38,7 +38,7 @@ public interface ILonganConstants {
 	public static final boolean OUTPUT_XML = true;
 	public static final boolean OUTPUT_ZIP = false;
 
-	public static final String OUTPUT_PATH = "report/dynamic/";
+	public static final String OUTPUT_PATH = "report/dynamic/tmp/";
 
 	public static final String OUTPUT_HTML = "report/html/";
 

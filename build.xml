@@ -21,6 +21,7 @@
   <path id="tracer.class.path">
     <pathelement location="${lib}/aspectjrt.jar"/>
     <pathelement location="${lib}/aspectjtools.jar"/>
+    <pathelement location="${lib}/ant.jar"/>
     <fileset dir="${inconsistencyInspectorResources}" includes="ca.lsmr.common_*.jar"/>
 	<fileset dir="${inconsistencyInspectorResources}" includes="ca.uwaterloo.cs.se.inconsistency.core_*.jar"/>
   </path>
