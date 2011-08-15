@@ -68,13 +68,17 @@ public class DynamicTracer extends Task {
 
 		for (String fileName : fileNames) {
 			String fName = tmpdir.getAbsolutePath() + File.separator + fileName;
+			try {
+				Model m = loadModel(fName);
 
-			Model m = loadModel(fName);
-
-			if (baseModel == null) {
-				baseModel = m;
-			} else {
-				baseModel.addModel(m);
+				if (baseModel == null) {
+					baseModel = m;
+				} else {
+					baseModel.addModel(m);
+				}
+			} catch (Exception e) {
+				_log.fatal("Error loading model from: " + fName);
+				_log.info("Processing will continue, but results should be tested manually");
 			}
 		}
 
