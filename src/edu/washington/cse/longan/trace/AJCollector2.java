@@ -583,6 +583,7 @@ public class AJCollector2 {
 
 			} catch (Exception e) {
 				_log.error("Error writing to disk: " + e);
+				e.printStackTrace();
 			}
 		}
 	}
