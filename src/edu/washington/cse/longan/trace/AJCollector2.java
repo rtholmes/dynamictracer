@@ -10,6 +10,7 @@ import java.util.Stack;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
+import org.aspectj.lang.reflect.CatchClauseSignature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.InitializerSignature;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -34,13 +35,24 @@ import edu.washington.cse.longan.trace.fromAJ.StringMaker;
  */
 public class AJCollector2 {
 
+	private static AJCollector2 _instance = null;
+
+	private static Logger _log = Logger.getLogger(AJCollector2.class);
+
+	/**
+	 * Controls debug output; this can be very helpful for diagnosing tracer problems.
+	 */
+	public static boolean OUTPUT = false;
+
+	public static final String XML_DESCRIPTION = "tracing system execution";
+
+	public static final String XML_KIND = "dynamic";
+
+	public static final String XML_ORIGIN = "dynamictracer_uw";
+
 	static {
 		LSMRLogger.startLog4J();
 	}
-	private static AJCollector2 _instance = null;
-	private static Logger _log = Logger.getLogger(AJCollector2.class);
-
-	public static boolean OUTPUT = false;
 
 	public static void clearInstance() {
 		if (_instance != null)
@@ -111,6 +123,24 @@ public class AJCollector2 {
 			buf.append(".");
 			buf.append(sig.getName());
 			name = buf.toString();
+		} else if (signature instanceof CatchClauseSignature) {
+			CatchClauseSignature sig = (CatchClauseSignature) signature;
+
+			StringBuffer buf = new StringBuffer();
+
+			StringMaker sm = StringMaker.longStringMaker;
+			buf.append(sm.makePrimaryTypeName(sig.getDeclaringType(), sig.getDeclaringTypeName()));
+			buf.append(".");
+			buf.append(sig.getName());
+			buf.append(sm.makeTypeName(sig.getParameterType()));
+
+			try {
+				throw new RuntimeException();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("CatchClauseSignature - evaluates to: " + name);
 		} else {
 			String msg = "AJCollector2::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
 			_log.warn(msg);
@@ -162,13 +192,8 @@ public class AJCollector2 {
 		};
 	};
 
-	private Stack<Integer> _exceptionStack = null;
-
-	// private Hashtable<String, ClassElement> _classes = new Hashtable<String, ClassElement>();
-	// private Hashtable<JoinPoint.StaticPart, MethodElement> _methods = new Hashtable<JoinPoint.StaticPart, MethodElement>();
 	private Hashtable<Signature, MethodElement> _methods = new Hashtable<Signature, MethodElement>();
 
-	// XXX: this is not used yet!
 	Model _model = new Model();
 
 	private AJCollector2() {
@@ -213,7 +238,6 @@ public class AJCollector2 {
 	 * 
 	 * @param jp
 	 */
-	@SuppressWarnings("unchecked")
 	public void afterCreateException(JoinPoint jp) {
 
 		// NOTE: if exception tracking seems screwed up, check to see if this is
@@ -222,8 +246,6 @@ public class AJCollector2 {
 		// from constructors.
 
 		// Needed to capture call stack for exceptions arising in constructors
-		_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
-
 		constructorExit(jp, true);
 
 		if (OUTPUT) {
@@ -282,6 +304,7 @@ public class AJCollector2 {
 				out += "\t";
 			_log.debug(out + "Before create exception: " + jp.getSignature().toString());
 		}
+
 		constructorEnter(jp, true);
 	}
 
@@ -373,83 +396,49 @@ public class AJCollector2 {
 		return _model.getClass(className);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void exceptionHandled(JoinPoint jp, Object instance, Object exception) {
+		// This block is mainly for debugging
+		// Ultimately the after methodExit() calls are handling the unwinding of the stack
+
 		if (getCurrentCallstack().isEmpty()) {
 			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception handled but the call stack is empty: " + jp.getSignature());
-		} else {
-			// MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
-			// Preconditions.checkArgument(exception instanceof Throwable);
-
-			// NOTE: this false is poor form; hopefully this call never results in a ME being generated for the first time
-			MethodElement mt = getMethod(jp, false);
-
-			if (_exceptionStack == null) {
-				// RFE: handle case where exception comes from somewhere we don't instrument
-				_log.warn("Exception handled but the exception stack is empty: " + jp.getSignature());
-
-				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
-				// mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-
-			}
-
-			// mt.handleException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-
-			// this is a new exception
-			_exceptionStack = null;
-
-			if (OUTPUT) {
-				_log.debug("handling current exception, exception stack cleared. " + mt.getId() + " ex type: " + exception.getClass().getName()
-						+ " ex msg: " + ((Throwable) exception).getMessage());
-			}
-
-			if (OUTPUT) {
-				String out = "";
-				for (int i = getCurrentCallstack().size(); i > 0; i--)
-					out += "\t";
-
-				_log.debug(out + "|-| Exception handled: " + exception + " in: " + mt.getId());
-			}
 		}
+
+		if (OUTPUT) {
+			_log.debug("handling current exception, exception stack cleared. " + jp.getSignature() + " ex type: " + exception.getClass().getName()
+					+ " ex msg: " + ((Throwable) exception).getMessage());
+		}
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
+				out += "\t";
+
+			_log.debug(out + "|-| Exception handled: " + exception + " in: " + jp.getSignature());
+		}
+
 	}
 
-	@SuppressWarnings("unchecked")
 	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
+
+		// This block is mainly for debugging
+		// Ultimately the after methodExit() calls are handling the unwinding of the stack
+
 		if (getCurrentCallstack().isEmpty()) {
 			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception thrown with an empty callstack");
-		} else {
-			// MethodElement mt = _session.getMethod(getCurrentCallstack().peek());
+		}
 
-			// NOTE: this false is poor form; hopefully this call never results in a ME being generated for the first time
-			MethodElement mt = getMethod(jp, false);
-			if (_exceptionStack == null) {
-				// this is a new exception
-				_exceptionStack = (Stack<Integer>) getCurrentCallstack().clone();
-				// mt.throwException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-				if (OUTPUT) {
-					_log.debug("Rew exception encountered, new exception stack created. " + mt.getId() + " ex type: "
-							+ exception.getClass().getName() + " ex msg: " + ((Throwable) exception).getMessage());
-				}
-			} else {
-				// mt.reThrowException(_exceptionStack, exception.getClass().getName(), ((Throwable) exception).getMessage());
-				if (OUTPUT) {
-					_log.debug("Rethrowing existing exception. " + mt.getId() + " ex type: " + exception.getClass().getName() + " ex msg: "
-							+ ((Throwable) exception).getMessage());
-				}
-			}
+		if (OUTPUT) {
+			String out = "";
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
+				out += "\t";
 
-			if (OUTPUT) {
-				String out = "";
-				for (int i = getCurrentCallstack().size(); i > 0; i--)
-					out += "\t";
-
-				if (!isExternal)
-					_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-				else
-					_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
-			}
+			if (!isExternal)
+				_log.debug(out + "|-| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
+			else
+				_log.debug(out + "|x| Exception thrown: " + exception + " in: " + jp.getSignature().toString());
 		}
 	}
 
@@ -499,7 +488,24 @@ public class AJCollector2 {
 		} else {
 			// _log.warn("Empty call stack; target: " + me);
 		}
+
+		if (OUTPUT) {
+			String out = "";
+			for (int i = getCurrentCallstack().size(); i > 0; i--)
+				out += "\t";
+
+			// Signature sig = jp.getSignature();
+
+			if (!isExternal)
+				out += "--> " + me;
+			else
+				out += "-x-> " + me;
+
+			_log.debug(out);
+		}
+
 		getCurrentCallstack().push(me);
+
 	}
 
 	public synchronized void methodExit(JoinPoint jp, boolean isExternal) {
@@ -512,6 +518,21 @@ public class AJCollector2 {
 		}
 
 		getCurrentCallstack().pop();
+
+		// REMOVE THIS
+		// make this a bit better...
+		// pop until the popped element is the current method
+		// MethodElement mexit = getMethod(jp, isExternal);
+		// System.out.println("Exiting - looking for: " + mexit);
+		// while (true) {
+		// MethodElement popMe = getCurrentCallstack().pop();
+		// System.out.println("\tExiting - considering: " + popMe + " match? " + mexit.equals(popMe));
+		// if (mexit.equals(popMe)) {
+		// break;
+		// } else {
+		// System.out.println("Popping extra method: " + popMe + " loking for: " + mexit);
+		// }
+		// }
 
 		if (OUTPUT) {
 			String out = "";
@@ -528,10 +549,6 @@ public class AJCollector2 {
 			_log.debug(out);
 		}
 	}
-
-	public static final String XML_ORIGIN = "dynamictracer_uw";
-	public static final String XML_KIND = "dynamic";
-	public static final String XML_DESCRIPTION = "tracing system execution";
 
 	public void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
