@@ -8,7 +8,6 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.junit.Assert;
 
 import ca.lsmr.common.log.LSMRLogger;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
@@ -78,7 +77,7 @@ public class DynamicTracer extends Task {
 				}
 			} catch (Exception e) {
 				_log.fatal("Error loading model from: " + fName);
-				_log.info("Processing will continue, but results should be tested manually");
+				_log.warn("Processing will continue, but results should be tested manually");
 			}
 		}
 
@@ -94,7 +93,6 @@ public class DynamicTracer extends Task {
 	private Model loadModel(String fName) {
 		Model2XMLReader xmlrdf = new Model2XMLReader(fName);
 		Model model = xmlrdf.read();
-		Assert.assertNotNull(model);
 		return model;
 	}
 
