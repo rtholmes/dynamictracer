@@ -142,7 +142,8 @@ public class AJCollector2 {
 
 			System.out.println("CatchClauseSignature - evaluates to: " + name);
 		} else {
-			String msg = "AJCollector2::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature + " )";
+			String msg = "AJCollector2::getMethodName(..) - Unknown signature type: " + signature.getClass() + " ( " + signature
+					+ " )";
 			_log.warn(msg);
 			throw new RuntimeException(msg);
 		}
@@ -401,16 +402,13 @@ public class AJCollector2 {
 		// Ultimately the after methodExit() calls are handling the unwinding of the stack
 
 		if (getCurrentCallstack().isEmpty()) {
-			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception handled but the call stack is empty: " + jp.getSignature());
 		}
 
 		if (OUTPUT) {
-			_log.debug("handling current exception, exception stack cleared. " + jp.getSignature() + " ex type: " + exception.getClass().getName()
-					+ " ex msg: " + ((Throwable) exception).getMessage());
-		}
+			_log.debug("handling current exception, exception stack cleared. " + jp.getSignature() + " ex type: "
+					+ exception.getClass().getName() + " ex msg: " + ((Throwable) exception).getMessage());
 
-		if (OUTPUT) {
 			String out = "";
 			for (int i = getCurrentCallstack().size(); i > 0; i--)
 				out += "\t";
@@ -421,12 +419,10 @@ public class AJCollector2 {
 	}
 
 	public void exceptionThrown(JoinPoint jp, Throwable exception, boolean isExternal) {
-
 		// This block is mainly for debugging
 		// Ultimately the after methodExit() calls are handling the unwinding of the stack
 
 		if (getCurrentCallstack().isEmpty()) {
-			// RFE: handle the case where not everything is instrumented.
 			_log.warn("Exception thrown with an empty callstack");
 		}
 
@@ -550,17 +546,17 @@ public class AJCollector2 {
 		}
 	}
 
-	public void writeToDisk() {
+	public synchronized void writeToDisk() {
 		if (ILonganConstants.OUTPUT_XML) {
 			try {
 				String folder = ILonganConstants.OUTPUT_PATH;
 				String fName = folder + TimeUtility.getCurrentLSMRDateString() + ".xml";
-				// SessionXMLWriter sxmlw = new SessionXMLWriter();
-				// sxmlw.write(fName, _session);
 
 				Model2XMLWriter mxmlw = new Model2XMLWriter(fName);
 				mxmlw.write(_model, "dynamictracer_uw", "dynamic", "tracing system execution", new Date());
 
+				// Ant now does this copy for us; this code is kept around for historical reference only
+				//
 				// String latestFName = ILonganConstants.OUTPUT_PATH + "dynamic_latest.xml";
 				//
 				// try {
