@@ -193,7 +193,10 @@ public class AJCollector2 {
 		};
 	};
 
-	private Hashtable<Signature, MethodElement> _methods = new Hashtable<Signature, MethodElement>();
+	/*
+	 * NOTE: This has been <Signature, MethodElement> in the past; trying to debug problem with this though
+	 */
+	private Hashtable<String, MethodElement> _methods = new Hashtable<String, MethodElement>();
 
 	Model _model = new Model();
 
@@ -444,17 +447,18 @@ public class AJCollector2 {
 
 	private MethodElement getMethod(JoinPoint jp, boolean isExternal) {
 
-		if (!_methods.containsKey(jp.getSignature())) {
+		String methodName = getMethodName(jp);
+
+		if (!_methods.containsKey(methodName)) {
 			// this only happens the first time
 
-			String methodName = getMethodName(jp);
 			MethodElement me = new MethodElement(methodName);
 
 			if (!_model.hasMethod(methodName)) {
 				_model.addElement(me);
 			}
 
-			_methods.put(jp.getSignature(), me);
+			_methods.put(methodName, me);
 
 			ClassElement ce = createTypeHierarchy(jp, isExternal);
 
@@ -463,10 +467,9 @@ public class AJCollector2 {
 				// add it to class, if needed
 				ce.getMethods().add(me);
 			}
-
 		}
 
-		return _methods.get(jp.getSignature());
+		return _methods.get(methodName);
 	}
 
 	public synchronized void methodEnter(JoinPoint jp, boolean isExternal) {
@@ -477,7 +480,7 @@ public class AJCollector2 {
 			System.err.println("Null method element: " + jp.getSignature());
 		}
 		if (!getCurrentCallstack().empty()) {
-			// NOTE: this could be replaced with a single local variable _lastPush to make this a simle:
+			// NOTE: this could be replaced with a single local variable _lastPush to make this a simple:
 			// if (_lastPush != null) prev.getCalls().add(_lastPush);
 			MethodElement prev = getCurrentCallstack().peek();
 			prev.getCalls().add(me);
