@@ -17,7 +17,7 @@ import org.apache.log4j.Logger;
 import ca.lsmr.common.log.LSMRLogger;
 import ca.lsmr.common.util.TimeUtility;
 import ca.uwaterloo.cs.se.inconsistency.core.model2.Model;
-import ca.uwaterloo.cs.se.inconsistency.core.model2.io.DependencyFinderSchema;
+import ca.uwaterloo.cs.se.inconsistency.core.model2.io.Model2XML;
 import edu.washington.cse.longan.model.ILonganConstants;
 import edu.washington.cse.longan.model.MethodElement;
 import edu.washington.cse.longan.model.Session;
@@ -44,7 +44,7 @@ public class SessionXMLWriter2 extends ILonganIO {
 			rootAttrs.put("origin", "runtime trace");
 			rootAttrs.put("created", new Date().toString());
 
-			indent().println(tag(DependencyFinderSchema.GENERATOR, rootAttrs, false));
+			indent().println(tag(Model2XML.GENERATOR, rootAttrs, false));
 
 			raiseIndent();
 
@@ -53,7 +53,7 @@ public class SessionXMLWriter2 extends ILonganIO {
 
 			// clean up
 			lowerIndent();
-			out.println(endTag(DependencyFinderSchema.GENERATOR));
+			out.println(endTag(Model2XML.GENERATOR));
 
 			out.close();
 
@@ -142,27 +142,27 @@ public class SessionXMLWriter2 extends ILonganIO {
 
 	private void genStatic(Session session, PrintWriter out) {
 
-		indent().println(tag(DependencyFinderSchema.DECLARATIONS, null, false));
+		indent().println(tag(Model2XML.DECLARATIONS, null, false));
 		raiseIndent();
-		indent().println(tag(DependencyFinderSchema.CLASSLIST, null, false));
+		indent().println(tag(Model2XML.CLASSLIST, null, false));
 		raiseIndent();
 
 		genClassList(session, out);
 
 		lowerIndent();
-		indent().println(endTag(DependencyFinderSchema.CLASSLIST));
+		indent().println(endTag(Model2XML.CLASSLIST));
 
 		raiseIndent();
-		indent().println(tag(DependencyFinderSchema.CLASSDETAILS, null, false));
+		indent().println(tag(Model2XML.CLASSDETAILS, null, false));
 		raiseIndent();
 
 		genMethods(session, out);
 
 		lowerIndent();
-		indent().println(endTag(DependencyFinderSchema.CLASSDETAILS));
+		indent().println(endTag(Model2XML.CLASSDETAILS));
 
 		lowerIndent();
-		indent().println(endTag(DependencyFinderSchema.DECLARATIONS));
+		indent().println(endTag(Model2XML.DECLARATIONS));
 	}
 
 	private void genClassList(Session session, PrintWriter out2) {
